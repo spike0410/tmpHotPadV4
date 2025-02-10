@@ -1,0 +1,22 @@
+{
+  "Kor": {
+    "Stop": "작업 중지",
+	"Preheat Rising": "예열 상승",
+	"Preheat Holding": "예열 유지",
+	"1st Rising": "1단 상승",
+	"2nd Rising": "2단 상승",
+	"1st Holding": "1단 유지",
+	"2nd Holding": "2단 유지",
+	"Pad Error": "히터 불량"
+  },
+  "Eng": {
+    "Stop": "Stop",
+	"Preheat Rising": "Preheat Rising",
+	"Preheat Holding": "Prehead Holding",
+	"1st Rising": "1st Rising",
+	"2nd Rising": "2nd Rising",
+	"1st Holding": "1st Holding",
+	"2nd Holding": "2st Holding",
+	"Pad Error": "Pad Error"
+  }
+}
