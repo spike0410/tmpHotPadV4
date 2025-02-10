@@ -265,7 +265,7 @@ class _BackupPageState extends State<BackupPage> {
           SizedBox(height: 40),
           Container(
             margin: EdgeInsets.only(left: 30, right: 30),
-            padding: EdgeInsets.only(left: 50, top: 20, right: 50, bottom: 20),
+            padding: EdgeInsets.only(left: 50, top: 20, right: 30, bottom: 20),
             width: screenWidth,
             height: 300,
             decoration: BoxDecoration(
@@ -279,15 +279,18 @@ class _BackupPageState extends State<BackupPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text(
-                      languageProvider.getLanguageTransValue('Copy start item'),
-                      style: TextStyle(
-                        fontSize: textSize,
+                    SizedBox(
+                      width: 200,
+                      child: Text(
+                        languageProvider.getLanguageTransValue('Copy start item'),
+                        style: TextStyle(
+                          fontSize: textSize,
+                        ),
                       ),
                     ),
-                    SizedBox(width: 10),
+                    // SizedBox(width: 10),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -299,7 +302,7 @@ class _BackupPageState extends State<BackupPage> {
                         dropdownMenuEntries: startItems,
                       ),
                     ),
-                    SizedBox(width: 48),
+                    SizedBox(width: 55),
                     ElevatedButton(
                       onPressed: isUSBConnect ? () {} : null,
                       style: btnStyle,
@@ -317,7 +320,7 @@ class _BackupPageState extends State<BackupPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 500),
+                    SizedBox(width: 505),
                     Text(
                       isUSBConnect ? '${languageProvider.getLanguageTransValue('Selected')}: 1000.0MB'
                           : '${languageProvider.getLanguageTransValue('Selected')}: 0.0MB',
@@ -329,15 +332,18 @@ class _BackupPageState extends State<BackupPage> {
                 ),
                 SizedBox(width: 10),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text(
-                      languageProvider.getLanguageTransValue('Copy last item'),
-                      style: TextStyle(
-                        fontSize: textSize,
+                    SizedBox(
+                      width: 200,
+                      child:  Text(
+                        languageProvider.getLanguageTransValue('Copy last item'),
+                        style: TextStyle(
+                          fontSize: textSize,
+                        ),
                       ),
                     ),
-                    SizedBox(width: 10),
+                    // SizedBox(width: 10),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -349,7 +355,7 @@ class _BackupPageState extends State<BackupPage> {
                         dropdownMenuEntries: endItems,
                       ),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: 40),
                     Checkbox(
                       value: true,
                       onChanged: (_) {},
@@ -389,6 +395,7 @@ class _BackupPageState extends State<BackupPage> {
                             fontSize: (textSize - 4),
                           ),
                         ),
+                        SizedBox(height: 5),
                         Stack(
                           children: [
                             SizedBox(
@@ -415,7 +422,7 @@ class _BackupPageState extends State<BackupPage> {
                         ),
                       ],
                     ),
-                    SizedBox(width: 40),
+                    SizedBox(width: 53),
                     ElevatedButton(
                       onPressed: isUSBConnect ? () {} : null,
                       style: btnStyle,

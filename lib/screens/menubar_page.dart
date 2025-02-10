@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
+import '../devices/hotpad_ctrl.dart';
 import '../screens/graph_page.dart';
 import '../devices/config_file_ctrl.dart';
 
@@ -7,7 +9,6 @@ enum LanguageEnum { kor, eng }
 
 class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
   final double barHeight;
-  final String currentTime;
   final String title;
   final String imagePath;
   final int selectedIndex;
@@ -18,7 +19,6 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
   const MenuBarPage({
     super.key,
     required this.barHeight,
-    required this.currentTime,
     required this.title,
     required this.imagePath,
     required this.selectedIndex,
@@ -62,9 +62,13 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                         title,
                         style: TextStyle(color: titleTextColor, fontSize: 34, fontWeight: FontWeight.bold),
                       ),
-                      Text(
-                        currentTime,
-                        style: TextStyle(fontSize: defaultFontSize),
+                      Consumer<HotpadCtrl>(
+                          builder: (context, hotpadCtrl, _) {
+                            return Text(
+                              hotpadCtrl.getCurrentTimeValue(),
+                              style: TextStyle(fontSize: defaultFontSize),
+                            );
+                          },
                       ),
                     ],
                   ),

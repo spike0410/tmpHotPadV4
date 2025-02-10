@@ -131,14 +131,12 @@ class RxPackage {
   }
 }
 
-// class SerialCtrl with ChangeNotifier {
 class SerialCtrl{
   UsbPort? _port;
   StreamSubscription<String>? _subscription;
   Transaction<String>? _transaction;
   List<Map<String, String>> deviceFilters = [];
   SerialPortStatus serialPortStatus = SerialPortStatus.none;
-  // Isolate? _isolate;
   int _noDataRxCount = 0; // Counter for no data received
   bool isError = false;
 

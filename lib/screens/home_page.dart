@@ -14,8 +14,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
-  final List<TextEditingController> _textEditCtrl =
-  List.generate(totalChannel, (_) => TextEditingController());
+  final List<TextEditingController> _textEditCtrl = List.generate(totalChannel, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(totalChannel, (_) => FocusNode());
 
   late HotpadCtrl hotpadCtrl;
@@ -57,26 +56,36 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       padding: EdgeInsets.all(5),
       child: Column(
         children: [
-          _headerRowItem(languageProvider, hotpadCtrl),
+          Consumer<HotpadCtrl>(
+            builder: (context, hotpadCtrl, _) {
+              return _headerRowItem(languageProvider, hotpadCtrl);
+            },
+          ),
           ...List.generate(
             totalChannel,
                 (index) => Column(
               children: [
                 SizedBox(height: 5),
-                _dataRowItem(
-                  index: index,
-                  statusCh: StatusChannel.ready,
-                  strChannel: (index + 1).toString().padLeft(2, '0'),
-                  currentTempValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
-                  setTemp: _settingTempSelect(hotpadCtrl.getIsPU45Enable(index), hotpadCtrl.getHeatingStepStatus(index)),
-                  remainTimeValue: 39,
-                  textEditCtrl: _textEditCtrl[index],
-                  currentValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
-                  strPADOhm: hotpadCtrl.serialCtrl.rxPackage.padOhm[index],
-                  strPADStatus: hotpadCtrl.getHeatingStatus(languageProvider, HeatingStatus.stop),
-                  isHighlighted: hotpadCtrl.getIsPU45Enable(index),
-                  focusNode: _focusNodes[index],
-                  languageProvider: languageProvider,
+                Consumer<HotpadCtrl>(
+                  builder: (context, hotpadCtrl, _) {
+                    return _dataRowItem(
+                      index: index,
+                      statusCh: StatusChannel.ready,
+                      strChannel: (index + 1).toString().padLeft(2, '0'),
+                      currentTempValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
+                      setTemp: _settingTempSelect(
+                        hotpadCtrl.getIsPU45Enable(index),
+                        hotpadCtrl.getHeatingStepStatus(index)),
+                      remainTimeValue: 39,
+                      textEditCtrl: _textEditCtrl[index],
+                      currentValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
+                      strPADOhm: hotpadCtrl.serialCtrl.rxPackage.padOhm[index],
+                      strPADStatus: hotpadCtrl.getHeatingStatus(languageProvider, HeatingStatus.stop),
+                      isHighlighted: hotpadCtrl.getIsPU45Enable(index),
+                      focusNode: _focusNodes[index],
+                      languageProvider: languageProvider,
+                    );
+                  },
                 ),
               ],
             ),

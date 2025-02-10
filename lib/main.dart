@@ -17,7 +17,6 @@ import '../screens/settings_page.dart';
 import '../screens/menubar_page.dart';
 import '../screens/statusbar_page.dart';
 import '../devices/config_file_ctrl.dart';
-import '../devices/serial_ctrl.dart';
 import '../devices/file_ctrl.dart';
 import '../providers/authentication_provider.dart';
 import '../providers/language_provider.dart';
@@ -28,11 +27,9 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  // final serialCtrlProvider = SerialCtrl();
   final languageProvider = LanguageProvider();
   final authProvider = AuthenticationProvider();
   final messageProvider = MessageProvider();
-  // final hotpadCtrl = HotpadCtrl(serialCtrl: serialCtrlProvider, messageProvider: messageProvider);
   final hotpadCtrl = HotpadCtrl(messageProvider: messageProvider);
 
   await FileCtrl.checkFolder(messageProvider);
@@ -47,7 +44,6 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        // ChangeNotifierProvider(create: (context) => serialCtrlProvider),
         ChangeNotifierProvider(create: (context) => languageProvider),
         ChangeNotifierProvider(create: (context) => authProvider),
         ChangeNotifierProvider(create: (context) => messageProvider),
@@ -79,11 +75,11 @@ class MyApp extends StatelessWidget {
               color: backgroundColor,
             ),
             scrollbarTheme: ScrollbarThemeData(
-              thumbVisibility: WidgetStateProperty.all<bool>(true),
-              trackVisibility: WidgetStateProperty.all<bool>(true),
-              trackColor: WidgetStateProperty.all<Color>(Colors.white),
-              thumbColor: WidgetStateProperty.all<Color>(Color(0xFF606060)),
-              thickness: WidgetStateProperty.all<double>(20),
+              thumbVisibility: MaterialStateProperty.all<bool>(true),
+              trackVisibility: MaterialStateProperty.all<bool>(true),
+              trackColor: MaterialStateProperty.all<Color>(Colors.white),
+              thumbColor: MaterialStateProperty.all<Color>(Color(0xFF606060)),
+              thickness: MaterialStateProperty.all<double>(20),
               crossAxisMargin: 1,
             ),
           ),
@@ -103,7 +99,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  String _currentTime = '';
   String _appBarTitle = 'Main Panel';
   String _appBarImage = iconHomePath;
   double _storageValue = 0.0;
@@ -118,18 +113,16 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _currentTime = _getCurrentTime();
-    Timer.periodic(Duration(seconds: 1), (Timer t) => _updateTime());
     _updateStorageUsage();
 
     splashScreenDelay();
 
     // Set the context after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Provider.of<SerialCtrl>(context, listen: false).setContext(context);
-      Provider.of<HotpadCtrl>(context, listen: false).setContext(context);
-      Provider.of<HotpadCtrl>(context, listen: false).serialStart();
-      Provider.of<HotpadCtrl>(context, listen: false).showAlarmMessage('SYS', '-', 'I0001');
+      final hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
+      hotpadCtrl.setContext(context);
+      hotpadCtrl.serialStart();
+      hotpadCtrl.showAlarmMessage('SYS', '-', 'I0001');
     });
   }
 
@@ -150,18 +143,6 @@ class _MainPageState extends State<MainPage> {
 
     FlutterNativeSplash.remove();
 
-  }
-
-  String _getCurrentTime() {
-    final now = DateTime.now();
-    return '${now.year}.${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')} '
-        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
-  }
-
-  void _updateTime() {
-    setState(() {
-      _currentTime = _getCurrentTime();
-    });
   }
 
   Future<void> _updateStorageUsage() async {
@@ -270,19 +251,19 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return RepaintBoundary(
       key: _repaintBoundaryKey,
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: MenuBarPage(
-          barHeight: barHeight,
-          currentTime: _currentTime,
-          title: _appBarTitle,
-          imagePath: _appBarImage,
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-          onCapturePressed: _capturePng,
-          graphPageKey: _graphPageKey,
+            barHeight: barHeight,
+            title: _appBarTitle,
+            imagePath: _appBarImage,
+            selectedIndex: _selectedIndex,
+            onItemTapped: _onItemTapped,
+            onCapturePressed: _capturePng,
+            graphPageKey: _graphPageKey,
         ),
         body: PageView(
           controller: _pageController,

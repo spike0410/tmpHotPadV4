@@ -21,7 +21,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   late DateTime _dateTime;
   late int _graphCount;
   final List<bool> _visibleSeries = List.filled(10, true);
-  final List<List<ChartData>> _chartDataSeries = List.filled(10, []);
+  final List<List<ChartData>> _chartDataSeries = List.generate(10, (_) => []);
   final List<Color> bkColor = [
     Colors.white,
     Color(0xFF808080),
@@ -330,8 +330,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                 decimalPlaces: 0,
                 minorGridLines: MinorGridLines(color: Colors.transparent),
                 majorTickLines: MajorTickLines(size: 10),
-                minorTickLines:
-                    MinorTickLines(size: 5, width: 1, color: Colors.white),
+                minorTickLines: MinorTickLines(size: 5, width: 1, color: Colors.white),
                 minorTicksPerInterval: 5,
                 labelStyle: TextStyle(color: Colors.white),
                 maximum: 120,
@@ -366,13 +365,11 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
     DateTime tmpDateTime = serialCtrlProvider.rxPackage.rxTime;
     for (int index = 0; index < 10; index++) {
-      double value =
-          double.tryParse(serialCtrlProvider.rxPackage.rtd[index]) ?? 0.0;
+      double value = double.tryParse(serialCtrlProvider.rxPackage.rtd[index]) ?? 0.0;
       _chartDataSeries[index].add(ChartData(tmpDateTime, value));
     }
 
-    debugPrint(
-        "Graph Data] [$tmpDateTime] ${serialCtrlProvider.rxPackage.rtd}");
+    debugPrint("Graph Data] [$tmpDateTime] ${serialCtrlProvider.rxPackage.rtd}");
 
     // if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(seconds: 1)))) {
     if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
 import '../devices/serial_ctrl.dart';
@@ -19,12 +20,16 @@ class HotpadCtrl with ChangeNotifier {
   List<bool> _isPreheatingBtn = List.filled(totalChannel, false);
   List<String> _padIDText = List.filled(totalChannel, '');
 
+  String _currentTime = '';
+
   HotpadCtrl({
     required this.messageProvider
   });
 
   void initialize() {
     serialCtrl.initialize();
+
+    _currentTime = DateFormat('yyyy.MM.dd HH:mm:ss').format(DateTime.now());
 
     _isPU45Enable = ConfigFileCtrl.isPU45EnableList;
     _heatingStepStatus = ConfigFileCtrl.heatingStepStatusList;
@@ -38,55 +43,66 @@ class HotpadCtrl with ChangeNotifier {
   }
 
   void serialStart(){
-    serialCtrl.setContext(_context!);
-    serialCtrl.loadDeviceFilter().then((_) => serialCtrl.getDevice());
-
-    startIsolate();
+    if(_context != null){
+      serialCtrl.setContext(_context!);
+      serialCtrl.loadDeviceFilter().then((_) => serialCtrl.getDevice());
+      startIsolate();
+    }
   }
 
   bool getIsPU45Enable(int index){
+    if (index < 0 || index >= totalChannel) return false;
     return _isPU45Enable[index];
   }
 
   HeatingStepStatus getHeatingStepStatus(int index){
+    if (index < 0 || index >= totalChannel) return HeatingStepStatus.step1;
     return _heatingStepStatus[index];
   }
 
   bool getIsStartBtn(int index){
+    if (index < 0 || index >= totalChannel) return false;
     return _isStartBtn[index];
   }
 
   bool getIsPreheatingBtn(int index){
+    if (index < 0 || index >= totalChannel) return false;
     return _isPreheatingBtn[index];
   }
 
   String getPadIDText(int index){
+    if (index < 0 || index >= totalChannel) return '';
     return _padIDText[index];
   }
 
   void togglePU45Enable(int index) {
+    if (index < 0 || index >= totalChannel) return;
     _isPU45Enable[index] = !_isPU45Enable[index];
     _updateStatus();
   }
 
   void setPadID(int index, String text) {
+    if (index < 0 || index >= totalChannel) return;
     _padIDText[index] = text;
     _updateStatus();
   }
 
   void startHeating(int index){
+    if (index < 0 || index >= totalChannel) return;
     _isStartBtn[index] = true;
     _isPreheatingBtn[index] = false;
     _updateStatus();
   }
 
   void startPreheating(int index){
+    if (index < 0 || index >= totalChannel) return;
     _isStartBtn[index] = false;
     _isPreheatingBtn[index] = true;
     _updateStatus();
   }
 
   void stopHeating(index){
+    if (index < 0 || index >= totalChannel) return;
     _padIDText[index] = '';
     _isStartBtn[index] = false;
     _isPreheatingBtn[index] = false;
@@ -157,15 +173,18 @@ class HotpadCtrl with ChangeNotifier {
         serialCtrl.sendData();
         serialCtrl.checkDataReceived();
       }
+      if (message == 'updateTime') {
+        _currentTime = getCurrentTime();
+      }
     });
   }
 
   static void _isolateEntry(SendPort sendPort) async {
     Timer.periodic(Duration(seconds: 1), (timer) {
       sendPort.send('sendData');
+      sendPort.send('updateTime');
     });
   }
-
 
   void onDataReceived(String data) {
     serialCtrl.noDataRxCount = 0; // Reset counter on data received
@@ -181,12 +200,23 @@ class HotpadCtrl with ChangeNotifier {
         serialCtrl.serialPortStatus = SerialPortStatus.rxCplt;
         serialCtrl.rxPackage.setRxPackageData(dataList);
         debugPrint('R>>>[${DateTime.now()}] $dataList');
+
       } else {
         serialCtrl.serialPortStatus = SerialPortStatus.rxErr;
         debugPrint('### Status : ${serialCtrl.serialPortStatus}');
       }
     }
     serialCtrl.serialPortStatus = SerialPortStatus.rxReady;
+  }
+
+  String getCurrentTime() {
+    notifyListeners();
+
+    return DateFormat('yyyy.MM.dd HH:mm:ss').format(DateTime.now());
+  }
+
+  String getCurrentTimeValue() {
+    return _currentTime;
   }
 
   @override
