@@ -1,3 +1,18 @@
+### 25/02/10
+	1. HotpadCtrl 클래스 추가
+		- hotpad_ctrl.dart 파일 추가
+		- 데이터 통합 관리 클래스
+		- isolate를 사용하여 GUI와 구분
+		- 현재 Serial 통신 및 현재 시간 관리
+		- 추가적으로 PID 및 Hotpad 제어 부분 구현 예정
+	
+	2. 기타 수정 사항
+		- backup_page의 언어 변경에 따른 레이아웃 변동을 수정
+		- 25/02/07 1항에 오류 부분을 수정
+			--> main.dart에 현재 시간을 표시하기 위해 사용한 타이머로 인한 데이터 2번 알림이 발생하는 것을 
+			    HotpadCtrl 클래스 적용(현재 시간을 본 클래스로 이동)으로 notifyListeners()를 사용하여
+				데이터 변경 사항을 전달하는 것으로 변경
+		
 ### 25/02/07
 	1. Graph 오류 수정
 		- SerialCtrl 클래스가 ChangeNotifier를 상속하였고, onDataReceived()함수를 StreamSubscription로 콜백을 선언하였다.
