@@ -143,18 +143,17 @@ class SerialCtrl{
   late TxPackage txPackage;
   late RxPackage rxPackage;
   BuildContext? _context; // Add this line
+  late Function(String) onDataReceivedCallback;
 
   set noDataRxCount(int val){
     _noDataRxCount = val;
   }
 
   // 초기화 함수
-  void initialize() {
+  void initialize(Function(String) onDataReceived) {
     txPackage = TxPackage();
     rxPackage = RxPackage();
-
-    // // loadDeviceFilter를 먼저 호출하여 파싱 후 getDevice를 호출
-    // loadDeviceFilter().then((_) => getDevice());
+    onDataReceivedCallback = onDataReceived;
   }
 
   // Add this method to set the context
@@ -223,10 +222,7 @@ class SerialCtrl{
         _port!.inputStream as Stream<Uint8List>, Uint8List.fromList([13, 10]));
 
     // 스트림 리스너에 콜백 함수 설정
-    // _subscription = _transaction!.stream.listen(onDataReceived);
-    _subscription = _transaction!.stream.listen((data) {
-      Provider.of<HotpadCtrl>(_context!, listen: false).onDataReceived(data);
-    });
+    _subscription = _transaction!.stream.listen(onDataReceivedCallback);
 
     serialPortStatus = SerialPortStatus.connect;
     debugPrint('### Status : $serialPortStatus');

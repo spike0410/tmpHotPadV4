@@ -35,7 +35,7 @@ void main() async {
   await FileCtrl.checkFolder(messageProvider);
   await ConfigFileCtrl.initialize(); // ConfigFileCtrl 초기화
   await languageProvider.setLanguageFromDeviceConfig(); // 초기 언어 설정
-  hotpadCtrl.initialize();
+  await hotpadCtrl.initialize();
 
   // Register Syncfusion license
   SyncfusionLicense.registerLicense(

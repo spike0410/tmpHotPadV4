@@ -7,9 +7,12 @@ import '../providers/language_provider.dart';
 
 class ConfigFileCtrl {
   static const String _isPU45EnableKey = 'isPU45Enable';
-  static const String _heatingStepStatusKey = 'heatingStepStatus';
   static const String _isHeatingBtnKey = 'isHeatingBtn';
   static const String _isPreheatingBtnKey = 'isPreheatingBtn';
+  static const String _statusChannelKey = 'statusChannel';
+  static const String _heatingStatusKey = 'heatingStatus';
+  static const String _remainTimeKey = 'remainTime';
+  static const String _remainTotalTimeKey = 'remainTotalTime';
   static const String _padIDKey = 'padIDKey';
 
   static const String _versionKey = 'version';
@@ -34,9 +37,12 @@ class ConfigFileCtrl {
    *                  Home Page Status Variable
    *******************************************************************////
   static List<bool> isPU45EnableList = List.filled(totalChannel, true);
-  static List<HeatingStepStatus> heatingStepStatusList = List.filled(totalChannel, HeatingStepStatus.step1);
   static List<bool> isStartBtnList = List.filled(totalChannel, false);
   static List<bool> isPreheatingBtnList = List.filled(totalChannel, false);
+  static List<StatusChannel> statusChList = List.filled(totalChannel, StatusChannel.ready);
+  static List<HeatingStatus> heatingStatusList = List.filled(totalChannel, HeatingStatus.stop);
+  static List<double> remainTimeList = List.filled(totalChannel, 0);
+  static List<double> remainTotalTimeList = List.filled(totalChannel, -1);
   static List<String>  padIDList = List.filled(totalChannel, '');
 
   /*******************************************************************
@@ -138,10 +144,14 @@ class ConfigFileCtrl {
 
     await prefs.setString(_languageKey, 'Kor');
     await prefs.setString(_isPU45EnableKey, jsonEncode(isPU45EnableList));
-    List<String> stringList = heatingStepStatusList.map((status) => status.toString()).toList();
-    await prefs.setString(_heatingStepStatusKey, jsonEncode(stringList));
     await prefs.setString(_isHeatingBtnKey, jsonEncode(isStartBtnList));
     await prefs.setString(_isPreheatingBtnKey, jsonEncode(isPreheatingBtnList));
+    List<String> tmpStatusChList = statusChList.map((status) => status.toString()).toList();
+    await prefs.setString(_statusChannelKey, jsonEncode(tmpStatusChList));
+    List<String> tmpHeatingStatusList = heatingStatusList.map((status) => status.toString()).toList();
+    await prefs.setString(_heatingStatusKey, jsonEncode(tmpHeatingStatusList));
+    await prefs.setString(_remainTimeKey, jsonEncode(remainTimeList));
+    await prefs.setString(_remainTotalTimeKey, jsonEncode(remainTotalTimeList));
     await prefs.setString(_padIDKey, jsonEncode(padIDList));
 
     await prefs.setString(_versionKey, _currentVersion);
@@ -176,18 +186,18 @@ class ConfigFileCtrl {
    *******************************************************************////
   static Future<void> _getHomePageStatusData(SharedPreferences prefs) async {
     final String? jPU45Enable = prefs.getString(_isPU45EnableKey);
-    final String? jHeatingStepStatus = prefs.getString(_heatingStepStatusKey);
     final String? jHeatingBtn = prefs.getString(_isHeatingBtnKey);
     final String? jPreheatingBtn = prefs.getString(_isPreheatingBtnKey);
+
+    final String? jStatusChList = prefs.getString(_statusChannelKey);
+    final String? jHeatingStatusList = prefs.getString(_heatingStatusKey);
+    final String? jRemainTimeList = prefs.getString(_remainTimeKey);
+    final String? jRemainTotalTimeList = prefs.getString(_remainTotalTimeKey);
+
     final String? jPadID = prefs.getString(_padIDKey);
 
     if (jPU45Enable != null) {
       isPU45EnableList = List<bool>.from(jsonDecode(jPU45Enable));
-    }
-
-    if(jHeatingStepStatus != null){
-      List<dynamic> stringList = jsonDecode(jHeatingStepStatus);
-      heatingStepStatusList = stringList.map((status) => HeatingStepStatus.values.firstWhere((e) => e.toString() == status)).toList();
     }
 
     if (jHeatingBtn != null) {
@@ -198,14 +208,35 @@ class ConfigFileCtrl {
       isPreheatingBtnList = List<bool>.from(jsonDecode(jPreheatingBtn));
     }
 
+    if (jStatusChList != null) {
+      List<dynamic> stringList = jsonDecode(jStatusChList);
+      statusChList = stringList.map((status) => StatusChannel.values.firstWhere((e) => e.toString() == status)).toList();
+    }
+
+    if (jHeatingStatusList != null) {
+      List<dynamic> stringList = jsonDecode(jHeatingStatusList);
+      heatingStatusList = stringList.map((status) => HeatingStatus.values.firstWhere((e) => e.toString() == status)).toList();
+    }
+
+    if (jRemainTimeList != null) {
+      remainTimeList = List<double>.from(jsonDecode(jRemainTimeList));
+    }
+
+    if (jRemainTotalTimeList != null) {
+      remainTotalTimeList = List<double>.from(jsonDecode(jRemainTotalTimeList));
+    }
+
     if (jPadID != null) {
       padIDList = List<String>.from(jsonDecode(jPadID));
     }
 
     debugPrint("### HomePageStatusData[isPU45Enable]###\n$isPU45EnableList");
-    debugPrint("### HomePageStatusData[heatingStepStatus]###\n$heatingStepStatusList");
     debugPrint("### HomePageStatusData[isHeatingBtn]###\n$isStartBtnList");
     debugPrint("### HomePageStatusData[isPreheatingBtn]###\n$isPreheatingBtnList");
+    debugPrint("### HomePageStatusData[StatusChannel]###\n$statusChList");
+    debugPrint("### HomePageStatusData[HeatingStatus]###\n$heatingStatusList");
+    debugPrint("### HomePageStatusData[RemainTime]###\n$remainTimeList");
+    debugPrint("### HomePageStatusData[RemainTotalTime]###\n$remainTotalTimeList");
     debugPrint("### HomePageStatusData[padID]###\n$padIDList");
   }
 
@@ -335,17 +366,24 @@ class ConfigFileCtrl {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString(_isPU45EnableKey, jsonEncode(isPU45EnableList));
-    List<String> stringList = heatingStepStatusList.map((status) => status.toString()).toList();
-    await prefs.setString(_heatingStepStatusKey, jsonEncode(stringList));
     await prefs.setString(_isHeatingBtnKey, jsonEncode(isStartBtnList));
     await prefs.setString(_isPreheatingBtnKey, jsonEncode(isPreheatingBtnList));
+    List<String> tmpStatusChList = statusChList.map((status) => status.toString()).toList();
+    await prefs.setString(_statusChannelKey, jsonEncode(tmpStatusChList));
+    List<String> tmpHeatingStatusList = heatingStatusList.map((status) => status.toString()).toList();
+    await prefs.setString(_heatingStatusKey, jsonEncode(tmpHeatingStatusList));
+    await prefs.setString(_remainTimeKey, jsonEncode(remainTimeList));
+    await prefs.setString(_remainTotalTimeKey, jsonEncode(remainTotalTimeList));
     await prefs.setString(_padIDKey, jsonEncode(padIDList));
 
-    debugPrint("#1 setHomePageStatusData[isPU45Enable]\n$isPU45EnableList");
-    debugPrint("#2 setHomePageStatusData[heatingStepStatus]\n$heatingStepStatusList");
-    debugPrint("#3 setHomePageStatusData[isStartBtn]\n$isStartBtnList");
-    debugPrint("#4 setHomePageStatusData[isPreheatingBtn]\n$isPreheatingBtnList");
-    debugPrint("#5 setHomePageStatusData[padID]\n$padIDList");
+    debugPrint("### setHomePageStatusData[isPU45Enable]\n$isPU45EnableList");
+    debugPrint("### setHomePageStatusData[isStartBtn]\n$isStartBtnList");
+    debugPrint("### setHomePageStatusData[isPreheatingBtn]\n$isPreheatingBtnList");
+    debugPrint("### setHomePageStatusData[statusChList]\n$statusChList");
+    debugPrint("### setHomePageStatusData[heatingStatusList]\n$heatingStatusList");
+    debugPrint("### setHomePageStatusData[remainTimeList]\n$remainTimeList");
+    debugPrint("### setHomePageStatusData[remainTotalTimeList]\n$remainTotalTimeList");
+    debugPrint("### setHomePageStatusData[padID]\n$padIDList");
   }
 
   /*******************************************************************

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
@@ -25,13 +26,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
     hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
 
+    // HotpadCtrl의 콜백 함수 설정.
+    hotpadCtrl.onPadIDTextChanged = (index, text) {
+      setState(() {
+        _textEditCtrl[index].text = text;
+      });
+    };
+
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _focusNodes[i].addListener(() {
         if (!_focusNodes[i].hasFocus) {
           _onFocusLost(i);
         }
       });
-
       _textEditCtrl[i].text = hotpadCtrl.getPadIDText(i);
     }
   }
@@ -42,7 +49,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
-
     super.dispose();
   }
 
@@ -70,17 +76,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   builder: (context, hotpadCtrl, _) {
                     return _dataRowItem(
                       index: index,
-                      statusCh: StatusChannel.ready,
+                      statusCh: hotpadCtrl.getStatusChannel(index),
                       strChannel: (index + 1).toString().padLeft(2, '0'),
                       currentTempValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
-                      setTemp: _settingTempSelect(
-                        hotpadCtrl.getIsPU45Enable(index),
-                        hotpadCtrl.getHeatingStepStatus(index)),
-                      remainTimeValue: 39,
+                      setTemp: hotpadCtrl.settingTempSelect(index),
+                      remainTotalTimeValue: hotpadCtrl.getRemainTotalTime(index),
+                      remainTimeValue: hotpadCtrl.getRemainTime(index),
                       textEditCtrl: _textEditCtrl[index],
                       currentValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
                       strPADOhm: hotpadCtrl.serialCtrl.rxPackage.padOhm[index],
-                      strPADStatus: hotpadCtrl.getHeatingStatus(languageProvider, HeatingStatus.stop),
+                      strPADStatus: hotpadCtrl.getHeatingStatusString(languageProvider, hotpadCtrl.getHeatingStatus(index)),
                       isHighlighted: hotpadCtrl.getIsPU45Enable(index),
                       focusNode: _focusNodes[index],
                       languageProvider: languageProvider,
@@ -279,6 +284,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     required String strChannel,
     required double currentTempValue,
     required String setTemp,
+    required double remainTotalTimeValue,
     required double remainTimeValue,
     required TextEditingController textEditCtrl,
     required double currentValue,
@@ -368,9 +374,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           height: cellHeight,
           isHighlighted : isHighlighted,
           child: _progressDataTable(
-              value: remainTimeValue,
+              value: (remainTotalTimeValue == -1)
+                  ? 0
+                  : (1.0 - remainTimeValue/remainTotalTimeValue),
               width: (cellWidth[1] - 10),
-              text: remainTimeValue.toStringAsFixed(1),
+              text: _formatDuration(remainTimeValue),
               size: 18,
               fontWeight: FontWeight.bold),
         ),
@@ -458,10 +466,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 'W0001');
             } else {
               hotpadCtrl.startHeating(index);
-              hotpadCtrl.showAlarmMessage(
-                'CH${(index+1).toString().padLeft(2,'0')}',
-                hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
-                'I0002');
+              // hotpadCtrl.showAlarmMessage(
+              //   'CH${(index+1).toString().padLeft(2,'0')}',
+              //   hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+              //   'I0002');
             }
           },
         ),
@@ -481,10 +489,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   'W0001');
             } else {
               hotpadCtrl.startPreheating(index);
-              hotpadCtrl.showAlarmMessage(
-                  'CH${(index+1).toString().padLeft(2,'0')}',
-                  hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
-                  'I0006');
+              // hotpadCtrl.showAlarmMessage(
+              //     'CH${(index+1).toString().padLeft(2,'0')}',
+              //     hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+              //     'I0006');
             }
           },
         ),
@@ -501,7 +509,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               hotpadCtrl.showAlarmMessage(
                   'CH${(index+1).toString().padLeft(2,'0')}',
                   hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
-                  'I0007');
+                  'I0008');
             }
           },
         ),
@@ -718,24 +726,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return tmpVal;
   }
 
-  String _settingTempSelect(bool flag, HeatingStepStatus status){
-    String strVal = '';
+  String _formatDuration(double seconds) {
+    // double 값을 Duration으로 변환
+    Duration duration = Duration(seconds: seconds.toInt());
+    // Duration을 DateTime으로 변환
+    DateTime dateTime = DateTime(0).add(duration);
 
-    if(!flag){      // PU15 Setting Temp
-      strVal =  ConfigFileCtrl.pu15TargetTemp.toStringAsFixed(1);
+    if(seconds >= 3600.0){
+      // 'hh:mm:ss' 포맷으로 변환
+      return DateFormat('hh:mm:ss').format(dateTime);
     }
-    else{           // PU45 Setting Temp
-      if(status == HeatingStepStatus.step1){
-        strVal =  ConfigFileCtrl.pu45Target1stTemp.toStringAsFixed(1);
-      }
-      else if(status == HeatingStepStatus.step2){
-        strVal =  ConfigFileCtrl.pu45Target2ndTemp.toStringAsFixed(1);
-      }
-      else{
-        strVal =  ConfigFileCtrl.pu45Target1stTemp.toStringAsFixed(1);
-      }
+    else{
+      // 'mm:ss' 포맷으로 변환
+      return DateFormat('mm:ss').format(dateTime);
     }
-
-    return strVal;
   }
 }
