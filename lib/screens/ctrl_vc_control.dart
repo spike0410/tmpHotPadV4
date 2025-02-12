@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/language_provider.dart';
 import '../devices/config_file_ctrl.dart';
-// import 'package:intl/intl.dart';
 
 class CtrlVCControl extends StatefulWidget {
   const CtrlVCControl({super.key});
@@ -13,11 +12,8 @@ class CtrlVCControl extends StatefulWidget {
   State<CtrlVCControl> createState() => _CtrlVCControlState();
 }
 
-class _CtrlVCControlState extends State<CtrlVCControl>
-    with WidgetsBindingObserver {
-  // 9개의 TextEditingController 생성
-  final List<TextEditingController> _textEditCtrl =
-      List.generate(4, (_) => TextEditingController());
+class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserver {
+  final List<TextEditingController> _textEditCtrl = List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
   final List<dynamic> _configValue = List<dynamic>.filled(4, null, growable: false);
 
@@ -28,16 +24,17 @@ class _CtrlVCControlState extends State<CtrlVCControl>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
-
+    // 저장되어 있는 설정 값을 _configValue에 저장
     _configValue[0] = acVoltApplied;
     _configValue[1] = ConfigFileCtrl.acVoltCalOffset;
     _configValue[2] = ConfigFileCtrl.acVoltCalGain;
     _configValue[3] = acCurrentApplied;
 
+    // TextField와 FocusLost에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _textEditCtrl[i].addListener(() {
         _updateConfig(i, _textEditCtrl[i].text);
@@ -55,10 +52,16 @@ class _CtrlVCControlState extends State<CtrlVCControl>
     _textEditCtrl[3].text = '';
   }
 
+  /***********************************************************************
+   *          설정 값을 업데이트하는 함수
+   ***********************************************************************////
   void _updateConfig(int index, String value) {
     _configValue[index] = double.tryParse(value) ?? 0.0;
   }
 
+  /***********************************************************************
+   *          Focus를 잃었을 때 호출되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index) async{
     String tmpStr ='';
 
@@ -72,6 +75,7 @@ class _CtrlVCControlState extends State<CtrlVCControl>
 
     _textEditCtrl[index].text = tmpStr;
 
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.acVoltCalOffset = _configValue[1];
     ConfigFileCtrl.acVoltCalGain = _configValue[2];
 
@@ -80,7 +84,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
+    // TextEditingController 해제
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -99,7 +105,6 @@ class _CtrlVCControlState extends State<CtrlVCControl>
       controller: _scrollController,
       scrollDirection: Axis.vertical,
       child: Padding(
-        // padding: EdgeInsets.only(left: 10, top: 100, right: 10),
         padding: EdgeInsets.only(top: 100),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -299,6 +304,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
     );
   }
 
+  /***********************************************************************
+   *          행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _rowItem({
     required String name,
     required Widget child,
@@ -320,6 +328,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
     );
   }
 
+  /***********************************************************************
+   *          TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField(
       {required int index,
       bool enable = true,
@@ -365,6 +376,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
     );
   }
 
+  /***********************************************************************
+   *          사용자 TextItem을 생성하는 함수
+   ***********************************************************************////
   Widget _textItem({
     required String text,
     double size = defaultFontSize,
@@ -385,6 +399,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
     );
   }
 
+  /***********************************************************************
+   *          사용자 BtnTextItem을 생성하는 함수
+   ***********************************************************************////
   Widget _btnTextItem({
     required String text,
     required Color color,
@@ -415,6 +432,9 @@ class _CtrlVCControlState extends State<CtrlVCControl>
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final double max;
 

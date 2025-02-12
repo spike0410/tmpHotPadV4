@@ -27,10 +27,9 @@ class _AlarmTableState extends State<AlarmTable> {
     color: Colors.white,
   );
 
-  // final ScrollController _verticalScrollController = ScrollController();
-
   @override
   Widget build(BuildContext context) {
+    // LanguageProvider와 MessageProvider를 가져옴
     final languageProvider = Provider.of<LanguageProvider>(context);
     final messageProvider = Provider.of<MessageProvider>(context);
 
@@ -46,7 +45,6 @@ class _AlarmTableState extends State<AlarmTable> {
       child: Scrollbar(
         thumbVisibility: true,
         child: SingleChildScrollView(
-          // controller: _verticalScrollController,
           primary: true,
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.only(right: 22),
@@ -111,7 +109,7 @@ class _AlarmTableState extends State<AlarmTable> {
                 DataCell(Center(child: Text(data['NO.']!))),
                 DataCell(Center(child: Text(data['Channel']!))),
                 DataCell(Center(child: Text(data['HotPad']!))),
-                // DataCell(Text(data['Descriptions']!)),
+                // Data 출력시 사용된 code를 언어 설정에 맞게 출력
                 DataCell(Text(languageProvider.getMessageTransValue(data['Descriptions']!))),
                 DataCell(Center(child: Text(data['Date Time']!))),
               ]);

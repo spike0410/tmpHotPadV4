@@ -13,22 +13,21 @@ class TempSettingsTab extends StatefulWidget {
   State<TempSettingsTab> createState() => _TempSettingsTabState();
 }
 
-class _TempSettingsTabState extends State<TempSettingsTab>
-    with WidgetsBindingObserver {
-  // 9개의 TextEditingController 생성
-  final List<TextEditingController> _textEditCtrl =
-      List.generate(9, (_) => TextEditingController());
+class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingObserver {
+  // 9개의 TextEditingController와 FocusNode 생성
+  final List<TextEditingController> _textEditCtrl = List.generate(9, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(9, (_) => FocusNode());
-  final List<dynamic> _configValue =
-      List<dynamic>.filled(9, null, growable: false);
+  final List<dynamic> _configValue = List<dynamic>.filled(9, null, growable: false);
 
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
+    // 저장되어 있는 설정 값을 _configValue에 저장
     _configValue[0] = ConfigFileCtrl.preheatingTime;
     _configValue[1] = ConfigFileCtrl.pu15TargetTemp;
     _configValue[2] = ConfigFileCtrl.pu15HoldTime;
@@ -39,6 +38,7 @@ class _TempSettingsTabState extends State<TempSettingsTab>
     _configValue[7] = ConfigFileCtrl.pu45Ramp2ndTime;
     _configValue[8] = ConfigFileCtrl.pu45Hold2ndTime;
 
+    // TextField와 FocusLost에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _textEditCtrl[i].addListener(() {
         _updateConfig(i, _textEditCtrl[i].text);
@@ -57,6 +57,9 @@ class _TempSettingsTabState extends State<TempSettingsTab>
     }
   }
 
+  /***********************************************************************
+   *          설정 값을 업데이트하는 함수
+   ***********************************************************************////
   void _updateConfig(int index, String value) {
     if ((index == 1) || (index == 3) || (index == 4)) {
       _configValue[index] = double.tryParse(value) ?? 0.0;
@@ -65,6 +68,9 @@ class _TempSettingsTabState extends State<TempSettingsTab>
     }
   }
 
+  /***********************************************************************
+   *          Focus를 잃었을 때 호출되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index) async {
     String tmpStr = '';
 
@@ -75,6 +81,7 @@ class _TempSettingsTabState extends State<TempSettingsTab>
     }
     _textEditCtrl[index].text = tmpStr;
 
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.preheatingTime = _configValue[0];
     ConfigFileCtrl.pu15TargetTemp = _configValue[1];
     ConfigFileCtrl.pu15HoldTime = _configValue[2];
@@ -90,7 +97,9 @@ class _TempSettingsTabState extends State<TempSettingsTab>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
+    // TextEditingController 해제
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -224,6 +233,9 @@ class _TempSettingsTabState extends State<TempSettingsTab>
     );
   }
 
+  /***********************************************************************
+   *          TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField(
       {required int index,
       double width = 70,
@@ -260,6 +272,9 @@ class _TempSettingsTabState extends State<TempSettingsTab>
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final double max;
 

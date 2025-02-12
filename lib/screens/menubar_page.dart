@@ -5,15 +5,13 @@ import '../devices/hotpad_ctrl.dart';
 import '../screens/graph_page.dart';
 import '../devices/config_file_ctrl.dart';
 
-enum LanguageEnum { kor, eng }
-
 class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
   final double barHeight;
   final String title;
   final String imagePath;
   final int selectedIndex;
   final Function(int) onItemTapped;
-  final VoidCallback onCapturePressed; // 추가된 콜백 함수
+  final VoidCallback onCapturePressed;
   final GlobalKey<GraphPageState> graphPageKey;
 
   const MenuBarPage({
@@ -108,6 +106,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  /***********************************************************************
+   *          언어 선택 다이얼로그를 표시하는 함수
+   ***********************************************************************////
   void _showLanguageDialog(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
@@ -181,7 +182,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // 줌 아이콘 생성
+  /***********************************************************************
+   *          줌 기능을 위한 아이콘을 생성하는 함수
+   ***********************************************************************////
   Widget _buildZoomIcons() {
     return Row(
       children: [
@@ -216,7 +219,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // 메뉴 아이콘 생성
+  /***********************************************************************
+   *          메뉴 아이콘을 생성하는 함수
+   ***********************************************************************////
   Widget _buildMenuIcons() {
     return Row(
       children: [
@@ -238,7 +243,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  // 토글 버튼 생성
+  /***********************************************************************
+   *          메뉴 버튼 생성하는 함수
+   ***********************************************************************////
   Widget _buildToggleButton(String iconPath, int index) {
     return GestureDetector(
       onTap: () => onItemTapped(index),
@@ -259,6 +266,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  /***********************************************************************
+   *          언어 선택 다이얼로그의 사용되는 라디오 버튼 생성 함수
+   ***********************************************************************////
   Widget _titleRadio<T>({
     required String text,
     required T value,

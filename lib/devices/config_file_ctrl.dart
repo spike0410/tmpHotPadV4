@@ -119,7 +119,7 @@ class ConfigFileCtrl {
   static List<double> acCurrentOffsetCalData = [];
   static List<double> acCurrentGainCalData = [];
 
-  static Future<void> initialize() async {
+  static Future<void> check() async {
     final prefs = await SharedPreferences.getInstance();
     final storedVersion = prefs.getString(_versionKey);
 

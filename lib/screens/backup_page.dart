@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart'; // 플랫폼 채널 사용을 위해 추가
@@ -6,16 +7,7 @@ import '../providers/language_provider.dart';
 import '../constant/user_style.dart';
 
 class BackupPage extends StatefulWidget {
-  final double progressStorageValue;
-  final double totalStorage;
-  final double usedStorage;
-
-  const BackupPage({
-    super.key,
-    required this.progressStorageValue,
-    required this.totalStorage,
-    required this.usedStorage,
-  });
+  const BackupPage({super.key});
 
   @override
   _BackupPageState createState() => _BackupPageState();
@@ -175,15 +167,26 @@ class _BackupPageState extends State<BackupPage> {
                 height: 50,
                 child: Align(
                   alignment: Alignment.center,
-                  child: Text(
-                    '${languageProvider.getLanguageTransValue('Total')} : ${numberFormat.format(widget.totalStorage.round())}MB'
-                        ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(widget.usedStorage.round())}MB'
-                        ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format((widget.totalStorage - widget.usedStorage).round())}MB',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: (textSize - 4),
-                    ),
-                  ),
+                  child: Consumer<HotpadCtrl>(
+                    builder: (context, hotpadCtrl, _) {
+                      return Text(
+                        '${languageProvider.getLanguageTransValue(
+                            'Total')} : ${numberFormat.format(
+                            hotpadCtrl.totalStorage.round())}MB'
+                            ' / ${languageProvider.getLanguageTransValue(
+                            'Usage')} : ${numberFormat.format(
+                            hotpadCtrl.usedStorage.round())}MB'
+                            ' / ${languageProvider.getLanguageTransValue(
+                            'Remain')} : ${numberFormat.format(
+                            (hotpadCtrl.totalStorage - hotpadCtrl.usedStorage)
+                                .round())}MB',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: (textSize - 4),
+                        ),
+                      );
+                    },
+                  )
                 ),
               ),
               SizedBox(
@@ -207,61 +210,120 @@ class _BackupPageState extends State<BackupPage> {
             ],
           ),
           SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Stack(
+          Consumer<HotpadCtrl>(
+            builder: (context, hotpadCtrl, _){
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  SizedBox(
-                    width: halfWidth,
-                    height: 35,
-                    child: LinearProgressIndicator(
-                      value: widget.progressStorageValue,
-                      backgroundColor: Colors.white,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        '${(widget.progressStorageValue * 100).toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          fontSize: textSize,
-                          fontWeight: FontWeight.bold,
+                  Stack(
+                    children: [
+                      SizedBox(
+                        width: halfWidth,
+                        height: 35,
+                        child: LinearProgressIndicator(
+                          value: hotpadCtrl.storageProgressValue,
+                          backgroundColor: Colors.white,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              Stack(
-                children: [
-                  SizedBox(
-                    width: halfWidth,
-                    height: 35,
-                    child: LinearProgressIndicator(
-                      value: usbProgressValue,
-                      backgroundColor: Colors.white,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        isUSBConnect == true
-                            ? '${(usbProgressValue * 100).toStringAsFixed(1)}%'
-                            : '',
-                        style: TextStyle(
-                          fontSize: textSize,
-                          fontWeight: FontWeight.bold,
+                      Positioned.fill(
+                        child: Center(
+                          child: Text(
+                            '${(hotpadCtrl.storageProgressValue * 100).toStringAsFixed(1)}%',
+                            style: TextStyle(
+                              fontSize: textSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+                  Stack(
+                    children: [
+                      SizedBox(
+                        width: halfWidth,
+                        height: 35,
+                        child: LinearProgressIndicator(
+                          value: usbProgressValue,
+                          backgroundColor: Colors.white,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: Center(
+                          child: Text(
+                            isUSBConnect == true
+                                ? '${(usbProgressValue * 100).toStringAsFixed(1)}%'
+                                : '',
+                            style: TextStyle(
+                              fontSize: textSize,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //   children: [
+          //     Stack(
+          //       children: [
+          //         SizedBox(
+          //           width: halfWidth,
+          //           height: 35,
+          //           child: LinearProgressIndicator(
+          //             value: widget.progressStorageValue,
+          //             backgroundColor: Colors.white,
+          //             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+          //           ),
+          //         ),
+          //         Positioned.fill(
+          //           child: Center(
+          //             child: Text(
+          //               '${(widget.progressStorageValue * 100).toStringAsFixed(1)}%',
+          //               style: TextStyle(
+          //                 fontSize: textSize,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //     Stack(
+          //       children: [
+          //         SizedBox(
+          //           width: halfWidth,
+          //           height: 35,
+          //           child: LinearProgressIndicator(
+          //             value: usbProgressValue,
+          //             backgroundColor: Colors.white,
+          //             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+          //           ),
+          //         ),
+          //         Positioned.fill(
+          //           child: Center(
+          //             child: Text(
+          //               isUSBConnect == true
+          //                   ? '${(usbProgressValue * 100).toStringAsFixed(1)}%'
+          //                   : '',
+          //               style: TextStyle(
+          //                 fontSize: textSize,
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ],
+          // ),
           SizedBox(height: 40),
           Container(
             margin: EdgeInsets.only(left: 30, right: 30),

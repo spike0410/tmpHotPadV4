@@ -7,8 +7,12 @@ import '../devices/file_ctrl.dart';
 
 class MessageProvider extends ChangeNotifier {
   Timer? _timer;
+  // 메시지 데이터를 저장하는 리스트
   final List<Map<String, String>> _data = [];
 
+  /***********************************************************************
+   *          데이터를 불러와서 _data 리스트에 추가하는 함수
+   ***********************************************************************////
   void loadData(List<Map<String, dynamic>> data) {
     for (var item in data) {
       _data.insert(0, {
@@ -23,6 +27,9 @@ class MessageProvider extends ChangeNotifier {
     }
   }
 
+  /***********************************************************************
+   *          인스턴트 메시지 다이얼로그를 표시하는 함수
+   ***********************************************************************////
   void showInstMessageDialog(BuildContext context,
       String title,
       String ch,
@@ -65,6 +72,9 @@ class MessageProvider extends ChangeNotifier {
     });
   }
 
+  /***********************************************************************
+   *          알람 메시지를 처리하고 저장하는 함수
+   ***********************************************************************////
   void alarmMessage(BuildContext context, String ch, String padMode, String desc) {
     final DateTime now = DateTime.now();
     final String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
@@ -84,5 +94,6 @@ class MessageProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 메시지 데이터를 반환하는 getter
   List<Map<String, String>> get data => _data;
 }

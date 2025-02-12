@@ -22,6 +22,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
 
   @override
   void dispose() {
+    // TabController 해제
     _tabCtrl.dispose();
     super.dispose();
   }
@@ -29,14 +30,17 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
+    // TabController 초기화
     _tabCtrl = TabController(
       length: 3,
       initialIndex: 0,
       vsync: this,
     );
+    // Tab 변경 Listener 추가
     _tabCtrl.addListener(() async {
       if (_tabCtrl.indexIsChanging) {
         final newIndex = _tabCtrl.index;
+        // 첫 번째 탭이 아닌 경우 인증 필요
         if (newIndex != 0 && !Provider.of<AuthenticationProvider>(context, listen: false).isAuthenticated) {
           final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
           final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
@@ -61,6 +65,9 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
     });
   }
 
+  /***********************************************************************
+   *          TabBar 생성하는 함수
+   ***********************************************************************////
   TabBar _buildTabBar(LanguageProvider languageProvider) => TabBar(
     controller: _tabCtrl,
     labelStyle: TextStyle(
@@ -72,6 +79,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
     dividerColor: Colors.grey,
     dividerHeight: 2,
     tabs: [
+      /// ### Temp.Setting
       Tab(
         height: tabBarHeight,
         child: Container(
@@ -84,6 +92,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
           ),
         ),
       ),
+      /// ### Temp.Cal.
       Tab(
         height: tabBarHeight,
         child: Container(
@@ -96,6 +105,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
           ),
         ),
       ),
+      /// ### System
       Tab(
         height: tabBarHeight,
         child: Container(
@@ -130,6 +140,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
           children: [
             TempSettingsTab(),
             TempCalTab(),
+            // SystemTab() 클래스 사용할 때 사용자 모드임을 알려줌.
             SystemTab(isAdmin: false),
           ],
         ),

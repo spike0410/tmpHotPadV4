@@ -10,11 +10,8 @@ class CtrlFaultDiagnosisTab extends StatefulWidget {
   State<CtrlFaultDiagnosisTab> createState() => _CtrlFaultDiagnosisTabState();
 }
 
-class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
-    with WidgetsBindingObserver {
-  // 9개의 TextEditingController 생성
-  final List<TextEditingController> _textEditCtrl =
-  List.generate(25, (_) => TextEditingController());
+class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with WidgetsBindingObserver {
+  final List<TextEditingController> _textEditCtrl = List.generate(25, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(25, (_) => FocusNode());
   final List<dynamic> _configValue = List<dynamic>.filled(25, null, growable: false);
 
@@ -22,11 +19,12 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
+    // 저장되어 있는 설정 값을 _configValue에 저장
     _configValue[0] = ConfigFileCtrl.acVoltLow;
     _configValue[1] = ConfigFileCtrl.acVoltHigh;
     _configValue[2] = ConfigFileCtrl.acCurrentLow;
@@ -55,6 +53,7 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
     _configValue[23] = ConfigFileCtrl.pu45Over2ndDeltaTemp;
     _configValue[24] = ConfigFileCtrl.pu45OverStopDelay;
 
+    // TextField와 FocusLost에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _textEditCtrl[i].addListener(() {
         _updateConfig(i, _textEditCtrl[i].text);
@@ -75,6 +74,9 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
     }
   }
 
+  /***********************************************************************
+   *          설정 값을 업데이트하는 함수
+   ***********************************************************************////
   void _updateConfig(int index, String value) {
     if((index == 0) || (index == 1) || (index == 2) || (index == 3) || (index == 4) || (index == 5) || (index == 6)
         || (index == 7) || (index == 9) || (index == 13) || (index == 15) || (index == 18) || (index == 21)
@@ -85,6 +87,9 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
     }
   }
 
+  /***********************************************************************
+   *          Focus를 잃었을 때 호출되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index) async{
     String tmpStr ='';
 
@@ -98,6 +103,7 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
     }
     _textEditCtrl[index].text = tmpStr;
 
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.acVoltLow = _configValue[0];
     ConfigFileCtrl.acVoltHigh = _configValue[1];
     ConfigFileCtrl.acCurrentLow = _configValue[2];
@@ -131,7 +137,9 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
+    // TextEditingController 해제
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -239,6 +247,9 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
     );
   }
 
+  /***********************************************************************
+   *          TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField({
     required int index,
     double width = 70,
@@ -280,6 +291,9 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab>
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final double max;
 

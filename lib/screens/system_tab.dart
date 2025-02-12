@@ -37,12 +37,15 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
   void initState() {
     // TODO: implement initState
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
+    // 저장된 설정 값을 _configValue에 저장
     _configValue[0] = ConfigFileCtrl.deviceConfigNumber;
     _configValue[1] = ConfigFileCtrl.deviceConfigFANStartTemp;
     _configValue[2] = ConfigFileCtrl.deviceConfigFANDeltaTemp;
 
+    // TextField와 FocusNode에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _textEditCtrl[i].addListener(() {
         _updateConfig(i, _textEditCtrl[i].text);
@@ -72,16 +75,22 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
 
   @override
   void dispose(){
-    // 위젯이 dispose 상태일 때 타이머를 취소합니다.
+    // Timer 해제
     _timer?.cancel();
     super.dispose();
   }
 
+  /***********************************************************************
+   *          네트워크 정보와 OS 버전을 초기화하는 함수
+   ***********************************************************************////
   Future<void> _initializeNetworkInfo() async {
     await _getNetworkInfo();
     await _getOSVersion();
   }
 
+  /***********************************************************************
+   *          OS 버전을 가져오는 함수
+   ***********************************************************************////
   Future<void> _getOSVersion() async {
     try {
       final String osVersion = await platform.invokeMethod('getOSVersion');
@@ -96,6 +105,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     }
   }
 
+  /***********************************************************************
+   *          네트워크 정보를 가져오는 함수
+   ***********************************************************************////
   Future<void> _getNetworkInfo() async {
     // 네트워크 인터페이스 목록을 가져옵니다.
     List<NetworkInterface> interfaces = await NetworkInterface.list();
@@ -115,6 +127,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     }
   }
 
+  /***********************************************************************
+   *          설정 값을 업데이트하는 함수
+   ***********************************************************************////
   void _updateConfig(int index, String value) {
     if ((index == 1) || (index == 2)) {
       _configValue[index] = double.tryParse(value) ?? 0.0;
@@ -123,6 +138,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     }
   }
 
+  /***********************************************************************
+   *          Focus를 잃었을 때 호출되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index) async {
     String tmpStr = '';
 
@@ -133,6 +151,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     }
     _textEditCtrl[index].text = tmpStr;
 
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.deviceConfigNumber = _configValue[0];
     ConfigFileCtrl.deviceConfigFANStartTemp = _configValue[1];
     ConfigFileCtrl.deviceConfigFANDeltaTemp = _configValue[2];
@@ -346,6 +365,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          기본 TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField(
       {required int index,
       double width = 90,
@@ -378,6 +400,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          비밀번호 변경 다이얼로그를 표시하는 함수
+   ***********************************************************************////
   Future<void> _showChangePasswordDialog(BuildContext context) async {
     final LanguageProvider languageProvider =
         Provider.of<LanguageProvider>(context, listen: false);
@@ -409,16 +434,13 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
             passwordMsg =
                 languageProvider.getLanguageTransValue('Saving the password.');
           });
-          // Future.delayed(Duration(seconds: 3), () {
-          //   Navigator.of(context).pop(); // Close the dialog after 3 seconds
-          // });
           _timer = Timer(Duration(seconds: 3), () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop(); // Close the dialog after 3 seconds
             }
           });
         } else {
-          // Show error message
+          // 새 비밀번호가 일치하지 않을 때의 처리
           setState(() {
             currentPasswordController.clear();
             newPasswordController.clear();
@@ -426,11 +448,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
             passwordMsg = languageProvider
                 .getLanguageTransValue('The new password does not match.');
           });
-          // Future.delayed(Duration(seconds: 3), () {
-          //   setState(() {
-          //     passwordMsg = ''; // Clear the message after 3 seconds
-          //   });
-          // });
           _timer = Timer(Duration(seconds: 3), () {
             if (mounted) {
               setState(() {
@@ -440,7 +457,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
           });
         }
       } else {
-        // Show error message
+        // 현재 비밀번호가 일치하지 않을 때의 처리
         setState(() {
           currentPasswordController.clear();
           newPasswordController.clear();
@@ -448,11 +465,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
           passwordMsg = languageProvider
               .getLanguageTransValue('The current password does not match.');
         });
-        // Future.delayed(Duration(seconds: 3), () {
-        //   setState(() {
-        //     passwordMsg = ''; // Clear the message after 3 seconds
-        //   });
-        // });
         _timer = Timer(Duration(seconds: 3), () {
           if (mounted) {
             setState(() {
@@ -548,6 +560,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final double max;
 

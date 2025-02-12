@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
@@ -10,18 +9,12 @@ import 'package:xml/xml.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 enum SerialPortStatus {
-  none,
-  noFound,
-  noOpen,
-  portOpen,
-  disconnected,
-  connect,
-  txBusy,
-  rxReady,
-  rxCplt,
-  rxErr,
-}
+  none, noFound, noOpen, portOpen, disconnected,
+  connect, txBusy, rxReady, rxCplt, rxErr}
 
+/*****************************************************************************
+ *          송신 패키지 클래스
+ *****************************************************************************////
 class TxPackage {
   final String _header = "STR";
   List<String> _operate = List.filled(10, '0');
@@ -51,6 +44,9 @@ class TxPackage {
     _bootmode = bootmode;
   }
 
+  /*****************************************************************************
+   *          송신 패키지 데이터를 생성하는 함수
+   *****************************************************************************////
   String getTxPackageData() {
     String tmpPackage = "$_header,";
     tmpPackage += "${_operate.join(',')},";
@@ -62,6 +58,9 @@ class TxPackage {
   }
 }
 
+/*****************************************************************************
+ *          수신 패키지 클래스
+ *****************************************************************************////
 class RxPackage {
   DateTime _rxTime = DateTime.now();
   final List<String> _status = List.filled(10, '0');
@@ -91,20 +90,21 @@ class RxPackage {
   int get statusFAN => _statusFAN;
   String get fwVer => _fwVer;
 
+  /*****************************************************************************
+   *          수신 패키지 데이터를 설정하는 함수
+   *****************************************************************************////
   void setRxPackageData(List<String> data) {
     _rxTime = DateTime.now();
+
     for (int i = 0; i < _status.length; i++) {
       _status[i] = data[i];
     }
-
     for (int i = 0; i < _rtd.length; i++) {
       _rtd[i] = data[10 + i];
     }
-
     for (int i = 0; i < _padCrnt.length; i++) {
       _padCrnt[i] = data[20 + i];
     }
-
     for (int i = 0; i < _padCmd.length; i++) {
       _padCmd[i] = data[30 + i];
     }
@@ -117,20 +117,24 @@ class RxPackage {
     _statusFAN = int.tryParse(data[45]) ?? 0;
     _fwVer = data[46];
     _padCurrentToOhm(_padCrnt);
-
-    // notifyListeners();
   }
 
+  /*****************************************************************************
+   *          패드 전류를 저항으로 변환하는 함수
+   *****************************************************************************////
   void _padCurrentToOhm(List<String> list) {
     for (int i = 0; i < list.length; i++) {
       double tmpPadOhm = 0;
       double dCurrentVal = double.tryParse(list[i]) ?? 0.0;
-      tmpPadOhm = dCurrentVal * 10;
+      tmpPadOhm = dCurrentVal * 10;   // <---!@# 테스트
       _padCrntOhm[i] = tmpPadOhm.toStringAsFixed(0);
     }
   }
 }
 
+/*****************************************************************************
+ *          시리얼 제어 클래스
+ *****************************************************************************////
 class SerialCtrl{
   UsbPort? _port;
   StreamSubscription<String>? _subscription;
@@ -149,19 +153,22 @@ class SerialCtrl{
     _noDataRxCount = val;
   }
 
-  // 초기화 함수
   void initialize(Function(String) onDataReceived) {
     txPackage = TxPackage();
     rxPackage = RxPackage();
+    // 데이터 수신 콜백 함수 등록
     onDataReceivedCallback = onDataReceived;
   }
 
-  // Add this method to set the context
   void setContext(BuildContext context) {
     _context = context;
   }
 
-  // device_filter.xml 파일을 읽고 파싱하는 함수
+  /*****************************************************************************
+   *          USBtoSerial 장치 검색 함수
+   *
+   *    - device_filter.xml 파일을 읽고 파싱하는 함수
+   *****************************************************************************////
   Future<void> loadDeviceFilter() async {
     final String xmlString = await rootBundle.loadString('asset/xml/device_filter.xml');
     final XmlDocument xmlDocument = XmlDocument.parse(xmlString);
@@ -178,7 +185,9 @@ class SerialCtrl{
     debugPrint('Loaded device filters: $deviceFilters');
   }
 
-  // 사용 가능한 시리얼 포트를 찾는 함수
+  /*****************************************************************************
+   *          사용 가능한 시리얼 포트를 찾는 함수
+   *****************************************************************************////
   Future<void> getDevice() async {
     List<UsbDevice> devices = await UsbSerial.listDevices();
     for (var device in devices) {
@@ -197,7 +206,9 @@ class SerialCtrl{
     debugPrint('### Status : $serialPortStatus');
   }
 
-  // 시리얼 포트를 여는 함수
+  /*****************************************************************************
+   *          시리얼 포트를 여는 함수
+   *****************************************************************************////
   Future<void> serialOpen(UsbDevice device) async {
     _port = await device.create();
     if (_port == null) {
@@ -228,7 +239,9 @@ class SerialCtrl{
     debugPrint('### Status : $serialPortStatus');
   }
 
-  // 시리얼 포트를 닫는 함수
+  /*****************************************************************************
+   *          시리얼 포트를 닫는 함수
+   *****************************************************************************////
   Future<void> serialClose() async {
     await _subscription?.cancel();
     _transaction?.dispose();
@@ -237,11 +250,13 @@ class SerialCtrl{
     // _isolate?.kill(priority: Isolate.immediate);
   }
 
-  // 데이터 수신 여부를 확인하는 함수
+  /*****************************************************************************
+   *          데이터 수신 여부를 확인하는 함수
+   *****************************************************************************////
   void checkDataReceived() {
     _noDataRxCount++;
+    // 20회(약 20초) 데이터 미수신 된 경우 경고 다이얼로그 표시
     if (_noDataRxCount == 20) {
-      // Show warning dialog
       if (_context != null) {
         String tmpMsg = isError ? 'E0002' : 'E0001';
 
@@ -255,7 +270,9 @@ class SerialCtrl{
     }
   }
 
-  // 데이터를 전송하는 함수
+  /*****************************************************************************
+   *          데이터를 전송하는 함수
+   *****************************************************************************////
   void sendData() {
     if ((serialPortStatus == SerialPortStatus.connect || serialPortStatus == SerialPortStatus.rxReady)
         && _port != null) {

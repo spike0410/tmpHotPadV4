@@ -28,12 +28,12 @@ class HotpadCtrl with ChangeNotifier {
   String _currentTime = '';
   double _totalStorage = 0.0;
   double _usedStorage = 0.0;
-  double _storageValue = 0.0;
+  double _storageProgressValue = 0.0;
   static const platform = MethodChannel('internal_storage');
 
   double get totalStorage => _totalStorage;
   double get usedStorage => _usedStorage;
-  double get storageValue => _storageValue;
+  double get storageProgressValue => _storageProgressValue;
 
   void Function(int index, String text)? onPadIDTextChanged;
 
@@ -41,6 +41,11 @@ class HotpadCtrl with ChangeNotifier {
     required this.messageProvider
   });
 
+  /*****************************************************************************
+   *          초기화 함수
+   *
+   *    - HotPad GUI의 사용되는 데이터 초기화
+   *****************************************************************************////
   Future<void> initialize() async {
     serialCtrl.initialize(onDataReceived);
 
@@ -51,7 +56,6 @@ class HotpadCtrl with ChangeNotifier {
     _isPreheatingBtn = ConfigFileCtrl.isPreheatingBtnList;
     _statusCh = ConfigFileCtrl.statusChList;
     _heatingStatus = ConfigFileCtrl.heatingStatusList;
-    // _oldHeatingStatus = ConfigFileCtrl.heatingStatusList;
     _oldHeatingStatus = List.filled(totalChannel, HeatingStatus.stop);
     _remainTime = ConfigFileCtrl.remainTimeList;
     _remainTotalTime = ConfigFileCtrl.remainTotalTimeList;
@@ -64,6 +68,9 @@ class HotpadCtrl with ChangeNotifier {
     _context = context;
   }
 
+  /*****************************************************************************
+   *          시리얼 통신 시작 함수
+   *****************************************************************************////
   void serialStart(){
     if(_context != null){
       serialCtrl.setContext(_context!);
@@ -126,11 +133,15 @@ class HotpadCtrl with ChangeNotifier {
     _updateStatus();
   }
 
+  /*****************************************************************************
+   *          히팅 시작 함수
+   *****************************************************************************////
   void startHeating(int index){
     if (index < 0 || index >= totalChannel) return;
     _isStartBtn[index] = true;
     _isPreheatingBtn[index] = false;
 
+    // PU15와 PU45 설정에 따른 RemainTime 설정
     if(_isPU45Enable[index] == false){
       _remainTotalTime[index] = ConfigFileCtrl.pu15HoldTime * 60;
     }
@@ -146,10 +157,14 @@ class HotpadCtrl with ChangeNotifier {
     _updateStatus();
   }
 
+  /*****************************************************************************
+   *          예열 시작 함수
+   *****************************************************************************////
   void startPreheating(int index){
     if (index < 0 || index >= totalChannel) return;
     _isStartBtn[index] = false;
     _isPreheatingBtn[index] = true;
+    // Preheating RemainTime 설정
     _remainTotalTime[index] = ConfigFileCtrl.preheatingTime * 60;
     _remainTime[index] = _remainTotalTime[index];
     _heatingStatus[index] = HeatingStatus.preheatRising;
@@ -157,6 +172,9 @@ class HotpadCtrl with ChangeNotifier {
     _updateStatus();
   }
 
+  /*****************************************************************************
+   *          히팅 종료 함수
+   *****************************************************************************////
   void stopHeating(index){
     if (index < 0 || index >= totalChannel) return;
     if (onPadIDTextChanged != null) {
@@ -175,19 +193,29 @@ class HotpadCtrl with ChangeNotifier {
     _updateStatus();
   }
 
+  /*****************************************************************************
+   *          인스턴트 메시지 다이얼로그 표시 함수
+   *****************************************************************************////
   void showInstMessage(String title, String channel, String padMode, String code) {
     if (_context != null) {
       messageProvider.showInstMessageDialog(_context!, title, channel, padMode, code);
     }
   }
 
+  /*****************************************************************************
+   *          알람 메시지 표시 함수
+   *****************************************************************************////
   void showAlarmMessage(String channel, String padMode, String code) {
     if (_context != null) {
       messageProvider.alarmMessage(_context!, channel, padMode, code);
     }
   }
 
+  /*****************************************************************************
+   *          상태 업데이트 함수
+   *****************************************************************************////
   void _updateStatus() async {
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.isPU45EnableList = _isPU45Enable;
     ConfigFileCtrl.isStartBtnList = _isStartBtn;
     ConfigFileCtrl.isPreheatingBtnList = _isPreheatingBtn;
@@ -201,6 +229,9 @@ class HotpadCtrl with ChangeNotifier {
     notifyListeners();
   }
 
+  /*****************************************************************************
+   *          히팅 상태 문자열 반환 함수
+   *****************************************************************************////
   String getHeatingStatusString(LanguageProvider languageProvider, HeatingStatus status) {
     String tmpStr = '';
 
@@ -234,6 +265,9 @@ class HotpadCtrl with ChangeNotifier {
     return languageProvider.getStatusLanguageTransValue(tmpStr);
   }
 
+  /*****************************************************************************
+   *          Isolate 시작 함수
+   *****************************************************************************////
   void startIsolate() async {
     final receivePort = ReceivePort();
     _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
@@ -267,6 +301,9 @@ class HotpadCtrl with ChangeNotifier {
     });
   }
 
+  /*****************************************************************************
+   *          데이터 수신 시 호출되는 함수
+   *****************************************************************************////
   void onDataReceived(String data) {
     serialCtrl.noDataRxCount = 0; // Reset counter on data received
     serialCtrl.isError = false;
@@ -300,13 +337,16 @@ class HotpadCtrl with ChangeNotifier {
     return _currentTime;
   }
 
+  /*****************************************************************************
+   *          스토리지 사용량 업데이트 함수
+   *****************************************************************************////
   Future<void> updateStorageUsage() async {
     try {
       final List<dynamic> result = await platform.invokeMethod('getIntStorageInfo');
       _totalStorage = result[0] / (1024 * 1024); // Convert to MB
       _usedStorage = result[1] / (1024 * 1024); // Convert to MB
-      _storageValue = _usedStorage / _totalStorage;
-      debugPrint("##### Internal Storage Info] $_totalStorage / $_usedStorage(${(_storageValue * 100).toStringAsFixed(1)})");
+      _storageProgressValue = _usedStorage / _totalStorage;
+      debugPrint("##### Internal Storage Info] $_totalStorage / $_usedStorage(${(_storageProgressValue * 100).toStringAsFixed(1)})");
       notifyListeners();
     } on PlatformException catch (e) {
       debugPrint("Failed to get USB storage info: '${e.message}'.");
@@ -337,6 +377,11 @@ class HotpadCtrl with ChangeNotifier {
     return tmpStr;
   }
 
+  /*****************************************************************************
+   *          남은 시간 감소 함수
+   *          
+   *    - Heating/Preheating Button 동작시 RemainTime 제어
+   *****************************************************************************////
   void _decrementRemainTime() {
     for (int index = 0; index < totalChannel; index++) {
       if (_statusCh[index] == StatusChannel.start) {
@@ -346,10 +391,12 @@ class HotpadCtrl with ChangeNotifier {
               _remainTime[index] -= 1;
               _heatingStatus[index] = HeatingStatus.holding1st;
             }
-          } else { // Preheating
+          }
+          else { // Preheating
             _remainTime[index] -= 1;
           }
-        } else { // PU45
+        }
+        else { // PU45
           if (_remainTime[index] > (_remainTotalTime[index] - (ConfigFileCtrl.pu45Ramp1stTime * 60))) {
             _heatingStatus[index] = HeatingStatus.rising1st;
           }
@@ -371,6 +418,7 @@ class HotpadCtrl with ChangeNotifier {
         }
       }
 
+      // HeatingStatus 변경에 따라 메세지 출력
       if(_heatingStatus[index] != _oldHeatingStatus[index]){
         String codeStr = '';
         _oldHeatingStatus[index] = _heatingStatus[index];

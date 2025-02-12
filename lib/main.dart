@@ -23,24 +23,29 @@ import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
 
 void main() async {
+  // 플러그인(ex. 파일시스템 접근, 카메라, GPS 등등)이 네이티브 코드와 통신할 수 있도록 초기화하는 역할
   ui.DartPluginRegistrant.ensureInitialized();
+  // Flutter의 위젯 바인딩이 초기화되었는지 확인
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // 초기화가 완료될 때까지 스플래시 화면 유지
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  // 프로바이더 및 컨트롤러 초기화
   final languageProvider = LanguageProvider();
   final authProvider = AuthenticationProvider();
   final messageProvider = MessageProvider();
   final hotpadCtrl = HotpadCtrl(messageProvider: messageProvider);
 
-  await FileCtrl.checkFolder(messageProvider);
-  await ConfigFileCtrl.initialize(); // ConfigFileCtrl 초기화
-  await languageProvider.setLanguageFromDeviceConfig(); // 초기 언어 설정
-  await hotpadCtrl.initialize();
+  await FileCtrl.checkFolder(messageProvider);          // 폴더 확인 및 생성
+  await ConfigFileCtrl.check();                         // Hotpad Setup Data check & load
+  await languageProvider.setLanguageFromDeviceConfig(); // 언어 데이터 가져오기
+  await hotpadCtrl.initialize();                        // Hotpad 컨트롤러 초기화
 
-  // Register Syncfusion license
+  // Syncfusion license 등록
   SyncfusionLicense.registerLicense(
       "Ngo9BigBOggjHTQxAR8/V1NDaF5cWWtCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdnWH1ednRWQ2hcWU1xV0I=");
 
+  // 다중 프로바이더와 함께 애플리케이션 실행
   runApp(
     MultiProvider(
       providers: [
@@ -48,7 +53,6 @@ void main() async {
         ChangeNotifierProvider(create: (context) => authProvider),
         ChangeNotifierProvider(create: (context) => messageProvider),
         ChangeNotifierProvider(create: (context) => hotpadCtrl),
-        // 다른 providers
       ],
       child: MyApp(),
     ),
@@ -62,9 +66,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
       builder: (context, languageProvider, child) {
+        // 시스템 UI를 완전히 숨기고 전체 화면 모드를 활성화
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+        // Material Design3 기반으로 앱 전체의 테마를 설정
         return MaterialApp(
-          title: 'HotpadApp_V4',
+          // title: 'HotpadApp_V4',
           theme: ThemeData(
             useMaterial3: true,
             appBarTheme: const AppBarTheme(
@@ -101,66 +107,50 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   String _appBarTitle = 'Main Panel';
   String _appBarImage = iconHomePath;
-  double _storageValue = 0.0;
-  double _totalStorage = 0.0;
-  double _usedStorage = 0.0;
 
+  // 페이지 이동을 위한 컨트롤러
   final PageController _pageController = PageController();
+  // GraphPage에 대한 키
   final GlobalKey<GraphPageState> _graphPageKey = GlobalKey<GraphPageState>();
-  final GlobalKey _repaintBoundaryKey = GlobalKey(); // RepaintBoundary Key
-  static const platform = MethodChannel('internal_storage');
+  // 스크린샷 캡처에 사용하는 RepaintBoundary의 키
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _updateStorageUsage();
 
-    splashScreenDelay();
-
-    // Set the context after the widget is built
+    // 위젯이 빌드된 후 컨텍스트 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
       hotpadCtrl.setContext(context);
       hotpadCtrl.serialStart();
       hotpadCtrl.showAlarmMessage('SYS', '-', 'I0001');
     });
+
+    splashScreenDelay();
   }
 
+  /***********************************************************************
+   *          스플래시 화면 지연을 처리하는 함수
+   ***********************************************************************////
   void splashScreenDelay() async{
     await Future.delayed(const Duration(seconds: 2));
 
-    // Initial navigation to page 1
+    // 처음에 페이지 1로 이동
     _pageController.jumpToPage(1);
 
-    // Delayed navigation back to page 0
-    await Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _selectedIndex = 0;
-        _updateAppBar(0);
-      });
-      _pageController.jumpToPage(0);
+    // 지연 후 페이지 0으로 다시 이동
+    await Future.delayed(const Duration(seconds: 2), () {
+      _onItemTapped(0);
     });
 
+    // 스플래시 화면 제거
     FlutterNativeSplash.remove();
-
   }
 
-  Future<void> _updateStorageUsage() async {
-    try {
-      final List<dynamic> result =
-      await platform.invokeMethod('getIntStorageInfo');
-      setState(() {
-        _totalStorage = result[0] / (1024 * 1024); // MB 단위로 변환
-        _usedStorage = result[1] / (1024 * 1024); // MB 단위로 변환
-        _storageValue = _usedStorage / _totalStorage;
-        debugPrint(
-            "##### Internal Storage Info] $_totalStorage / $_usedStorage(${(_storageValue * 100).toStringAsFixed(1)})");
-      });
-    } on PlatformException catch (e) {
-      debugPrint("Failed to get USB storage info: '${e.message}'.");
-    }
-  }
-
+  /***********************************************************************
+   *          MenuBar 항목 탭을 처리하는 함수
+   ***********************************************************************////
   void _onItemTapped(int index) {
     final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
     setState(() {
@@ -173,6 +163,9 @@ class _MainPageState extends State<MainPage> {
     _pageController.jumpToPage(index);
   }
 
+  /***********************************************************************
+   *          선택된 인덱스에 따라 앱 바 제목과 이미지를 업데이트하는 함수
+   ***********************************************************************////
   void _updateAppBar(int index) {
     switch (index) {
       case 0:
@@ -206,6 +199,9 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  /***********************************************************************
+   *          인증을 통해 Control 페이지로 이동하는 함수
+   ***********************************************************************////
   Future<void> _navigateToControlPage() async {
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final authProvider = Provider.of<AuthenticationProvider>(context, listen: false);
@@ -221,6 +217,9 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  /***********************************************************************
+   *          현재 화면의 스크린샷을 캡처하는 함수
+   ***********************************************************************////
   Future<void> _capturePng() async {
     try {
       final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
@@ -249,9 +248,11 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  /***********************************************************************
+   *          GUI 기본 구조
+   ***********************************************************************////
   @override
   Widget build(BuildContext context) {
-
     return RepaintBoundary(
       key: _repaintBoundaryKey,
       child: Scaffold(
@@ -279,19 +280,12 @@ class _MainPageState extends State<MainPage> {
             GraphPage(key: _graphPageKey),
             SettingsPage(),
             AlarmPage(),
-            BackupPage(
-              progressStorageValue: _storageValue,
-              totalStorage: _totalStorage,
-              usedStorage: _usedStorage,
-            ),
+            BackupPage(),
             ControlPage(),
           ],
         ),
         bottomNavigationBar: StatusBarPage(
           barHeight: barHeight,
-          progressStorageValue: _storageValue,
-          totalStorage: _totalStorage,
-          usedStorage: _usedStorage,
           onCtrlPressed: _navigateToControlPage,
         ),
       ),

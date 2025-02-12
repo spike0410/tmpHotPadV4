@@ -44,11 +44,13 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
     _graphCount = 0;
 
+    // 그래프 확대/축소 및 이동 동작 설정
     _zoomPanBehavior = ZoomPanBehavior(
       enablePanning: true,
       zoomMode: ZoomMode.x,
     );
 
+    // 그래프 트랙볼 동작 설정
     _trackballBehavior = TrackballBehavior(
       enable: true,
       activationMode: ActivationMode.longPress,
@@ -59,6 +61,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
     _dateTime = DateTime.now();
 
+    // 그래프의 X축 설정
     _dateTimeAxis = DateTimeAxis(
       dateFormat: DateFormat.Hms(),
       // intervalType: DateTimeIntervalType.seconds,
@@ -81,12 +84,18 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     super.dispose();
   }
 
+  /***********************************************************************
+   *          그래프 Series의 가시성 업데이트하는 함수
+   ***********************************************************************////
   void _updateSeriesVisibility(int index, bool isVisible) {
     setState(() {
       _visibleSeries[index] = isVisible;
     });
   }
 
+  /***********************************************************************
+   *          모든 그래프 Series의 가시성 토글 함수
+   ***********************************************************************////
   void _toggleAllSeriesVisibility() {
     setState(() {
       for (int i = 0; i < _visibleSeries.length; i++) {
@@ -95,14 +104,23 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     });
   }
 
+  /***********************************************************************
+   *          그래프 확대 함수
+   ***********************************************************************////
   void zoomIn() {
     _zoomPanBehavior.zoomIn();
   }
 
+  /***********************************************************************
+   *          그래프 축소 함수
+   ***********************************************************************////
   void zoomOut() {
     _zoomPanBehavior.zoomOut();
   }
 
+  /***********************************************************************
+   *          그래프 확대/축소를 초기화하는 함수
+   ***********************************************************************////
   void resetZoom() {
     _zoomPanBehavior.reset();
   }
@@ -151,6 +169,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          헤더 행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _headerRowItem(LanguageProvider languageProvider) {
     return Row(
       children: [
@@ -189,6 +210,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          각 데이터 행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _cellRowItem({
     required int index,
     required String strTemp,
@@ -238,6 +262,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          각 셀 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _cellItem({
     required double width,
     required double height,
@@ -263,6 +290,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          검색 버튼을 생성하는 함수
+   ***********************************************************************////
   Widget _searchButton(LanguageProvider languageProvider) {
     return Container(
       decoration: BoxDecoration(
@@ -300,6 +330,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          온도 차트를 생성하는 함수
+   ***********************************************************************////
   Widget _tempCharts() {
     return Expanded(
       child: Consumer<HotpadCtrl>(
@@ -357,6 +390,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
   }
 
+  /***********************************************************************
+   *          차트 데이터를 업데이트하는 함수
+   ***********************************************************************////
   void updateChartData(SerialCtrl serialCtrlProvider) {
     if((serialCtrlProvider.serialPortStatus.index < SerialPortStatus.txBusy.index)
         || (_graphCount++ % 10 != 0)) {
@@ -397,6 +433,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   }
 }
 
+/***********************************************************************
+ *          차트 데이터 구조 클래스
+ ***********************************************************************////
 class ChartData {
   final DateTime time;
   final double value;

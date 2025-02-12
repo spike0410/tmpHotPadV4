@@ -13,13 +13,16 @@ class TempCalTab extends StatefulWidget {
   _TempCalTabState createState() => _TempCalTabState();
 }
 
-class _TempCalTabState extends State<TempCalTab>
-    with WidgetsBindingObserver{
+class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
+  // 채널 선택 여부를 저장하는 리스트
   final List<bool> _isChannelChecked = List<bool>.filled(10, false);
+  // 스크롤 컨트롤러 생성
   final ScrollController _scrollController = ScrollController();
+  // TextEditingController와 FocusNode 생성
   final List<TextEditingController> _textEditCtrl =
   List.generate(3, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(3, (_) => FocusNode());
+  // 설정 값을 저장하는 리스트
   final List<dynamic> _configValue = List<dynamic>.filled(3, null, growable: false);
 
   String _strRefTemp = '';
@@ -28,12 +31,15 @@ class _TempCalTabState extends State<TempCalTab>
   @override
   void initState(){
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
+    // 저장된 설정 값을 _configValue에 저장
     _configValue[0] = ConfigFileCtrl.tempCalOhm;
     _configValue[1] = ConfigFileCtrl.tempCalTime;
     _configValue[2] = ConfigFileCtrl.tempCalGain;
 
+    // TextField와 FocusNode에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _textEditCtrl[i].addListener(() {
         _updateConfig(i, _textEditCtrl[i].text);
@@ -50,10 +56,16 @@ class _TempCalTabState extends State<TempCalTab>
     _calProgressValue = 0.10;
   }
 
+  /***********************************************************************
+   *          설정 값을 업데이트하는 함수
+   ***********************************************************************////
   void _updateConfig(int index, String value) {
     _configValue[index] = int.tryParse(value) ?? 0;
   }
 
+  /***********************************************************************
+   *          Focus를 잃었을 때 호출되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index) async{
     String tmpStr ='';
 
@@ -66,6 +78,7 @@ class _TempCalTabState extends State<TempCalTab>
       });
     }
 
+    // 변경된 설정 값을 ConfigFileCtrl에 저장 후 SharedPreferences에 저장
     ConfigFileCtrl.tempCalOhm = _configValue[0];
     ConfigFileCtrl.tempCalTime = _configValue[1];
     ConfigFileCtrl.tempCalGain = _configValue[2];
@@ -73,6 +86,9 @@ class _TempCalTabState extends State<TempCalTab>
     await ConfigFileCtrl.setTempCalConfigData();
   }
 
+  /***********************************************************************
+   *          저항 값을 온도로 변환하는 함수
+   ***********************************************************************////
   String ohmToTemp(int resistance) {
     const double R0 = 100.0; // PT100의 0°C에서의 저항값
     const double A = 3.9083e-3;
@@ -99,8 +115,9 @@ class _TempCalTabState extends State<TempCalTab>
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
+    // TextEditingController 해제
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -325,6 +342,9 @@ class _TempCalTabState extends State<TempCalTab>
     );
   }
 
+  /***********************************************************************
+   *          기본 TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField({
     required int index,
     double width = 90,
@@ -358,6 +378,9 @@ class _TempCalTabState extends State<TempCalTab>
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final int max;
 

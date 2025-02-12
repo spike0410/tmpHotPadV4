@@ -16,21 +16,18 @@ class CtrlTempControl extends StatefulWidget {
 
 enum OutputEnum { auto, manual }
 
-class _CtrlTempControlState extends State<CtrlTempControl>
-    with WidgetsBindingObserver {
-  // 9개의 TextEditingController 생성
-  final List<TextEditingController> _textEditCtrl =
-      List.generate(5, (_) => TextEditingController());
-
+class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingObserver {
+  final List<TextEditingController> _textEditCtrl = List.generate(5, (_) => TextEditingController());
   final ScrollController _scrollController = ScrollController();
   OutputEnum _outputEnum = OutputEnum.auto;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
 
+    // TextField와 FocusLost에 Listener 추가
     for (var controller in _textEditCtrl) {
       controller.addListener(() {
         final String text = controller.text.toString();
@@ -51,7 +48,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
+    // TextEditingController 해제
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -194,6 +193,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _rowItem({
     required String name,
     required Widget child,
@@ -215,6 +217,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          Text 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _textItem({
     required String text,
     double width = 100,
@@ -234,6 +239,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          rowRadioItem을 생성하는 함수
+   ***********************************************************************////
   Widget _rowRadioItem(LanguageProvider languageProvider) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -277,6 +285,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          titleRadio 버튼을 생성하는 함수
+   ***********************************************************************////
   Widget _titleRadio<T>({
     required String text,
     required T value,
@@ -305,6 +316,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          TextField를 생성하는 함수
+   ***********************************************************************////
   Widget _setPositionTextField(
       {required int index,
       bool enable = true,
@@ -349,6 +363,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          컨트롤 버튼을 생성하는 함수
+   ***********************************************************************////
   Widget _ctrlButton({
     required double width,
     required double height,
@@ -391,6 +408,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
     );
   }
 
+  /***********************************************************************
+   *          온도 차트를 생성하는 함수
+   ***********************************************************************////
   Widget _tempCharts() {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
@@ -450,6 +470,9 @@ class _CtrlTempControlState extends State<CtrlTempControl>
   }
 }
 
+/***********************************************************************
+ *          TextField에 입력된 최대값 설정 클래스
+ ***********************************************************************////
 class _CustomRangeTextInputFormatter extends TextInputFormatter {
   final double max;
 

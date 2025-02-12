@@ -21,20 +21,21 @@ class _ControlPageState extends State<ControlPage>
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    // TabController를 해제
     _tabCtrl.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    // TabController를 초기화
     _tabCtrl = TabController(
       length: 4,
       initialIndex: 0,
       vsync: this,
     );
+    // TabController의 Listener를 추가하여 탭 변경 시 상태를 업데이트
     _tabCtrl.addListener(() {
       setState(() {
         activeTabIndex = _tabCtrl.index;
@@ -42,6 +43,9 @@ class _ControlPageState extends State<ControlPage>
     });
   }
 
+  /***********************************************************************
+   *          TabBar를 생성하는 함수
+   ***********************************************************************////
   TabBar _buildTabBar(LanguageProvider languageProvider) => TabBar(
     controller: _tabCtrl,
     labelStyle: TextStyle(
@@ -129,6 +133,7 @@ class _ControlPageState extends State<ControlPage>
             CtrlFaultDiagnosisTab(),
             CtrlTempControl(),
             CtrlVCControl(),
+            // SystemTab() 클래스 사용할 때 관리자 모드임을 알려줌.
             SystemTab(isAdmin: true),
           ],
         ),

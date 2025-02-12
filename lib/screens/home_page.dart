@@ -14,6 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  // ScrollController, TextEditingController, FocusNode를 초기화
   final ScrollController _scrollController = ScrollController();
   final List<TextEditingController> _textEditCtrl = List.generate(totalChannel, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(totalChannel, (_) => FocusNode());
@@ -23,7 +24,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // 키보드 상태 감지를 위해 observer 등록
+    // 키보드 상태 감지를 위해 observer 등록
+    WidgetsBinding.instance.addObserver(this);
     hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
 
     // HotpadCtrl의 콜백 함수 설정.
@@ -33,6 +35,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       });
     };
 
+    // FocusNode에 Listener 추가
     for (var i = 0; i < _textEditCtrl.length; i++) {
       _focusNodes[i].addListener(() {
         if (!_focusNodes[i].hasFocus) {
@@ -45,7 +48,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // observer 제거
+    WidgetsBinding.instance.removeObserver(this);
     for (var controller in _textEditCtrl) {
       controller.dispose();
     }
@@ -100,6 +103,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          헤더 행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _headerRowItem(LanguageProvider languageProvider, HotpadCtrl hotpadCtrl) {
     const List<double> headerWidth = [110, 90, 90, 100, 75, 90, 90, 90, 114, 114];
     const double headerHeight = 55;
@@ -278,6 +284,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          데이터 행 항목을 생성하는 함수
+   ***********************************************************************////
   Widget _dataRowItem({
     required int index,
     required StatusChannel statusCh,
@@ -517,6 +526,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          헤더 아이템 생성하는 함수
+   ***********************************************************************////
   Widget _headerCellItem({
     required double width,
     required double height,
@@ -541,6 +553,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          데이터 아이템 생성하는 함수
+   ***********************************************************************////
   Widget _dataCellItem({
     required double width,
     required double height,
@@ -583,6 +598,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          Heating, Preheating, Stop 기본 버튼 함수
+   ***********************************************************************////
   Widget _ctrlButton({
     required double width,
     required double height,
@@ -623,6 +641,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          Heating, Preheating, Stop 기본 버튼 함수의 그라데이션
+   ***********************************************************************////
   LinearGradient _btnGradient({required bool isMode}) {
     if (isMode) {
       return LinearGradient(
@@ -647,6 +668,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  /***********************************************************************
+   *          기본 ProgressBar 함수
+   ***********************************************************************////
   Widget _progressDataTable({
     required double value,
     required String text,
@@ -692,6 +716,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          기본 Text 함수
+   ***********************************************************************////
   Widget _textDataTable({
     required String text,
     Color color = Colors.black,
@@ -709,10 +736,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /***********************************************************************
+   *          TextField에 FocusLost시 동작되는 함수
+   ***********************************************************************////
   void _onFocusLost(int index){
     hotpadCtrl.setPadID(index, _textEditCtrl[index].text);
   }
 
+  /***********************************************************************
+   *          ProgressBar의 Value 사용되는 데이터로 변환
+   ***********************************************************************////
   double _progressConvert(double val, double minVal, double maxVal){
     double tmpVal = 0;
     double totalVal = maxVal - minVal;
@@ -726,6 +759,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return tmpVal;
   }
 
+  /***********************************************************************
+   *          RemainTime의 출력 포멧
+   ***********************************************************************////
   String _formatDuration(double seconds) {
     // double 값을 Duration으로 변환
     Duration duration = Duration(seconds: seconds.toInt());

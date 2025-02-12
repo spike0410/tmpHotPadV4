@@ -16,7 +16,11 @@ class FileCtrl {
   static Database? _graphDatabase;
   static Database? _logDatabase;
 
+  /***********************************************************************
+   *          폴더를 확인하고 필요한 파일을 생성하는 함수
+   ***********************************************************************////
   static Future<String?> checkFolder(MessageProvider messageProvider) async {
+    // 저장소 권한을 요청하고, 권한이 승인된 경우 폴더를 생성
     if (await Permission.storage.request().isGranted) {
       DateTime dateTime = DateTime.now();
       String strDatePath = DateFormat('yyyyMM').format(DateTime.now());
@@ -28,10 +32,10 @@ class FileCtrl {
             Directory('${downloadDir.path}/$logDefaultFolder/$strDatePath');
         _defaultFolderPath = newFolder.path.toString();
 
-        await _createSubFolder();
-        await _createAlarmFile(messageProvider, dateTime);
-        await _createGraphFile(dateTime);
-        await _createLogFile(dateTime);
+        await _createSubFolder();                           // 서브 폴더를 생성
+        await _createAlarmFile(messageProvider, dateTime);  // 알람 파일을 생성
+        await _createGraphFile(dateTime);                   // 그래프 파일을 생성
+        await _createLogFile(dateTime);                     // 로그 파일을 생성
       }
     } else {
       _defaultFolderPath = null;
@@ -41,6 +45,9 @@ class FileCtrl {
     return _defaultFolderPath;
   }
 
+  /***********************************************************************
+   *          서브 폴더를 생성하는 함수
+   ***********************************************************************////
   static Future<void> _createSubFolder() async {
     final Directory tmpAlarmPath = Directory('$_defaultFolderPath/$alarmFolder');
     final Directory tmpLogPath = Directory('$_defaultFolderPath/$logFolder');
@@ -66,7 +73,7 @@ class FileCtrl {
   }
 
   /*****************************************************************************
-   *                        ScreenShot 함수
+   *          ScreenShot 함수
    *****************************************************************************////
   static Future<String> screenShotsSave(Uint8List pngBytes) async {
     if (_defaultFolderPath != null) {
@@ -84,9 +91,8 @@ class FileCtrl {
   }
 
   /*****************************************************************************
-   *                        SQLite Database 함수들
+   *          알람 파일을 생성하는 함수
    *****************************************************************************////
-
   static Future<void> _createAlarmFile(MessageProvider messageProvider, DateTime now) async {
     String dbName = 'ALARM_${DateFormat('yyyyMMdd').format(now)}.db';
     String dbPath = '$_defaultFolderPath/$alarmFolder/$dbName';
@@ -111,6 +117,9 @@ class FileCtrl {
     }
   }
 
+  /*****************************************************************************
+   *          알람 메시지를 저장하는 함수
+   *****************************************************************************////
   static Future<void> saveAlarmMessage(BuildContext context, List<String> dataList) async {
     if (_alramDatabase != null) {
       final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
@@ -128,6 +137,9 @@ class FileCtrl {
     }
   }
 
+  /*****************************************************************************
+   *          Graph File을 생성하는 함수
+   *****************************************************************************////
   static Future<void> _createGraphFile(DateTime now) async {
     String dbName = 'GRAPH_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
     String dbPath = '$_defaultFolderPath/$graphFolder/$dbName';
@@ -150,6 +162,9 @@ class FileCtrl {
     }
   }
 
+  /*****************************************************************************
+   *          Graph Data를 저장하는 함수
+   *****************************************************************************////
   static Future<void> saveGraphData(DateTime time, List<String> statusList, List<String> rtdList) async {
     if (_graphDatabase != null) {
       await _graphDatabase!.insert('graph', {
@@ -162,6 +177,9 @@ class FileCtrl {
     }
   }
 
+  /*****************************************************************************
+   *          LogFile을 생성하는 함수
+   *****************************************************************************////
   static Future<void> _createLogFile(DateTime now) async {
     String dbName = 'LOG_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
     String dbPath = '$_defaultFolderPath/$logFolder/$dbName';
