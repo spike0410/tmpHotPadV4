@@ -9,7 +9,7 @@ class ConfigFileCtrl {
   static const String _isPU45EnableKey = 'isPU45Enable';
   static const String _isHeatingBtnKey = 'isHeatingBtn';
   static const String _isPreheatingBtnKey = 'isPreheatingBtn';
-  static const String _statusChannelKey = 'statusChannel';
+  static const String _channelStatusKey = 'channelStatus';
   static const String _heatingStatusKey = 'heatingStatus';
   static const String _remainTimeKey = 'remainTime';
   static const String _remainTotalTimeKey = 'remainTotalTime';
@@ -39,7 +39,7 @@ class ConfigFileCtrl {
   static List<bool> isPU45EnableList = List.filled(totalChannel, true);
   static List<bool> isStartBtnList = List.filled(totalChannel, false);
   static List<bool> isPreheatingBtnList = List.filled(totalChannel, false);
-  static List<StatusChannel> statusChList = List.filled(totalChannel, StatusChannel.ready);
+  static List<ChannelStatus> chStatusList = List.filled(totalChannel, ChannelStatus.stop);
   static List<HeatingStatus> heatingStatusList = List.filled(totalChannel, HeatingStatus.stop);
   static List<double> remainTimeList = List.filled(totalChannel, 0);
   static List<double> remainTotalTimeList = List.filled(totalChannel, -1);
@@ -146,8 +146,8 @@ class ConfigFileCtrl {
     await prefs.setString(_isPU45EnableKey, jsonEncode(isPU45EnableList));
     await prefs.setString(_isHeatingBtnKey, jsonEncode(isStartBtnList));
     await prefs.setString(_isPreheatingBtnKey, jsonEncode(isPreheatingBtnList));
-    List<String> tmpStatusChList = statusChList.map((status) => status.toString()).toList();
-    await prefs.setString(_statusChannelKey, jsonEncode(tmpStatusChList));
+    List<String> tmpChStatusList = chStatusList.map((status) => status.toString()).toList();
+    await prefs.setString(_channelStatusKey, jsonEncode(tmpChStatusList));
     List<String> tmpHeatingStatusList = heatingStatusList.map((status) => status.toString()).toList();
     await prefs.setString(_heatingStatusKey, jsonEncode(tmpHeatingStatusList));
     await prefs.setString(_remainTimeKey, jsonEncode(remainTimeList));
@@ -189,7 +189,7 @@ class ConfigFileCtrl {
     final String? jHeatingBtn = prefs.getString(_isHeatingBtnKey);
     final String? jPreheatingBtn = prefs.getString(_isPreheatingBtnKey);
 
-    final String? jStatusChList = prefs.getString(_statusChannelKey);
+    final String? jChStatusList = prefs.getString(_channelStatusKey);
     final String? jHeatingStatusList = prefs.getString(_heatingStatusKey);
     final String? jRemainTimeList = prefs.getString(_remainTimeKey);
     final String? jRemainTotalTimeList = prefs.getString(_remainTotalTimeKey);
@@ -208,9 +208,9 @@ class ConfigFileCtrl {
       isPreheatingBtnList = List<bool>.from(jsonDecode(jPreheatingBtn));
     }
 
-    if (jStatusChList != null) {
-      List<dynamic> stringList = jsonDecode(jStatusChList);
-      statusChList = stringList.map((status) => StatusChannel.values.firstWhere((e) => e.toString() == status)).toList();
+    if (jChStatusList != null) {
+      List<dynamic> stringList = jsonDecode(jChStatusList);
+      chStatusList = stringList.map((status) => ChannelStatus.values.firstWhere((e) => e.toString() == status)).toList();
     }
 
     if (jHeatingStatusList != null) {
@@ -233,7 +233,7 @@ class ConfigFileCtrl {
     debugPrint("### HomePageStatusData[isPU45Enable]###\n$isPU45EnableList");
     debugPrint("### HomePageStatusData[isHeatingBtn]###\n$isStartBtnList");
     debugPrint("### HomePageStatusData[isPreheatingBtn]###\n$isPreheatingBtnList");
-    debugPrint("### HomePageStatusData[StatusChannel]###\n$statusChList");
+    debugPrint("### HomePageStatusData[ChannelStatus]###\n$chStatusList");
     debugPrint("### HomePageStatusData[HeatingStatus]###\n$heatingStatusList");
     debugPrint("### HomePageStatusData[RemainTime]###\n$remainTimeList");
     debugPrint("### HomePageStatusData[RemainTotalTime]###\n$remainTotalTimeList");
@@ -368,8 +368,8 @@ class ConfigFileCtrl {
     await prefs.setString(_isPU45EnableKey, jsonEncode(isPU45EnableList));
     await prefs.setString(_isHeatingBtnKey, jsonEncode(isStartBtnList));
     await prefs.setString(_isPreheatingBtnKey, jsonEncode(isPreheatingBtnList));
-    List<String> tmpStatusChList = statusChList.map((status) => status.toString()).toList();
-    await prefs.setString(_statusChannelKey, jsonEncode(tmpStatusChList));
+    List<String> tmpChStatusList = chStatusList.map((status) => status.toString()).toList();
+    await prefs.setString(_channelStatusKey, jsonEncode(tmpChStatusList));
     List<String> tmpHeatingStatusList = heatingStatusList.map((status) => status.toString()).toList();
     await prefs.setString(_heatingStatusKey, jsonEncode(tmpHeatingStatusList));
     await prefs.setString(_remainTimeKey, jsonEncode(remainTimeList));
@@ -379,7 +379,7 @@ class ConfigFileCtrl {
     debugPrint("### setHomePageStatusData[isPU45Enable]\n$isPU45EnableList");
     debugPrint("### setHomePageStatusData[isStartBtn]\n$isStartBtnList");
     debugPrint("### setHomePageStatusData[isPreheatingBtn]\n$isPreheatingBtnList");
-    debugPrint("### setHomePageStatusData[statusChList]\n$statusChList");
+    debugPrint("### setHomePageStatusData[chStatusList]\n$chStatusList");
     debugPrint("### setHomePageStatusData[heatingStatusList]\n$heatingStatusList");
     debugPrint("### setHomePageStatusData[remainTimeList]\n$remainTimeList");
     debugPrint("### setHomePageStatusData[remainTotalTimeList]\n$remainTotalTimeList");

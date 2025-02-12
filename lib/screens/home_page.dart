@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   builder: (context, hotpadCtrl, _) {
                     return _dataRowItem(
                       index: index,
-                      statusCh: hotpadCtrl.getStatusChannel(index),
+                      statusCh: hotpadCtrl.getChannelStatus(index),
                       strChannel: (index + 1).toString().padLeft(2, '0'),
                       currentTempValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
                       setTemp: hotpadCtrl.settingTempSelect(index),
@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
    ***********************************************************************////
   Widget _dataRowItem({
     required int index,
-    required StatusChannel statusCh,
+    required ChannelStatus statusCh,
     required String strChannel,
     required double currentTempValue,
     required String setTemp,
@@ -320,19 +320,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                if (statusCh == StatusChannel.ready)
+                if (statusCh == ChannelStatus.stop)
                   Image.asset(
                     width: 20,
                     height: 20,
                     iconLEDGreyPath,
                   )
-                else if (statusCh == StatusChannel.start)
+                else if (statusCh == ChannelStatus.start)
                   Image.asset(
                     width: 20,
                     height: 20,
                     iconLEDGreenPath,
                   )
-                else if (statusCh == StatusChannel.error)
+                else if (statusCh == ChannelStatus.error)
                     Image.asset(
                       width: 20,
                       height: 20,

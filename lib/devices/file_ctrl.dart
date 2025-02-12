@@ -187,12 +187,14 @@ class FileCtrl {
 
     _logDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
       await db.execute('''
-        CREATE TABLE graph (
+        CREATE TABLE log (
           time TEXT,
-          status TEXT,
+          chStatus TEXT,
+          heatingStatus TEXT,
           rtd TEXT,
           crnt TEXT,
           cmd TEXT,
+          ohm TEXT,
           acVtg TEXT,
           dcVtg TEXT,
           dcCrnt TEXT,
@@ -205,6 +207,30 @@ class FileCtrl {
       // Load existing graph data if needed
       // List<Map<String, dynamic>> result = await _graphDatabase!.query('graph');
       // Do something with the result
+    }
+  }
+
+  /*****************************************************************************
+   *          Graph Data를 저장하는 함수
+   *****************************************************************************////
+   static Future<void> saveLogData(List<String> data) async {
+    if (_logDatabase != null) {
+      await _logDatabase!.insert('log', {
+        'time': data[0],
+        'chStatus': data[1],
+        'heatingStatus': data[2],
+        'rtd': data[3],
+        'crnt': data[4],
+        'cmd': data[5],
+        'ohm': data[6],
+        'acVtg': data[7],
+        'dcVtg': data[8],
+        'dcCrnt': data[9],
+        'intTemp': data[10]
+      });
+    }
+    else {
+      debugPrint('Database is not initialized');
     }
   }
 }

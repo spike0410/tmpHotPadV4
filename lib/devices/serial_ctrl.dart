@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:usb_serial/usb_serial.dart';
 import 'package:usb_serial/transaction.dart';
 import 'package:xml/xml.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import '../devices/hotpad_ctrl.dart';
+import '../constant/user_style.dart';
 
 enum SerialPortStatus {
   none, noFound, noOpen, portOpen, disconnected,
@@ -17,15 +19,38 @@ enum SerialPortStatus {
  *****************************************************************************////
 class TxPackage {
   final String _header = "STR";
-  List<String> _operate = List.filled(10, '0');
+  final List<String> _operate = List.filled(10, '0');
   List<int> _cmd = List.filled(10, 0);
   List<int> _maxTemp = List.filled(10, 0);
   int _operateFAN = 0;
   int _bootmode = 0;
   final String _end = '\r\n';
 
-  void setHTOperate(List<String> operate) {
-    _operate = operate;
+  void setHTOperate(List<ChannelStatus> operate) {
+    String tmpStr = '';
+    for(int i = 0; i < totalChannel; i++) {
+      switch(operate[i]){
+        case ChannelStatus.stop:
+          tmpStr = '0';
+          break;
+        case ChannelStatus.start:
+          tmpStr = '1';
+          break;
+        case ChannelStatus.calTempStart:
+          tmpStr = 'A';
+          break;
+        case ChannelStatus.calACStart:
+          tmpStr = 'B';
+          break;
+        case ChannelStatus.calStart:
+          tmpStr = 'C';
+          break;
+        case ChannelStatus.error:
+          tmpStr = '!';
+          break;
+      }
+      _operate[i] = tmpStr;
+    }
   }
 
   void setHTCmd(List<int> cmd) {

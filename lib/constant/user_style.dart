@@ -76,7 +76,7 @@ const String viewBackupPath = 'asset/img/backupView.png';
  *                        Enum Variable
  *****************************************************************////
 enum LanguageEnum { kor, eng }
-enum StatusChannel {ready,  start, error}
+enum ChannelStatus {stop, start, calTempStart, calACStart, calStart, error}
 enum HeatingStatus {stop, rising1st, holding1st, rising2nd, holding2nd, preheatRising, preheatHolding, error}
 
 /*****************************************************************

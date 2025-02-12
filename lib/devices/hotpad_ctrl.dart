@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hotpadapp_v4/devices/file_ctrl.dart';
 import 'package:intl/intl.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
@@ -19,11 +20,12 @@ class HotpadCtrl with ChangeNotifier {
   List<bool> _isStartBtn = List.filled(totalChannel, false);
   List<bool> _isPreheatingBtn = List.filled(totalChannel, false);
   List<String> _padIDText = List.filled(totalChannel, '');
-  List<StatusChannel> _statusCh = List.filled(totalChannel, StatusChannel.ready);
+  List<ChannelStatus> _chStatus = List.filled(totalChannel, ChannelStatus.stop);
   List<HeatingStatus> _heatingStatus = List.filled(totalChannel, HeatingStatus.stop);
   List<HeatingStatus> _oldHeatingStatus = List.filled(totalChannel, HeatingStatus.stop);
   List<double> _remainTime = List.filled(totalChannel, 0);
   List<double> _remainTotalTime = List.filled(totalChannel, -1);
+  List<List<String>> _logDataList = [];
 
   String _currentTime = '';
   double _totalStorage = 0.0;
@@ -54,12 +56,14 @@ class HotpadCtrl with ChangeNotifier {
     _isPU45Enable = ConfigFileCtrl.isPU45EnableList;
     _isStartBtn = ConfigFileCtrl.isStartBtnList;
     _isPreheatingBtn = ConfigFileCtrl.isPreheatingBtnList;
-    _statusCh = ConfigFileCtrl.statusChList;
+    _chStatus = ConfigFileCtrl.chStatusList;
     _heatingStatus = ConfigFileCtrl.heatingStatusList;
     _oldHeatingStatus = List.filled(totalChannel, HeatingStatus.stop);
     _remainTime = ConfigFileCtrl.remainTimeList;
     _remainTotalTime = ConfigFileCtrl.remainTotalTimeList;
     _padIDText = ConfigFileCtrl.padIDList;
+
+    _logDataList = [];
 
     await updateStorageUsage();
   }
@@ -85,9 +89,9 @@ class HotpadCtrl with ChangeNotifier {
     return _isPU45Enable[index];
   }
 
-  StatusChannel getStatusChannel(int index){
-    if (index < 0 || index >= totalChannel) return StatusChannel.ready;
-    return _statusCh[index];
+  ChannelStatus getChannelStatus(int index){
+    if (index < 0 || index >= totalChannel) return ChannelStatus.stop;
+    return _chStatus[index];
   }
 
   HeatingStatus getHeatingStatus(int index){
@@ -153,7 +157,7 @@ class HotpadCtrl with ChangeNotifier {
     }
     _remainTime[index] = _remainTotalTime[index];
     _heatingStatus[index] = HeatingStatus.rising1st;
-    _statusCh[index] = StatusChannel.start;
+    _chStatus[index] = ChannelStatus.start;
     _updateStatus();
   }
 
@@ -168,7 +172,7 @@ class HotpadCtrl with ChangeNotifier {
     _remainTotalTime[index] = ConfigFileCtrl.preheatingTime * 60;
     _remainTime[index] = _remainTotalTime[index];
     _heatingStatus[index] = HeatingStatus.preheatRising;
-    _statusCh[index] = StatusChannel.start;
+    _chStatus[index] = ChannelStatus.start;
     _updateStatus();
   }
 
@@ -188,7 +192,7 @@ class HotpadCtrl with ChangeNotifier {
     _remainTotalTime[index] = -1;
     _heatingStatus[index] = HeatingStatus.stop;
     _oldHeatingStatus[index] = HeatingStatus.stop;
-    _statusCh[index] = StatusChannel.ready;
+    _chStatus[index] = ChannelStatus.stop;
 
     _updateStatus();
   }
@@ -219,7 +223,7 @@ class HotpadCtrl with ChangeNotifier {
     ConfigFileCtrl.isPU45EnableList = _isPU45Enable;
     ConfigFileCtrl.isStartBtnList = _isStartBtn;
     ConfigFileCtrl.isPreheatingBtnList = _isPreheatingBtn;
-    ConfigFileCtrl.statusChList = _statusCh;
+    ConfigFileCtrl.chStatusList = _chStatus;
     ConfigFileCtrl.heatingStatusList = _heatingStatus;
     ConfigFileCtrl.remainTimeList = _remainTime;
     ConfigFileCtrl.remainTotalTimeList = _remainTotalTime;
@@ -273,6 +277,7 @@ class HotpadCtrl with ChangeNotifier {
     _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
     receivePort.listen((message) {
       if (message == 'sendData') {
+        serialCtrl.txPackage.setHTOperate(_chStatus);
         serialCtrl.sendData();
         serialCtrl.checkDataReceived();
       }
@@ -317,10 +322,13 @@ class HotpadCtrl with ChangeNotifier {
       if (headerStr == 'STR') {
         serialCtrl.serialPortStatus = SerialPortStatus.rxCplt;
         serialCtrl.rxPackage.setRxPackageData(dataList);
-        debugPrint('R>>>[${DateTime.now()}] $dataList');
+        _saveLogData();
 
-      } else {
+        debugPrint('R>>>[${serialCtrl.rxPackage.rxTime}] $dataList');
+      }
+      else {
         serialCtrl.serialPortStatus = SerialPortStatus.rxErr;
+
         debugPrint('### Status : ${serialCtrl.serialPortStatus}');
       }
     }
@@ -384,7 +392,7 @@ class HotpadCtrl with ChangeNotifier {
    *****************************************************************************////
   void _decrementRemainTime() {
     for (int index = 0; index < totalChannel; index++) {
-      if (_statusCh[index] == StatusChannel.start) {
+      if (_chStatus[index] == ChannelStatus.start) {
         if (_isPU45Enable[index] == false) { // PU15
           if (_isPreheatingBtn[index] == false) { // heating
             if ((double.tryParse(serialCtrl.rxPackage.rtd[index]) ?? 0.0) >= ConfigFileCtrl.pu15TargetTemp) {
@@ -457,6 +465,40 @@ class HotpadCtrl with ChangeNotifier {
             codeStr);
       }
     }
+  }
+
+  /*****************************************************************************
+   *          Log Data를 SQLite 형식으로 파일 저장
+   *
+   *    - rxPackage.setRxPackageData() 함수 사용 후 파일을 저장할 것
+   *    - 데이터를 List에 10개 저장 후 파일로 저장
+   *****************************************************************************////
+  void _saveLogData(){
+    if(_logDataList.length == 10){
+      for(int i = 0; i < _logDataList.length; i++){
+        FileCtrl.saveLogData(_logDataList[i]);
+      }
+      _logDataList.clear();
+    }
+    _logDataList.add(_getRxLogData());
+  }
+
+  List<String> _getRxLogData(){
+    List<String> tmpLog = List.filled(11, '0');
+
+    tmpLog[0] = serialCtrl.rxPackage.rxTime.toString();
+    tmpLog[1] = serialCtrl.rxPackage.status.join(',');
+    tmpLog[2] = _heatingStatus.toList().join(',').replaceAll('HeatingStatus.', '');
+    tmpLog[3] = serialCtrl.rxPackage.rtd.join(',');
+    tmpLog[4] = serialCtrl.rxPackage.padCurrent.join(',');
+    tmpLog[5] = serialCtrl.rxPackage.padCmd.join(',');
+    tmpLog[6] = serialCtrl.rxPackage.padOhm.join(',');
+    tmpLog[7] = serialCtrl.rxPackage.acVolt;
+    tmpLog[8] = serialCtrl.rxPackage.dcVolt;
+    tmpLog[9] = serialCtrl.rxPackage.dcCrnt;
+    tmpLog[10] = serialCtrl.rxPackage.intTemp;
+
+    return tmpLog;
   }
 
   @override

@@ -6,6 +6,7 @@ import '../constant/user_style.dart';
 import '../providers/language_provider.dart';
 import '../devices/serial_ctrl.dart';
 import '../devices/hotpad_ctrl.dart';
+import '../devices/file_ctrl.dart';
 
 class GraphPage extends StatefulWidget {
   const GraphPage({super.key});
@@ -393,19 +394,22 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   /***********************************************************************
    *          차트 데이터를 업데이트하는 함수
    ***********************************************************************////
-  void updateChartData(SerialCtrl serialCtrlProvider) {
-    if((serialCtrlProvider.serialPortStatus.index < SerialPortStatus.txBusy.index)
+  void updateChartData(SerialCtrl serialCtrl) {
+    if((serialCtrl.serialPortStatus.index < SerialPortStatus.txBusy.index)
         || (_graphCount++ % 10 != 0)) {
       return;
     }
 
-    DateTime tmpDateTime = serialCtrlProvider.rxPackage.rxTime;
+    DateTime tmpDateTime = serialCtrl.rxPackage.rxTime;
     for (int index = 0; index < 10; index++) {
-      double value = double.tryParse(serialCtrlProvider.rxPackage.rtd[index]) ?? 0.0;
+      double value = double.tryParse(serialCtrl.rxPackage.rtd[index]) ?? 0.0;
       _chartDataSeries[index].add(ChartData(tmpDateTime, value));
     }
 
-    debugPrint("Graph Data] [$tmpDateTime] ${serialCtrlProvider.rxPackage.rtd}");
+    // HotpadData/yyyyMM/Graph 폴더의 SQLite 파일에 저장
+    FileCtrl.saveGraphData(tmpDateTime, serialCtrl.rxPackage.status, serialCtrl.rxPackage.rtd);
+
+    debugPrint("Graph Data] [$tmpDateTime] ${serialCtrl.rxPackage.status},${serialCtrl.rxPackage.rtd}");
 
     // if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(seconds: 1)))) {
     if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
