@@ -348,7 +348,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                   children: [
                     SizedBox(width: 132),
 
-                    /// ### Fan Start Temp.
+                    /// ### System 종료.
                     IconButton(
                       onPressed: () {
                         SystemNavigator.pop();
@@ -538,15 +538,27 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 ],
               ),
               actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(languageProvider.getLanguageTransValue('Cancel')),
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Cancel'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-                TextButton(
-                  onPressed: () => authenticate(setState),
-                  child: Text(languageProvider.getLanguageTransValue('Change')),
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () => authenticate(setState),
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Change'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               ],
             );

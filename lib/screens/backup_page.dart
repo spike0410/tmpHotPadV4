@@ -269,61 +269,6 @@ class _BackupPageState extends State<BackupPage> {
               );
             },
           ),
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //   children: [
-          //     Stack(
-          //       children: [
-          //         SizedBox(
-          //           width: halfWidth,
-          //           height: 35,
-          //           child: LinearProgressIndicator(
-          //             value: widget.progressStorageValue,
-          //             backgroundColor: Colors.white,
-          //             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
-          //           ),
-          //         ),
-          //         Positioned.fill(
-          //           child: Center(
-          //             child: Text(
-          //               '${(widget.progressStorageValue * 100).toStringAsFixed(1)}%',
-          //               style: TextStyle(
-          //                 fontSize: textSize,
-          //                 fontWeight: FontWeight.bold,
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //     Stack(
-          //       children: [
-          //         SizedBox(
-          //           width: halfWidth,
-          //           height: 35,
-          //           child: LinearProgressIndicator(
-          //             value: usbProgressValue,
-          //             backgroundColor: Colors.white,
-          //             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
-          //           ),
-          //         ),
-          //         Positioned.fill(
-          //           child: Center(
-          //             child: Text(
-          //               isUSBConnect == true
-          //                   ? '${(usbProgressValue * 100).toStringAsFixed(1)}%'
-          //                   : '',
-          //               style: TextStyle(
-          //                 fontSize: textSize,
-          //                 fontWeight: FontWeight.bold,
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ],
-          // ),
           SizedBox(height: 40),
           Container(
             margin: EdgeInsets.only(left: 30, right: 30),

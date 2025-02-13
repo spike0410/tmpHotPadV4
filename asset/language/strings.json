@@ -89,7 +89,12 @@
 	"The new password does not match." : "새로운 비밀번호가 일치하지 않습니다.",
 	"The current password does not match." : "현재 비밀번호가 일치하지 않습니다.",
 	"Cancel" : "취소",
-	"Change" : "변경"
+  	"OK" : "확인",
+	"Change" : "변경",
+	"Search Graph File List" : "그래프 파일 목록 검색",
+	"Date" : "날짜",
+	"File List" : "파일 목록",
+	"select..." : "선택해주세요..."
   },
   "Eng": {
     "Channel": "Channel",
@@ -181,6 +186,11 @@
 	"The new password does not match." : "The new password does not match.",
 	"The current password does not match." : "The current password does not match.",
 	"Cancel" : "Cancel",
-	"Change" : "Change"
+  	"OK" : "OK",
+	"Change" : "Change",
+	"Search Graph File List" : "Search Graph File List",
+	"Date" : "Date",
+	"File List" : "File List",
+	"select..." : "select..."
   }
 }

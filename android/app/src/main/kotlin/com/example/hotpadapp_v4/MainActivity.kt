@@ -33,14 +33,18 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_SYSTEM_INFO).setMethodCallHandler { call, result ->
             if (call.method == "getOSVersion") {
                 result.success(getOSVersion())
-            } else {
+            }
+            else {
                 result.notImplemented()
             }
         }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL_INTERNAL_STORAGE).setMethodCallHandler { call, result ->
             if (call.method == "getIntStorageInfo") {
-                val intStorage = File("/storage/emulated/0/")
+                val intStoragePath = Environment.getExternalStorageDirectory().absolutePath // primary 경로
+                val intStorage = File(intStoragePath)
+//                val intStorage = File("/storage/emulated/0/")
+
                 if (intStorage.exists() && intStorage.isDirectory) {
                     val statFs = StatFs(intStorage.path)
                     val totalBytes = statFs.totalBytes
@@ -48,10 +52,12 @@ class MainActivity : FlutterActivity() {
                     val freeBytes = statFs.availableBytes
 
                     result.success(listOf(totalBytes, usedBytes, freeBytes))
-                } else {
+                }
+                else {
                     result.error("UNAVAILABLE", "Internal storage not available", null)
                 }
-            } else {
+            }
+            else {
                 result.notImplemented()
             }
         }
@@ -69,10 +75,12 @@ class MainActivity : FlutterActivity() {
                             val freeBytes = statFs.availableBytes
 
                             result.success(listOf(totalBytes, usedBytes, freeBytes))
-                        } else {
+                        }
+                        else {
                             result.error("UNAVAILABLE", "USB storage not available", null)
                         }
-                    } else {
+                    }
+                    else {
                         result.error("UNAVAILABLE", "USB storage not found", null)
                     }
                 }
@@ -80,7 +88,8 @@ class MainActivity : FlutterActivity() {
                     val success = ejectUSBStorage()
                     if (success) {
                         result.success("USB Eject Request Sent")
-                    } else {
+                    }
+                    else {
                         result.error("UNAVAILABLE", "Failed to eject USB storage", null)
                     }
                 }
@@ -117,7 +126,8 @@ class MainActivity : FlutterActivity() {
             if (storageVolume.isRemovable && storageVolume.state == Environment.MEDIA_MOUNTED) {
                 return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     storageVolume.directory?.path
-                } else {
+                }
+                else {
                     getVolumePath(storageVolume)
                 }
             }

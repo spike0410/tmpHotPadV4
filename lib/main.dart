@@ -223,26 +223,29 @@ class _MainPageState extends State<MainPage> {
   Future<void> _capturePng() async {
     try {
       final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
-      RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage();
-      ByteData? byteData =
-      await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData != null) {
-        Uint8List pngBytes = byteData.buffer.asUint8List();
-        String savedPath = await FileCtrl.screenShotsSave(pngBytes);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: savedPath.isNotEmpty
-              ? Text('${languageProvider.getLanguageTransValue('Screenshot has been saved')} : $savedPath')
-              : Text(languageProvider.getLanguageTransValue('Screenshot not saved')),
-          duration: Duration(seconds: 5),
-        ));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(languageProvider.getLanguageTransValue('Failed to capture image.')),
-          duration: Duration(seconds: 5),
-        ));
-      }
+      // 프레임이 완전히 렌더링된 후 스크린 샷을 캡쳐해야 함.
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        RenderRepaintBoundary boundary =
+          _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        ui.Image image = await boundary.toImage();
+        ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          Uint8List pngBytes = byteData.buffer.asUint8List();
+          String savedPath = await FileCtrl.screenShotsSave(pngBytes);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: savedPath.isNotEmpty
+                ? Text('${languageProvider.getLanguageTransValue(
+                'Screenshot has been saved')} : $savedPath')
+                : Text(languageProvider.getLanguageTransValue('Screenshot not saved')),
+            duration: Duration(seconds: 5),
+          ));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(languageProvider.getLanguageTransValue('Failed to capture image.')),
+            duration: Duration(seconds: 5),
+          ));
+        }
+      });
     } catch (e) {
       debugPrint("$e");
     }

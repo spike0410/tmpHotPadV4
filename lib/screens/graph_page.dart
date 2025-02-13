@@ -15,13 +15,14 @@ class GraphPage extends StatefulWidget {
   State<GraphPage> createState() => GraphPageState();
 }
 
-class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin {
+class GraphPageState extends State<GraphPage>
+    with AutomaticKeepAliveClientMixin {
   late ZoomPanBehavior _zoomPanBehavior;
   late TrackballBehavior _trackballBehavior;
   late DateTimeAxis _dateTimeAxis;
   late DateTime _dateTime;
   late int _graphCount;
-  final List<bool> _visibleSeries = List.filled(10, true);
+  final List<bool> _isVisibleSeries = List.filled(10, true);
   final List<List<ChartData>> _chartDataSeries = List.generate(10, (_) => []);
   final List<Color> bkColor = [
     Colors.white,
@@ -36,6 +37,8 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     Color(0xFF4682B4),
   ];
 
+  late bool _isChartEnable;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -43,6 +46,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   void initState() {
     super.initState();
 
+    _isChartEnable = true;
     _graphCount = 0;
 
     // 그래프 확대/축소 및 이동 동작 설정
@@ -65,11 +69,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     // 그래프의 X축 설정
     _dateTimeAxis = DateTimeAxis(
       dateFormat: DateFormat.Hms(),
-      // intervalType: DateTimeIntervalType.seconds,
       intervalType: DateTimeIntervalType.minutes,
       interval: 10,
       minimum: _dateTime,
-      // maximum: _dateTime.add(Duration(seconds: 60)),
       maximum: _dateTime.add(Duration(minutes: 120)),
       plotOffsetStart: 5,
       plotOffsetEnd: 10,
@@ -88,9 +90,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   /***********************************************************************
    *          그래프 Series의 가시성 업데이트하는 함수
    ***********************************************************************////
-  void _updateSeriesVisibility(int index, bool isVisible) {
+  void _updateVisibleSeries(int index, bool isVisible) {
     setState(() {
-      _visibleSeries[index] = isVisible;
+      _isVisibleSeries[index] = isVisible;
     });
   }
 
@@ -99,8 +101,8 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
    ***********************************************************************////
   void _toggleAllSeriesVisibility() {
     setState(() {
-      for (int i = 0; i < _visibleSeries.length; i++) {
-        _visibleSeries[i] = !_visibleSeries[i];
+      for (int i = 0; i < _isVisibleSeries.length; i++) {
+        _isVisibleSeries[i] = !_isVisibleSeries[i];
       }
     });
   }
@@ -141,7 +143,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
             _headerRowItem(languageProvider),
             Column(
               children: List.generate(
-                _visibleSeries.length,
+                _isVisibleSeries.length,
                 (index) => Column(
                   children: [
                     SizedBox(height: 5),
@@ -150,7 +152,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                         return _cellRowItem(
                           index: index,
                           strTemp: hotpadCtrl.serialCtrl.rxPackage.rtd[index],
-                          color: _visibleSeries[index]
+                          color: _isVisibleSeries[index]
                               ? bkColor[index]
                               : Colors.transparent,
                         );
@@ -161,7 +163,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
               ),
             ),
             SizedBox(height: 20),
-            _searchButton(languageProvider),
+            _userButton(languageProvider),
           ],
         ),
         SizedBox(width: 10),
@@ -228,9 +230,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
           child: Row(
             children: [
               Checkbox(
-                value: _visibleSeries[index],
+                value: _isVisibleSeries[index],
                 onChanged: (bool? value) {
-                  _updateSeriesVisibility(index, value!);
+                  _updateVisibleSeries(index, value!);
                 },
               ),
               Text(
@@ -294,42 +296,198 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   /***********************************************************************
    *          검색 버튼을 생성하는 함수
    ***********************************************************************////
-  Widget _searchButton(LanguageProvider languageProvider) {
-    return Container(
-      decoration: BoxDecoration(
-        color: homeHeaderColor,
-        borderRadius: BorderRadius.all(Radius.circular(100)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black45,
-            spreadRadius: 1,
-            blurRadius: 1,
-            offset: Offset(3, 3),
+  Widget _userButton(LanguageProvider languageProvider) {
+    return Row(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: homeHeaderColor,
+            borderRadius: BorderRadius.all(Radius.circular(100)),
+            boxShadow: [
+              BoxShadow(
+                color: (_isChartEnable == true) ? Colors.transparent: Colors.black45,
+                spreadRadius: 1, blurRadius: 1, offset: Offset(3, 3),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: TextButton.icon(
-        icon: Icon(
-          Icons.search,
-          size: 30,
-          color: Colors.black,
-        ),
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          fixedSize: Size(225, 40),
-        ),
-        label: Text(
-          languageProvider.getLanguageTransValue('Search'),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+          child: TextButton.icon(
+            icon: Icon(
+              Icons.auto_graph,
+              size: 22,
+              color: (_isChartEnable == true) ? Colors.black45 : Colors.black,
+            ),
+            onPressed: (_isChartEnable == true) ? null : () {
+                setState(() {
+                  _isChartEnable = true;
+                });
+              },
+            style: ElevatedButton.styleFrom(fixedSize: Size(110, 35)),
+            label: Text(
+              languageProvider.getLanguageTransValue('Live'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: (_isChartEnable == true) ? Colors.black45 : Colors.black,
+                fontSize: 16, fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
-      ),
+        SizedBox(width: 10),
+        Container(
+          decoration: BoxDecoration(
+            color: homeHeaderColor,
+            borderRadius: BorderRadius.all(Radius.circular(100)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black45,
+                spreadRadius: 1, blurRadius: 1, offset: Offset(3, 3),
+              ),
+            ],
+          ),
+          child: TextButton.icon(
+            icon: Icon(
+              Icons.search,
+              size: 22,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              _searchGraphFile(context, languageProvider);
+            },
+            style: ElevatedButton.styleFrom(
+              fixedSize: Size(110, 35),
+            ),
+            label: Text(
+              languageProvider.getLanguageTransValue('Search'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        )
+      ],
     );
   }
+
+  /***********************************************************************
+   *          그래프 파일 Searching 함수
+   ***********************************************************************////
+  Future<void> _searchGraphFile(BuildContext context, LanguageProvider languageProvider) async {
+    String? selectedPath;
+    List<String> graphDates = FileCtrl.searchGraphDate();
+    List<String> selectedFiles = [];
+
+    void updateFileList(String path){
+      selectedFiles = FileCtrl.searchGraphFileList(path);
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                languageProvider.getLanguageTransValue('Search Graph File List'),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold),
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width / 2,
+                height: MediaQuery.of(context).size.height / 2,
+                child: Column(
+                  children: [
+                    SizedBox(height: 10),
+                    /// ### DropDownMenu Text ###
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          child: Text(
+                            languageProvider.getLanguageTransValue('Date'),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 250,
+                          child: Text(
+                            languageProvider.getLanguageTransValue('File List'),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 5),
+                    /// ### DropDownMenu ###
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        DropdownMenu(
+                          width: 150,
+                          onSelected: (String? value) {
+                            if(value != null){
+                              setState((){
+                                updateFileList(value);
+                              });
+                            }
+                          },
+                          dropdownMenuEntries: graphDates
+                              .map((String path) => DropdownMenuEntry<String>(value: path, label: path))
+                              .toList(),
+                          hintText: languageProvider.getLanguageTransValue('select...'),
+
+                        ),
+                        DropdownMenu(
+                          width: 250,
+                          onSelected: (_) {},
+                          dropdownMenuEntries: selectedFiles
+                              .map((file) => DropdownMenuEntry(value: file, label: file))
+                              .toList(),
+                          hintText: languageProvider.getLanguageTransValue('select...'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () { Navigator.of(context).pop(); },
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Cancel'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState((){ _isChartEnable = false;});
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      languageProvider.getLanguageTransValue('OK'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_){
+      setState(() { });
+    });
+  }
+
+
 
   /***********************************************************************
    *          온도 차트를 생성하는 함수
@@ -338,7 +496,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     return Expanded(
       child: Consumer<HotpadCtrl>(
         builder: (context, hotpadCtrl, _) {
-          updateChartData(hotpadCtrl.serialCtrl);
+          updateChartData(hotpadCtrl);
           return Container(
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -364,7 +522,8 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                 decimalPlaces: 0,
                 minorGridLines: MinorGridLines(color: Colors.transparent),
                 majorTickLines: MajorTickLines(size: 10),
-                minorTickLines: MinorTickLines(size: 5, width: 1, color: Colors.white),
+                minorTickLines:
+                    MinorTickLines(size: 5, width: 1, color: Colors.white),
                 minorTicksPerInterval: 5,
                 labelStyle: TextStyle(color: Colors.white),
                 maximum: 120,
@@ -379,7 +538,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                   markerSettings: MarkerSettings(isVisible: false),
                   xValueMapper: (ChartData data, _) => data.time,
                   yValueMapper: (ChartData data, _) => data.value,
-                  color: _visibleSeries[index]
+                  color: _isVisibleSeries[index]
                       ? bkColor[index]
                       : Colors.transparent,
                 ),
@@ -394,35 +553,42 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   /***********************************************************************
    *          차트 데이터를 업데이트하는 함수
    ***********************************************************************////
-  void updateChartData(SerialCtrl serialCtrl) {
-    if((serialCtrl.serialPortStatus.index < SerialPortStatus.txBusy.index)
-        || (_graphCount++ % 10 != 0)) {
+  void updateChartData(HotpadCtrl hotpadCtrl) {
+    if (_isChartEnable == false) {
       return;
     }
 
-    DateTime tmpDateTime = serialCtrl.rxPackage.rxTime;
+    if ((hotpadCtrl.serialCtrl.serialPortStatus.index <
+            SerialPortStatus.txBusy.index) ||
+        (_graphCount++ % 10 != 0)) {
+      return;
+    }
+
+    DateTime tmpDateTime = hotpadCtrl.serialCtrl.rxPackage.rxTime;
     for (int index = 0; index < 10; index++) {
-      double value = double.tryParse(serialCtrl.rxPackage.rtd[index]) ?? 0.0;
+      double value =
+          double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0;
       _chartDataSeries[index].add(ChartData(tmpDateTime, value));
     }
 
     // HotpadData/yyyyMM/Graph 폴더의 SQLite 파일에 저장
-    FileCtrl.saveGraphData(tmpDateTime, serialCtrl.rxPackage.status, serialCtrl.rxPackage.rtd);
+    FileCtrl.saveGraphData(tmpDateTime, hotpadCtrl.serialCtrl.rxPackage.status,
+        hotpadCtrl.serialCtrl.rxPackage.rtd);
 
-    debugPrint("Graph Data] [$tmpDateTime] ${serialCtrl.rxPackage.status},${serialCtrl.rxPackage.rtd}");
+    debugPrint(
+        "Graph Data] [$tmpDateTime] ${hotpadCtrl.serialCtrl.rxPackage.status},${hotpadCtrl.serialCtrl.rxPackage.rtd}");
 
-    // if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(seconds: 1)))) {
-    if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
+    // 그래프가 x축의 maximum 부근에 도달하면 maximum을 확장함.
+    if (tmpDateTime
+        .isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // DateTime tmpMax = DateTime.now().add(Duration(seconds: 60));
-        // int durationInTime = tmpMax.difference(_dateTimeAxis.minimum!).inSeconds;
         DateTime tmpMax = DateTime.now().add(Duration(minutes: 60));
-        int durationInTime = tmpMax.difference(_dateTimeAxis.minimum!).inMinutes;
+        int durationInTime =
+            tmpMax.difference(_dateTimeAxis.minimum!).inMinutes;
         int interval = (durationInTime + 1) ~/ 12;
 
         _dateTimeAxis = DateTimeAxis(
           dateFormat: DateFormat.Hms(),
-          // intervalType: DateTimeIntervalType.seconds,
           intervalType: DateTimeIntervalType.minutes,
           interval: interval.toDouble(),
           minimum: _dateTime,

@@ -89,7 +89,7 @@ const String messagePath = 'asset/language/message_strings.json';
 /*****************************************************************
  *                        Log File Path
  *****************************************************************////
-const String logDefaultFolder = 'HotpadData';
+const String logDefaultFolder = 'HotPADData';
 const String alarmFolder = 'Alarm';
 const String logFolder = 'Log';
 const String graphFolder = 'Graph';

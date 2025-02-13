@@ -85,15 +85,27 @@ class AuthenticationProvider with ChangeNotifier {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: Text(languageProvider.getLanguageTransValue('Cancel')),
+            SizedBox(
+              width: 120,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text(
+                  languageProvider.getLanguageTransValue('Cancel'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-            TextButton(
-              onPressed: () => authenticate(setState), // OK 버튼을 눌렀을 때
-              child: Text(languageProvider.getLanguageTransValue('OK')),
+            SizedBox(
+              width: 120,
+              child: ElevatedButton(
+                onPressed: () => authenticate(setState), // OK 버튼을 눌렀을 때
+                child: Text(
+                  languageProvider.getLanguageTransValue('OK'),
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),

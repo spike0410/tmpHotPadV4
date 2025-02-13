@@ -17,6 +17,7 @@ class HotpadCtrl with ChangeNotifier {
   Isolate? _isolate;
 
   List<bool> _isPU45Enable = List.filled(totalChannel, false);
+  final List<String> _sPU45Enable = List.filled(totalChannel, '0');
   List<bool> _isStartBtn = List.filled(totalChannel, false);
   List<bool> _isPreheatingBtn = List.filled(totalChannel, false);
   List<String> _padIDText = List.filled(totalChannel, '');
@@ -64,6 +65,10 @@ class HotpadCtrl with ChangeNotifier {
     _padIDText = ConfigFileCtrl.padIDList;
 
     _logDataList = [];
+
+    for(int i = 0; i < _isPU45Enable.length; i++) {
+      _sPU45Enable[i] = (_isPU45Enable[i] == true ? "PU45" : "PU15");
+    }
 
     await updateStorageUsage();
   }
@@ -127,6 +132,14 @@ class HotpadCtrl with ChangeNotifier {
   void togglePU45Enable(int index) {
     if (index < 0 || index >= totalChannel) return;
     _isPU45Enable[index] = !_isPU45Enable[index];
+
+    if(_isPU45Enable[index] == true){
+      _sPU45Enable[index] = "PU45";
+    }
+    else{
+      _sPU45Enable[index] = "PU15";
+    }
+
     _updateStatus();
     notifyListeners();
   }
@@ -475,7 +488,7 @@ class HotpadCtrl with ChangeNotifier {
    *****************************************************************************////
   void _saveLogData(){
     if(_logDataList.length == 10){
-      for(int i = 0; i < _logDataList.length; i++){
+      for(int i = 0; i < _logDataList.length; i++) {
         FileCtrl.saveLogData(_logDataList[i]);
       }
       _logDataList.clear();
@@ -487,7 +500,7 @@ class HotpadCtrl with ChangeNotifier {
     List<String> tmpLog = List.filled(11, '0');
 
     tmpLog[0] = serialCtrl.rxPackage.rxTime.toString();
-    tmpLog[1] = serialCtrl.rxPackage.status.join(',');
+    tmpLog[1] = _sPU45Enable.join(',');
     tmpLog[2] = _heatingStatus.toList().join(',').replaceAll('HeatingStatus.', '');
     tmpLog[3] = serialCtrl.rxPackage.rtd.join(',');
     tmpLog[4] = serialCtrl.rxPackage.padCurrent.join(',');
