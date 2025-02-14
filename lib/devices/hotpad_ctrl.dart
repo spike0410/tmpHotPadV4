@@ -17,6 +17,7 @@ class HotpadCtrl with ChangeNotifier {
   Isolate? _isolate;
 
   List<bool> _isPU45Enable = List.filled(totalChannel, false);
+  bool _isGraphLive = true;
   final List<String> _sPU45Enable = List.filled(totalChannel, '0');
   List<bool> _isStartBtn = List.filled(totalChannel, false);
   List<bool> _isPreheatingBtn = List.filled(totalChannel, false);
@@ -34,6 +35,7 @@ class HotpadCtrl with ChangeNotifier {
   double _storageProgressValue = 0.0;
   static const platform = MethodChannel('internal_storage');
 
+  set isGraphLive(bool val) => _isGraphLive = val;
   double get totalStorage => _totalStorage;
   double get usedStorage => _usedStorage;
   double get storageProgressValue => _storageProgressValue;
@@ -103,6 +105,8 @@ class HotpadCtrl with ChangeNotifier {
     if (index < 0 || index >= totalChannel) return HeatingStatus.stop;
     return _heatingStatus[index];
   }
+
+  List<HeatingStatus> get getHeatingStatusList => _heatingStatus;
 
   double getRemainTime(int index){
     if (index < 0 || index >= totalChannel) return -1;
@@ -497,19 +501,20 @@ class HotpadCtrl with ChangeNotifier {
   }
 
   List<String> _getRxLogData(){
-    List<String> tmpLog = List.filled(11, '0');
+    List<String> tmpLog = List.filled(12, '0');
 
     tmpLog[0] = serialCtrl.rxPackage.rxTime.toString();
-    tmpLog[1] = _sPU45Enable.join(',');
-    tmpLog[2] = _heatingStatus.toList().join(',').replaceAll('HeatingStatus.', '');
-    tmpLog[3] = serialCtrl.rxPackage.rtd.join(',');
-    tmpLog[4] = serialCtrl.rxPackage.padCurrent.join(',');
-    tmpLog[5] = serialCtrl.rxPackage.padCmd.join(',');
-    tmpLog[6] = serialCtrl.rxPackage.padOhm.join(',');
-    tmpLog[7] = serialCtrl.rxPackage.acVolt;
-    tmpLog[8] = serialCtrl.rxPackage.dcVolt;
-    tmpLog[9] = serialCtrl.rxPackage.dcCrnt;
-    tmpLog[10] = serialCtrl.rxPackage.intTemp;
+    tmpLog[1] = _isGraphLive.toString();
+    tmpLog[2] = _sPU45Enable.join(',');
+    tmpLog[3] = _heatingStatus.toList().join(',').replaceAll('HeatingStatus.', '');
+    tmpLog[4] = serialCtrl.rxPackage.rtd.join(',');
+    tmpLog[5] = serialCtrl.rxPackage.padCurrent.join(',');
+    tmpLog[6] = serialCtrl.rxPackage.padCmd.join(',');
+    tmpLog[7] = serialCtrl.rxPackage.padOhm.join(',');
+    tmpLog[8] = serialCtrl.rxPackage.acVolt;
+    tmpLog[9] = serialCtrl.rxPackage.dcVolt;
+    tmpLog[10] = serialCtrl.rxPackage.dcCrnt;
+    tmpLog[11] = serialCtrl.rxPackage.intTemp;
 
     return tmpLog;
   }
@@ -519,4 +524,5 @@ class HotpadCtrl with ChangeNotifier {
     _isolate?.kill(priority: Isolate.immediate);
     super.dispose();
   }
+
 }

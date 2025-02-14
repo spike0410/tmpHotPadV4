@@ -1,3 +1,62 @@
+### 25/02/14
+	1. Graph 파일 검색 후 그래프 그리기
+		- Graph 파일 검색하여 찾은 파일을 선택하면,
+		  상단에 파일명을 표시하면서 해당 파일의 데이터를 그래프로 표시
+		- 실시간 데이터는 계속 저장되고, 현재 그래프가 라이브 상태를 log 파일에 표시
+
+	2. Alarm 파일 구조
+		- id, channel, hotpad, code, descriptions, dateTime
+		- 장비에서 언어 설정에 따라 표기하기 위하여 code를 저장
+		
+	3. Graph 파일 구조
+		- time, ststus(HeatingStatus), rtd
+		
+	4. Log 파일 구조
+		- 추후 문제가 발생할 때 검토하기 위함
+		- time, live, mode(PU15/PU45), heatingStatus, rtd, crnt, cmd, ohm, acVtg, dcVtg, dcCrnt, intTemp
+		
+	5. backup page 기능 구현 중
+		- 최대 선택 버튼 동작 구현
+		- 복사 시작-마지막 선택 dropdownMenu 리스트 구현 중
+			--> 항목 리스트 구현
+			--> 선택 항목이 잘못된 경우 수정하는 부분 구현 중
+	
+### 25/02/13
+	1. 파일 구조 변경
+		- HotPADData --- Alarm --- 202502
+					  |			|
+					  |			-- 202503
+					  -- Graph --- 202502
+					  |			|
+					  |			-- 202503
+					  -- Log   --- 202502
+					  |			|
+					  |			-- 202503
+					  -- ScreenShots --- 202502
+					  				  |
+									  -- 202503
+		- 각 폴더의 서브 폴더는 월단위로 생성됩니다
+		
+	2. Graph 파일 검색 기능 추가
+		- Search와 Live 버튼 추가
+
+
+### 25/02/12
+	1. Graph 파일 저장 기능 추가
+	  - 그래프 그려지는 주가(10초) 간격으로 데이터 저장
+	  - SQLite 형식으로 파일 저장
+	  - updateChartData() 함수에 추가
+	  
+	2. Log 파일 저장 기능 추가
+	  - onDataReceived() 함수에서 수신된 데이터를 10회 저장 후 파일에 저장
+	  - SQLite 형식으로 파일 저장
+
+### 25/02/11
+	1. 시작/예열 버튼 입력시 PU15/PU45 모드에 따라 잔여시간 및 동작 상태 설정
+	2. PU15, PU45 시간에 따라 동작 상태 변경
+	3. 내부 용량 확인 함수를 hotpad_ctrl.dart로 옮김
+		- 1분 간격으로 용량 check
+		
 ### 25/02/10
 	1. HotpadCtrl 클래스 추가
 		- hotpad_ctrl.dart 파일 추가

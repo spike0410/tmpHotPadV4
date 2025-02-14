@@ -21,6 +21,9 @@ class FileCtrl {
   static Database? _alarmDatabase;
   static Database? _graphDatabase;
   static Database? _logDatabase;
+  static late String _nowGraphFileName;
+
+  static String get nowGraphFileName => _nowGraphFileName;
 
   /***********************************************************************
    *          폴더를 확인하고 필요한 파일을 생성하는 함수
@@ -36,7 +39,8 @@ class FileCtrl {
 
         await _createSubFolder(messageProvider);        // 서브 폴더를 생성
       }
-    } else {
+    }
+    else {
       _defaultPath = null;
       debugPrint('Storage permission denied');
       SystemNavigator.pop();
@@ -155,8 +159,8 @@ class FileCtrl {
   static Future<void> _createGraphFile(DateTime now) async {
     String dbName = 'GRAPH_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
     String dbPath = '$_graphPath/$dbName';
-    bool dbExists = await databaseExists(dbPath);
 
+    _nowGraphFileName = dbName;
     _graphDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
       await db.execute('''
         CREATE TABLE graph (
@@ -166,22 +170,16 @@ class FileCtrl {
         )
       ''');
     });
-
-    if (dbExists) {
-      // Load existing graph data if needed
-      // List<Map<String, dynamic>> result = await _graphDatabase!.query('graph');
-      // Do something with the result
-    }
   }
 
   /*****************************************************************************
    *          Graph Data를 저장하는 함수
    *****************************************************************************////
-  static Future<void> saveGraphData(DateTime time, List<String> statusList, List<String> rtdList) async {
+  static Future<void> saveGraphData(DateTime time, List<HeatingStatus> status,List<String> rtdList) async {
     if (_graphDatabase != null) {
       await _graphDatabase!.insert('graph', {
         'time': time.toString(),
-        'status': statusList.join(','),
+        'status': status.toList().join(',').replaceAll('HeatingStatus.', ''),
         'rtd': rtdList.join(','),
       });
     } else {
@@ -190,24 +188,21 @@ class FileCtrl {
   }
 
   /*****************************************************************************
-   *          Graph Data 폴더 내 하위(Date) 폴더명 모두를 불러오는 함수
+   *          Graph Data를 불러오는 함수
    *****************************************************************************////
-  static List<String> searchGraphDate() {
-    try {
-      final directoryList = Directory('$_defaultPath/$graphFolder')
-          .listSync()
-          .whereType<Directory>()
-          .map((e) => p.basename(e.path))
-          .toList();
+  static Future<List<Map<String, dynamic>>> loadGraphData(String subPath, String fileName) async {
+    String dbPath = '$_defaultPath/$graphFolder/$subPath/$fileName';
+    bool dbExists = await databaseExists(dbPath);
+    List<Map<String, dynamic>> result = [];
 
-      directoryList.sort();
+    if(dbExists){
+      final database = await openDatabase(dbPath);
+      result = await database.query('graph');
 
-      return directoryList.toList();
+      await database.close();
     }
-    catch(e){
-      debugPrint("Error Search Graph Date List.");
-      return [];
-    }
+
+    return result;
   }
 
   /*****************************************************************************
@@ -233,17 +228,17 @@ class FileCtrl {
   }
 
   /*****************************************************************************
-   *          LogFile을 생성하는 함수
+   *          Log File을 생성하는 함수
    *****************************************************************************////
   static Future<void> _createLogFile(DateTime now) async {
     String dbName = 'LOG_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
     String dbPath = '$_logPath/$dbName';
-    bool dbExists = await databaseExists(dbPath);
 
     _logDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
       await db.execute('''
         CREATE TABLE log (
           time TEXT,
+          live TEXT,
           mode TEXT,
           heatingStatus TEXT,
           rtd TEXT,
@@ -257,35 +252,51 @@ class FileCtrl {
         )
       ''');
     });
-
-    if (dbExists) {
-      // Load existing graph data if needed
-      // List<Map<String, dynamic>> result = await _graphDatabase!.query('graph');
-      // Do something with the result
-    }
   }
 
   /*****************************************************************************
-   *          Graph Data를 저장하는 함수
+   *          Log Data를 저장하는 함수
    *****************************************************************************////
    static Future<void> saveLogData(List<String> data) async {
     if (_logDatabase != null) {
       await _logDatabase!.insert('log', {
         'time': data[0],
-        'mode': data[1],
-        'heatingStatus': data[2],
-        'rtd': data[3],
-        'crnt': data[4],
-        'cmd': data[5],
-        'ohm': data[6],
-        'acVtg': data[7],
-        'dcVtg': data[8],
-        'dcCrnt': data[9],
-        'intTemp': data[10]
+        'live': data[1],
+        'mode': data[2],
+        'heatingStatus': data[3],
+        'rtd': data[4],
+        'crnt': data[5],
+        'cmd': data[6],
+        'ohm': data[7],
+        'acVtg': data[8],
+        'dcVtg': data[9],
+        'dcCrnt': data[10],
+        'intTemp': data[11]
       });
     }
     else {
       debugPrint('Database is not initialized');
+    }
+  }
+
+  /*****************************************************************************
+   *          폴더 내 하위(Date) 폴더명 모두를 불러오는 함수
+   *****************************************************************************////
+  static List<String> searchSubFolder(String subFolder) {
+    try {
+      final directoryList = Directory('$_defaultPath/$subFolder')
+          .listSync()
+          .whereType<Directory>()
+          .map((e) => p.basename(e.path))
+          .toList();
+
+      directoryList.sort();
+
+      return directoryList.toList();
+    }
+    catch(e){
+      debugPrint("Error Search Graph Date List.");
+      return [];
     }
   }
 }

@@ -38,6 +38,7 @@ class GraphPageState extends State<GraphPage>
   ];
 
   late bool _isChartEnable;
+  late String chartTitle;
 
   @override
   bool get wantKeepAlive => true;
@@ -48,6 +49,7 @@ class GraphPageState extends State<GraphPage>
 
     _isChartEnable = true;
     _graphCount = 0;
+    chartTitle = '';
 
     // 그래프 확대/축소 및 이동 동작 설정
     _zoomPanBehavior = ZoomPanBehavior(
@@ -67,19 +69,7 @@ class GraphPageState extends State<GraphPage>
     _dateTime = DateTime.now();
 
     // 그래프의 X축 설정
-    _dateTimeAxis = DateTimeAxis(
-      dateFormat: DateFormat.Hms(),
-      intervalType: DateTimeIntervalType.minutes,
-      interval: 10,
-      minimum: _dateTime,
-      maximum: _dateTime.add(Duration(minutes: 120)),
-      plotOffsetStart: 5,
-      plotOffsetEnd: 10,
-      edgeLabelPlacement: EdgeLabelPlacement.shift,
-      labelStyle: TextStyle(color: Colors.white),
-    );
-
-    //startIsolate();
+    _setXAxis(_dateTime, _dateTime.add(Duration(minutes: 120)), interval: 10);
   }
 
   @override
@@ -299,6 +289,7 @@ class GraphPageState extends State<GraphPage>
   Widget _userButton(LanguageProvider languageProvider) {
     return Row(
       children: [
+        /// ### Live Button
         Container(
           decoration: BoxDecoration(
             color: homeHeaderColor,
@@ -317,8 +308,13 @@ class GraphPageState extends State<GraphPage>
               color: (_isChartEnable == true) ? Colors.black45 : Colors.black,
             ),
             onPressed: (_isChartEnable == true) ? null : () {
+                DateTime minDate = DateTime.now();
+                DateTime maxDate = minDate.add(Duration(minutes: 120));
+
                 setState(() {
+                  chartTitle = '';
                   _isChartEnable = true;
+                  _setXAxis(minDate, maxDate);
                 });
               },
             style: ElevatedButton.styleFrom(fixedSize: Size(110, 35)),
@@ -333,6 +329,7 @@ class GraphPageState extends State<GraphPage>
           ),
         ),
         SizedBox(width: 10),
+        /// ### Search Button
         Container(
           decoration: BoxDecoration(
             color: homeHeaderColor,
@@ -373,12 +370,15 @@ class GraphPageState extends State<GraphPage>
    *          그래프 파일 Searching 함수
    ***********************************************************************////
   Future<void> _searchGraphFile(BuildContext context, LanguageProvider languageProvider) async {
-    String? selectedPath;
-    List<String> graphDates = FileCtrl.searchGraphDate();
+    List<String> graphSubFolder = FileCtrl.searchSubFolder(graphFolder);
     List<String> selectedFiles = [];
+    String? selectPath;
+    String? selectFileName;
 
     void updateFileList(String path){
       selectedFiles = FileCtrl.searchGraphFileList(path);
+      String nowFile = FileCtrl.nowGraphFileName;
+      selectedFiles.removeWhere((file) => file == nowFile);
     }
 
     showDialog(
@@ -393,62 +393,55 @@ class GraphPageState extends State<GraphPage>
                 style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold),
               ),
               content: SizedBox(
-                width: MediaQuery.of(context).size.width / 2,
-                height: MediaQuery.of(context).size.height / 2,
+                width: MediaQuery.of(context).size.width / 3,
+                height: MediaQuery.of(context).size.height / 3,
                 child: Column(
                   children: [
                     SizedBox(height: 10),
                     /// ### DropDownMenu Text ###
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SizedBox(
-                          width: 150,
-                          child: Text(
-                            languageProvider.getLanguageTransValue('Date'),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 250,
-                          child: Text(
-                            languageProvider.getLanguageTransValue('File List'),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
+                    /// ### Graph Date
+                    SizedBox(
+                      width: 300,
+                      child: Text(
+                        languageProvider.getLanguageTransValue('Date'),
+                        // textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                    SizedBox(height: 5),
-                    /// ### DropDownMenu ###
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        DropdownMenu(
-                          width: 150,
-                          onSelected: (String? value) {
-                            if(value != null){
-                              setState((){
-                                updateFileList(value);
-                              });
-                            }
-                          },
-                          dropdownMenuEntries: graphDates
-                              .map((String path) => DropdownMenuEntry<String>(value: path, label: path))
-                              .toList(),
-                          hintText: languageProvider.getLanguageTransValue('select...'),
-
-                        ),
-                        DropdownMenu(
-                          width: 250,
-                          onSelected: (_) {},
-                          dropdownMenuEntries: selectedFiles
-                              .map((file) => DropdownMenuEntry(value: file, label: file))
-                              .toList(),
-                          hintText: languageProvider.getLanguageTransValue('select...'),
-                        ),
-                      ],
+                    SizedBox(height: 10),
+                    DropdownMenu(
+                      width: 300,
+                      onSelected: (String? value) {
+                        if(value != null){
+                          setState((){
+                            selectPath = value;
+                            updateFileList(value);
+                          });
+                        }
+                      },
+                      dropdownMenuEntries: graphSubFolder
+                          .map((String path) => DropdownMenuEntry<String>(value: path, label: path))
+                          .toList(),
+                      hintText: languageProvider.getLanguageTransValue('select...'),
+                    ),
+                    SizedBox(height: 30),
+                    /// ### Graph File List
+                    SizedBox(
+                      width: 300,
+                      child: Text(
+                        languageProvider.getLanguageTransValue('File List'),
+                        // textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownMenu(
+                      width: 300,
+                      onSelected: (String? value) {selectFileName = value;},
+                      dropdownMenuEntries: selectedFiles
+                          .map((file) => DropdownMenuEntry(value: file, label: file))
+                          .toList(),
+                      hintText: languageProvider.getLanguageTransValue('select...'),
                     ),
                   ],
                 ),
@@ -457,7 +450,10 @@ class GraphPageState extends State<GraphPage>
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () { Navigator.of(context).pop(); },
+                    onPressed: () {
+                      chartTitle = '';
+                      Navigator.of(context).pop();
+                      },
                     child: Text(
                       languageProvider.getLanguageTransValue('Cancel'),
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -467,8 +463,11 @@ class GraphPageState extends State<GraphPage>
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () {
-                      setState((){ _isChartEnable = false;});
+                    onPressed: () async {
+                      _isChartEnable = false;
+                      List<Map<String, dynamic>> graphData = await FileCtrl.loadGraphData(selectPath!, selectFileName!);
+                      chartTitle = 'File : $selectFileName';
+                      drawGraphDataFile(graphData);
                       Navigator.of(context).pop();
                     },
                     child: Text(
@@ -486,8 +485,6 @@ class GraphPageState extends State<GraphPage>
       setState(() { });
     });
   }
-
-
 
   /***********************************************************************
    *          온도 차트를 생성하는 함수
@@ -513,6 +510,11 @@ class GraphPageState extends State<GraphPage>
               backgroundColor: Colors.black,
               zoomPanBehavior: _zoomPanBehavior,
               trackballBehavior: _trackballBehavior,
+              title: ChartTitle(
+                text: chartTitle,
+                alignment: ChartAlignment.far,
+                textStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
 
               /// ### X-axis ###
               primaryXAxis: _dateTimeAxis,
@@ -554,10 +556,6 @@ class GraphPageState extends State<GraphPage>
    *          차트 데이터를 업데이트하는 함수
    ***********************************************************************////
   void updateChartData(HotpadCtrl hotpadCtrl) {
-    if (_isChartEnable == false) {
-      return;
-    }
-
     if ((hotpadCtrl.serialCtrl.serialPortStatus.index <
             SerialPortStatus.txBusy.index) ||
         (_graphCount++ % 10 != 0)) {
@@ -565,15 +563,22 @@ class GraphPageState extends State<GraphPage>
     }
 
     DateTime tmpDateTime = hotpadCtrl.serialCtrl.rxPackage.rxTime;
+    hotpadCtrl.isGraphLive= _isChartEnable;
+    // HotpadData/yyyyMM/Graph 폴더의 SQLite 파일에 저장
+    FileCtrl.saveGraphData(
+        tmpDateTime,
+        hotpadCtrl.getHeatingStatusList,
+        hotpadCtrl.serialCtrl.rxPackage.rtd);
+
+    if (_isChartEnable == false) {
+      return;
+    }
+
     for (int index = 0; index < 10; index++) {
       double value =
           double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0;
       _chartDataSeries[index].add(ChartData(tmpDateTime, value));
     }
-
-    // HotpadData/yyyyMM/Graph 폴더의 SQLite 파일에 저장
-    FileCtrl.saveGraphData(tmpDateTime, hotpadCtrl.serialCtrl.rxPackage.status,
-        hotpadCtrl.serialCtrl.rxPackage.rtd);
 
     debugPrint(
         "Graph Data] [$tmpDateTime] ${hotpadCtrl.serialCtrl.rxPackage.status},${hotpadCtrl.serialCtrl.rxPackage.rtd}");
@@ -583,23 +588,67 @@ class GraphPageState extends State<GraphPage>
         .isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         DateTime tmpMax = DateTime.now().add(Duration(minutes: 60));
-        int durationInTime =
-            tmpMax.difference(_dateTimeAxis.minimum!).inMinutes;
+        int durationInTime = tmpMax.difference(_dateTimeAxis.minimum!).inMinutes;
         int interval = (durationInTime + 1) ~/ 12;
 
-        _dateTimeAxis = DateTimeAxis(
-          dateFormat: DateFormat.Hms(),
-          intervalType: DateTimeIntervalType.minutes,
-          interval: interval.toDouble(),
-          minimum: _dateTime,
-          maximum: tmpMax,
-          plotOffsetStart: 5,
-          plotOffsetEnd: 10,
-          edgeLabelPlacement: EdgeLabelPlacement.shift,
-          labelStyle: TextStyle(color: Colors.white),
-        );
+        _setXAxis(_dateTime, tmpMax, interval: interval);
       });
     }
+  }
+
+/***********************************************************************
+ *          Graph Data File 그래프 그리기 함수
+ ***********************************************************************////
+  void drawGraphDataFile(List<Map<String, dynamic>> data){
+    List<List<ChartData>> tmpCharDataSeries = List.generate(10, (_) => []);
+
+    for(int i = 0; i < (data.length - 1); i++){
+      DateTime time = DateTime.parse(data[i]['time']);
+      List<String> rtdValues = data[i]['rtd'].split(',');
+      for(int j = 0; j < totalChannel; j++){
+        double value = double.tryParse(rtdValues[j]) ?? 0.0;
+        tmpCharDataSeries[j].add(ChartData(time, value));
+      }
+    }
+
+    DateTime minDate = DateTime.parse(data[0]['time']);
+    DateTime lastDate = DateTime.parse(data[(data.length-1)]['time']);
+    DateTime maxDate = minDate.add(Duration(minutes: 120));
+    Duration diff = lastDate.difference(maxDate);
+
+    if(!diff.isNegative){
+      int tmpVal = (diff.inMinutes % 60) + 1;
+      maxDate = maxDate.add(Duration(minutes: (60 * tmpVal)));
+    }
+
+    _setXAxis(minDate, maxDate);
+
+    setState(() {
+      _chartDataSeries.clear();
+      _chartDataSeries.addAll(tmpCharDataSeries);
+    });
+  }
+
+/***********************************************************************
+ *          Graph x축 설정 함수
+ ***********************************************************************////
+  void _setXAxis(DateTime minDate, DateTime maxDate, {int? interval}){
+    // 그래프 x축 Range 계산
+    Duration diff = maxDate.difference(minDate);
+    diff = maxDate.difference(minDate);
+    int tmpInterval = diff.inMinutes ~/ 12;
+
+    _dateTimeAxis = DateTimeAxis(
+      dateFormat: DateFormat.Hms(),
+      intervalType: DateTimeIntervalType.minutes,
+      interval: (interval ?? tmpInterval).toDouble(),
+      minimum: minDate,
+      maximum: maxDate,
+      plotOffsetStart: 5,
+      plotOffsetEnd: 10,
+      edgeLabelPlacement: EdgeLabelPlacement.shift,
+      labelStyle: TextStyle(color: Colors.white),
+    );
   }
 }
 

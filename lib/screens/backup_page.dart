@@ -3,6 +3,7 @@ import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart'; // 플랫폼 채널 사용을 위해 추가
+import '../devices/file_ctrl.dart';
 import '../providers/language_provider.dart';
 import '../constant/user_style.dart';
 
@@ -20,6 +21,9 @@ class _BackupPageState extends State<BackupPage> {
   late double usbTotalStorage;
   late double usbUsedStorage;
   late double usbFreeStorage;
+
+  String? selectedStartItem;
+  String? selectedEndItem;
 
   @override
   void initState() {
@@ -82,19 +86,13 @@ class _BackupPageState extends State<BackupPage> {
       ),
     );
 
-    final List<DropdownMenuEntry<String>> startItems = <String>[
-      '2025/01 - 100.0MB',
-      '2024/12 - 0.0MB',
-      '2024/11 - 0.0MB',
-      '2024/10 - 0.0MB',
-    ].map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
+    List<String> subFolderList = FileCtrl.searchSubFolder(logFolder);
 
-    final List<DropdownMenuEntry<String>> endItems = <String>[
-      '2025/01 - 0.0MB',
-      '2024/12 - 0.0MB',
-      '2024/11 - 0.0MB',
-      '2024/10 - 0.0MB',
-    ].map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
+    final List<DropdownMenuEntry<String>> startItems =
+        subFolderList.map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
+
+    final List<DropdownMenuEntry<String>> endItems =
+        subFolderList.map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
 
     const double textSize = (defaultFontSize + 6);
 
@@ -304,18 +302,30 @@ class _BackupPageState extends State<BackupPage> {
                       ),
                       child: DropdownMenu(
                         width: 250,
-                        initialSelection: startItems.first.value,
-                        onSelected: (_) {},
+                        initialSelection: selectedStartItem ?? startItems.first.value,
+                        onSelected: (value) {
+                          setState(() {
+                            selectedStartItem = value;
+                          });
+                        },
                         dropdownMenuEntries: startItems,
                       ),
                     ),
                     SizedBox(width: 55),
                     ElevatedButton(
-                      onPressed: isUSBConnect ? () {} : null,
+                      // onPressed: isUSBConnect ? () {} : null,  // <---!@# 잠시 주석
+                      onPressed: () {
+                        setState(() {
+                          selectedStartItem = startItems.first.value;
+                          selectedEndItem = endItems.last.value;
+                        });
+                      },
                       style: btnStyle,
                       child: Text(
                         languageProvider.getLanguageTransValue('Select Maximum'),
                         style: TextStyle(
+                          // color: isUSBConnect ? Colors.black : Colors.black45,     // <---!@# 잠시 주석.
+                          color: Colors.black,
                           fontSize: (textSize - 4),
                         ),
                       ),
@@ -357,8 +367,12 @@ class _BackupPageState extends State<BackupPage> {
                       ),
                       child: DropdownMenu(
                         width: 250,
-                        initialSelection: endItems.first.value,
-                        onSelected: (_) {},
+                        initialSelection: selectedEndItem ?? endItems.last.value,
+                        onSelected: (value) {
+                          setState(() {
+                            selectedEndItem = value;
+                          });
+                        },
                         dropdownMenuEntries: endItems,
                       ),
                     ),
@@ -436,6 +450,7 @@ class _BackupPageState extends State<BackupPage> {
                       child: Text(
                         languageProvider.getLanguageTransValue('Copy to USB'),
                         style: TextStyle(
+                          color: isUSBConnect ? Colors.black : Colors.black45,
                           fontSize: (textSize - 4),
                         ),
                       ),
@@ -455,6 +470,7 @@ class _BackupPageState extends State<BackupPage> {
                 child: Text(
                   languageProvider.getLanguageTransValue('Delete USB Data'),
                   style: TextStyle(
+                    color: isUSBConnect ? Colors.black : Colors.black45,
                     fontSize: (textSize - 4),
                   ),
                 ),
@@ -466,6 +482,7 @@ class _BackupPageState extends State<BackupPage> {
                 child: Text(
                   languageProvider.getLanguageTransValue('Eject USB'),
                   style: TextStyle(
+                    color: isUSBConnect ? Colors.black : Colors.black45,
                     fontSize: (textSize - 4),
                   ),
                 ),
