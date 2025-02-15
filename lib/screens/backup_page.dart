@@ -86,7 +86,7 @@ class _BackupPageState extends State<BackupPage> {
       ),
     );
 
-    List<String> subFolderList = FileCtrl.searchSubFolder(logFolder);
+    List<String> subFolderList = FileCtrl.searchSubFolder();
 
     final List<DropdownMenuEntry<String>> startItems =
         subFolderList.map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
@@ -113,7 +113,7 @@ class _BackupPageState extends State<BackupPage> {
                     end: Alignment.bottomCenter,
                     colors: <Color>[
                       textBarColor,
-                      gtextBarColor,
+                      gTextBarColor,
                       textBarColor,
                     ],
                   ),
@@ -138,7 +138,7 @@ class _BackupPageState extends State<BackupPage> {
                     end: Alignment.bottomCenter,
                     colors: <Color>[
                       textBarColor,
-                      gtextBarColor,
+                      gTextBarColor,
                       textBarColor,
                     ],
                   ),
@@ -284,7 +284,6 @@ class _BackupPageState extends State<BackupPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     SizedBox(
                       width: 200,
@@ -349,7 +348,6 @@ class _BackupPageState extends State<BackupPage> {
                 ),
                 SizedBox(width: 10),
                 Row(
-                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     SizedBox(
                       width: 200,

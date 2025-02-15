@@ -146,7 +146,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
         height: (screenHeight - barHeight * 2 - tabBarHeight),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? AssetImage(setupTempCalPath_kor) : AssetImage(setupTempCalPath),
+            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? AssetImage(setupTempCalPathKor) : AssetImage(setupTempCalPath),
             fit: BoxFit.cover,
           ),
         ),

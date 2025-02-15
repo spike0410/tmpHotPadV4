@@ -161,7 +161,7 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
         height: (screenHeight - barHeight * 2 - tabBarHeight),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? AssetImage(ctrlFaultPath_kor) : AssetImage(ctrlFaultPath),
+            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? AssetImage(ctrlFaultPathKor) : AssetImage(ctrlFaultPath),
             fit: BoxFit.cover,
           ),
         ),

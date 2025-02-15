@@ -370,7 +370,7 @@ class GraphPageState extends State<GraphPage>
    *          그래프 파일 Searching 함수
    ***********************************************************************////
   Future<void> _searchGraphFile(BuildContext context, LanguageProvider languageProvider) async {
-    List<String> graphSubFolder = FileCtrl.searchSubFolder(graphFolder);
+    List<String> graphSubFolder = FileCtrl.searchSubFolder();
     List<String> selectedFiles = [];
     String? selectPath;
     String? selectFileName;

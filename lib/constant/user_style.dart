@@ -7,9 +7,9 @@ const swVersion = '4.0.0';
  *****************************************************************////
 const backgroundColor = Color(0xFFC0C0C0);    // Background Color
 const barBackgroundColor = Color(0xFFF0F0F0);   // Gradient Color
-const gbarBackgroundColor = Color(0xFF808080);   // Gradient Color
+const gBarBackgroundColor = Color(0xFF808080);   // Gradient Color
 const textBarColor = Color(0xFF000080);
-const gtextBarColor = Color(0xFF006DC6);
+const gTextBarColor = Color(0xFF006DC6);
 const tabSelectedColor = backgroundColor;
 const tabUnselectedColor = Color(0xFFFFFFFF);
 const homeHeaderColor = Color(0xFFA5A5A5);
@@ -55,20 +55,20 @@ const String iconLEDRedPath = 'asset/img/LED_Red.png';
 const String iconCloseBtnPath = 'asset/img/btnClose.png';
 
 const String shiLogPath = 'asset/img/SamsungFooter-eng.png';
-const String shiLogPath_kor = 'asset/img/SamsungFooter.png';
+const String shiLogPathKor = 'asset/img/SamsungFooter.png';
 
 const String diskPath = 'asset/img/Disk.png';
 
 const String homeBackgroundPath = 'asset/img/MainBackground.png';
-const String LanguageBackgroundPath = 'asset/img/backLangSel.png';
-const String setupTempSettingPath_kor = 'asset/img/TempSettings.png';
+const String languageBackgroundPath = 'asset/img/backLangSel.png';
+const String setupTempSettingPathKor = 'asset/img/TempSettings.png';
 const String setupTempSettingPath = 'asset/img/TempSettings-eng.png';
-const String setupTempCalPath_kor = 'asset/img/TempCal.png';
+const String setupTempCalPathKor = 'asset/img/TempCal.png';
 const String setupTempCalPath = 'asset/img/TempCal-eng.png';
 const String setupSystemPath = 'asset/img/System-eng.png';
-const String setupSystemPath_kor = 'asset/img/System.png';
+const String setupSystemPathKor = 'asset/img/System.png';
 const String ctrlFaultPath = 'asset/img/ctrl_FaultDiagnosis-eng.png';
-const String ctrlFaultPath_kor = 'asset/img/ctrl_FaultDiagnosis.png';
+const String ctrlFaultPathKor = 'asset/img/ctrl_FaultDiagnosis.png';
 
 const String viewBackupPath = 'asset/img/backupView.png';
 

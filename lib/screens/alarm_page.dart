@@ -56,7 +56,7 @@ class _AlarmTableState extends State<AlarmTable> {
             border: TableBorder.all(color: Colors.grey),
             headingRowColor: WidgetStateProperty.resolveWith<Color>(
               (Set<WidgetState> states) {
-                return gbarBackgroundColor; // 헤더 배경색 적용
+                return gBarBackgroundColor; // 헤더 배경색 적용
               },
             ),
             headingRowHeight: 40,

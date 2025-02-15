@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -10,7 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 import '../constant/user_style.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
-import 'package:path/path.dart' as p;
 
 class FileCtrl {
   static late String? _defaultPath;
@@ -56,10 +55,10 @@ class FileCtrl {
     DateTime dateTime = DateTime.now();
     String strDatePath = DateFormat('yyyyMM').format(DateTime.now());
 
-    _alarmPath = '$_defaultPath/$alarmFolder/$strDatePath';
-    _logPath = '$_defaultPath/$logFolder/$strDatePath';
-    _graphPath = '$_defaultPath/$graphFolder/$strDatePath';
-    _screenShotPath = '$_defaultPath/$screenShotsFolder/$strDatePath';
+    _alarmPath = '$_defaultPath/$strDatePath/$alarmFolder';
+    _logPath = '$_defaultPath/$strDatePath/$logFolder';
+    _graphPath = '$_defaultPath/$strDatePath/$graphFolder';
+    _screenShotPath = '$_defaultPath/$strDatePath/$screenShotsFolder';
 
     final Directory tmpAlarmPath = Directory('$_alarmPath');
     final Directory tmpLogPath = Directory('$_logPath');
@@ -83,9 +82,9 @@ class FileCtrl {
       debugPrint('ScreenShots Folder Create ${tmpScreenShotsPath.path}');
     }
 
-    await _createAlarmFile(messageProvider, dateTime);  // 알람 파일을 생성
-    await _createGraphFile(dateTime);                   // 그래프 파일을 생성
-    await _createLogFile(dateTime);                     // 로그 파일을 생성
+    await _createAlarmFile(messageProvider, _alarmPath!, dateTime);  // 알람 파일을 생성
+    await _createGraphFile(_graphPath!, dateTime);                   // 그래프 파일을 생성
+    await _createLogFile(_logPath!, dateTime);                       // 로그 파일을 생성
   }
 
   /*****************************************************************************
@@ -109,9 +108,9 @@ class FileCtrl {
   /*****************************************************************************
    *          알람 파일을 생성하는 함수
    *****************************************************************************////
-  static Future<void> _createAlarmFile(MessageProvider messageProvider, DateTime now) async {
+  static Future<void> _createAlarmFile(MessageProvider messageProvider, String path, DateTime now) async {
     String dbName = 'ALARM_${DateFormat('yyyyMMdd').format(now)}.db';
-    String dbPath = '$_alarmPath/$dbName';
+    String dbPath = '$path/$dbName';
     bool dbExists = await databaseExists(dbPath);
 
     _alarmDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
@@ -156,9 +155,9 @@ class FileCtrl {
   /*****************************************************************************
    *          Graph File을 생성하는 함수
    *****************************************************************************////
-  static Future<void> _createGraphFile(DateTime now) async {
+  static Future<void> _createGraphFile(String path, DateTime now) async {
     String dbName = 'GRAPH_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
-    String dbPath = '$_graphPath/$dbName';
+    String dbPath = '$path/$dbName';
 
     _nowGraphFileName = dbName;
     _graphDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
@@ -191,7 +190,7 @@ class FileCtrl {
    *          Graph Data를 불러오는 함수
    *****************************************************************************////
   static Future<List<Map<String, dynamic>>> loadGraphData(String subPath, String fileName) async {
-    String dbPath = '$_defaultPath/$graphFolder/$subPath/$fileName';
+    String dbPath = '$_defaultPath/$subPath/$graphFolder/$fileName';
     bool dbExists = await databaseExists(dbPath);
     List<Map<String, dynamic>> result = [];
 
@@ -210,7 +209,7 @@ class FileCtrl {
    *****************************************************************************////
   static List<String> searchGraphFileList(String subPath) {
     try {
-      final fileList = Directory('$_defaultPath/$graphFolder/$subPath')
+      final fileList = Directory('$_defaultPath/$subPath/$graphFolder')
           .listSync()
           .whereType<File>()
           .map((e) => p.basename(e.path))
@@ -230,9 +229,9 @@ class FileCtrl {
   /*****************************************************************************
    *          Log File을 생성하는 함수
    *****************************************************************************////
-  static Future<void> _createLogFile(DateTime now) async {
+  static Future<void> _createLogFile(String path, DateTime now) async {
     String dbName = 'LOG_${DateFormat('yyyyMMdd_HHmmss').format(now)}.db';
-    String dbPath = '$_logPath/$dbName';
+    String dbPath = '$path/$dbName';
 
     _logDatabase = await openDatabase(dbPath, version: 1, onCreate: (db, version) async {
       await db.execute('''
@@ -282,9 +281,9 @@ class FileCtrl {
   /*****************************************************************************
    *          폴더 내 하위(Date) 폴더명 모두를 불러오는 함수
    *****************************************************************************////
-  static List<String> searchSubFolder(String subFolder) {
+  static List<String> searchSubFolder() {
     try {
-      final directoryList = Directory('$_defaultPath/$subFolder')
+      final directoryList = Directory('$_defaultPath/')
           .listSync()
           .whereType<Directory>()
           .map((e) => p.basename(e.path))

@@ -123,7 +123,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                       end: Alignment.bottomCenter,
                       colors: <Color>[
                         textBarColor,
-                        gtextBarColor,
+                        gTextBarColor,
                         textBarColor,
                       ],
                     ),
@@ -207,7 +207,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                       end: Alignment.bottomCenter,
                       colors: <Color>[
                         textBarColor,
-                        gtextBarColor,
+                        gTextBarColor,
                         textBarColor,
                       ],
                     ),

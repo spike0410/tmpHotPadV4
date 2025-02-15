@@ -130,7 +130,7 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
         decoration: BoxDecoration(
           image: DecorationImage(
             image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor')
-                ? AssetImage(setupTempSettingPath_kor)
+                ? AssetImage(setupTempSettingPathKor)
                 : AssetImage(setupTempSettingPath),
             fit: BoxFit.cover,
           ),

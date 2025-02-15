@@ -186,7 +186,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor')
-                ? AssetImage(setupSystemPath_kor)
+                ? AssetImage(setupSystemPathKor)
                 : AssetImage(setupSystemPath),
             fit: BoxFit.cover,
           ),

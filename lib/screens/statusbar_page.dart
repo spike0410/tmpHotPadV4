@@ -30,7 +30,7 @@ class StatusBarPage extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: <Color>[
             barBackgroundColor,
-            gbarBackgroundColor,
+            gBarBackgroundColor,
           ],
         ),
       ),
@@ -40,7 +40,7 @@ class StatusBarPage extends StatelessWidget {
           children: [
             // 컨트롤러 버튼
             IconButton(
-              icon: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? Image.asset(shiLogPath_kor, height: 40) : Image.asset(shiLogPath, height: 40),
+              icon: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? Image.asset(shiLogPathKor, height: 40) : Image.asset(shiLogPath, height: 40),
               onPressed: onCtrlPressed,
             ),
             SizedBox(width: 50),

@@ -35,7 +35,7 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
           end: Alignment.bottomCenter,
           colors: <Color>[
             barBackgroundColor,
-            gbarBackgroundColor,
+            gBarBackgroundColor,
           ],
         ),
       ),
@@ -128,7 +128,7 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                 height: (screenHeight * 0.8),
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(LanguageBackgroundPath), // 사용자 이미지 경로
+                    image: AssetImage(languageBackgroundPath), // 사용자 이미지 경로
                     fit: BoxFit.fill,
                   ),
                 ),
