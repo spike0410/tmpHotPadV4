@@ -450,19 +450,6 @@ class GraphPageState extends State<GraphPage>
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () {
-                      chartTitle = '';
-                      Navigator.of(context).pop();
-                      },
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Cancel'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 120,
-                  child: ElevatedButton(
                     onPressed: () async {
                       _isChartEnable = false;
                       List<Map<String, dynamic>> graphData = await FileCtrl.loadGraphData(selectPath!, selectFileName!);

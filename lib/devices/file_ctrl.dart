@@ -298,4 +298,44 @@ class FileCtrl {
       return [];
     }
   }
+
+  /*****************************************************************************
+   *          폴더 삭제 함수
+   *****************************************************************************////
+  static void deleteFolder(String folderPath) {
+    final directory = Directory('$_defaultPath/$folderPath');
+
+    if(directory.existsSync()){
+      try{
+        directory.deleteSync(recursive: true);
+      }
+      catch(e){
+        return;
+      }
+    }
+  }
+
+  /*****************************************************************************
+   *          폴더의 크기를 계산하는 함수
+   *****************************************************************************////
+  static double getFolderSize(String folderPath) {
+    try {
+      final directory = Directory('$_defaultPath/$folderPath');
+      if (!directory.existsSync()) {
+        return 0;
+      }
+
+      double totalSize = 0;
+      directory.listSync(recursive: true).forEach((file) {
+        if (file is File) {
+          totalSize += file.lengthSync();
+        }
+      });
+
+      return totalSize; // Return size in bytes
+    } catch (e) {
+      debugPrint("Error calculating folder size.");
+      return 0;
+    }
+  }
 }

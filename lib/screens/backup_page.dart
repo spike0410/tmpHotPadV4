@@ -3,6 +3,7 @@ import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart'; // 플랫폼 채널 사용을 위해 추가
+import 'package:permission_handler/permission_handler.dart';
 import '../devices/file_ctrl.dart';
 import '../providers/language_provider.dart';
 import '../constant/user_style.dart';
@@ -22,13 +23,19 @@ class _BackupPageState extends State<BackupPage> {
   late double usbUsedStorage;
   late double usbFreeStorage;
 
-  String? selectedStartItem;
-  String? selectedEndItem;
+  String selectedStartItem = '';
+  String selectedEndItem = '';
+  double selectedSize = 0;
+  late bool isEjectCheckBox;
 
   @override
   void initState() {
     super.initState();
     _getUSBStorageInfo();
+
+    isEjectCheckBox = true;
+    selectedStartItem = '';
+    selectedEndItem = '';
 
     // USB 마운트 이벤트 처리
     platform.setMethodCallHandler((call) async {
@@ -38,9 +45,15 @@ class _BackupPageState extends State<BackupPage> {
     });
   }
 
+  /***********************************************************************
+   *          USB Storage 용량 확인 함수
+   ***********************************************************************/
+
+  ///
   Future<void> _getUSBStorageInfo() async {
     try {
-      final List<dynamic> result = await platform.invokeMethod('getUSBStorageInfo');
+      final List<dynamic> result =
+          await platform.invokeMethod('getUSBStorageInfo');
       setState(() {
         isUSBConnect = true;
         usbTotalStorage = result[0] / (1024 * 1024); // MB 단위로 변환
@@ -48,7 +61,8 @@ class _BackupPageState extends State<BackupPage> {
         usbFreeStorage = result[2] / (1024 * 1024); // MB 단위로 변환
         usbProgressValue = usbUsedStorage / usbTotalStorage;
 
-        debugPrint("USB storage info: $usbTotalStorage / $usbUsedStorage / $usbFreeStorage");
+        debugPrint(
+            "USB storage info: $usbTotalStorage / $usbUsedStorage / $usbFreeStorage");
       });
     } on PlatformException catch (e) {
       setState(() {
@@ -59,6 +73,9 @@ class _BackupPageState extends State<BackupPage> {
     }
   }
 
+  /***********************************************************************
+   *          USB 안전 제거 함수
+   ***********************************************************************////
   Future<void> _ejectUSB() async {
     try {
       final String result = await platform.invokeMethod('ejectUSB');
@@ -69,6 +86,29 @@ class _BackupPageState extends State<BackupPage> {
       });
     } on PlatformException catch (e) {
       debugPrint("Failed to eject USB storage: '${e.message}'.");
+    }
+  }
+
+  /*****************************************************************************
+   *          DropDownMenu에 선택된 항목으로 파일 크기를 계산하는 함수
+   *****************************************************************************/
+
+  ///
+  void _calculateSelectedSize() {
+    if (selectedStartItem != '' && selectedEndItem != '') {
+      List<String> subFolderList = FileCtrl.searchSubFolder();
+      int startIndex = subFolderList.indexOf(selectedStartItem);
+      int endIndex = subFolderList.indexOf(selectedEndItem);
+
+      if (startIndex != -1 && endIndex != -1 && startIndex <= endIndex) {
+        double totalSize = 0;
+        for (int i = startIndex; i <= endIndex; i++) {
+          totalSize += FileCtrl.getFolderSize(subFolderList[i]);
+        }
+        setState(() {
+          selectedSize = totalSize / (1024 * 1024); // MB 단위로 변환
+        });
+      }
     }
   }
 
@@ -86,13 +126,30 @@ class _BackupPageState extends State<BackupPage> {
       ),
     );
 
+    final ButtonStyle btnStyle1 = ElevatedButton.styleFrom(
+      foregroundColor: isUSBConnect ? Colors.black : Colors.black38,
+      minimumSize: Size(170, 50),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+    );
+
     List<String> subFolderList = FileCtrl.searchSubFolder();
 
-    final List<DropdownMenuEntry<String>> startItems =
-        subFolderList.map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
+    final List<DropdownMenuEntry<String>> startItems = subFolderList
+        .map((String value) =>
+            DropdownMenuEntry<String>(value: value, label: value))
+        .toList();
 
-    final List<DropdownMenuEntry<String>> endItems =
-        subFolderList.map((String value) => DropdownMenuEntry<String>(value: value, label: value)).toList();
+    final List<DropdownMenuEntry<String>> endItems = subFolderList
+        .map((String value) =>
+            DropdownMenuEntry<String>(value: value, label: value))
+        .toList();
+    final TextEditingController startTextCtrl = TextEditingController();
+    final TextEditingController endTextCtrl = TextEditingController();
+
+    startTextCtrl.text = selectedStartItem;
+    endTextCtrl.text = selectedEndItem;
 
     const double textSize = (defaultFontSize + 6);
 
@@ -101,6 +158,8 @@ class _BackupPageState extends State<BackupPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(height: 40),
+
+          /// ### 내부 용량 확인 Text
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -129,6 +188,8 @@ class _BackupPageState extends State<BackupPage> {
                   ),
                 ),
               ),
+
+              /// ### USB 용량 확인 Text
               Container(
                 width: halfWidth,
                 height: 40,
@@ -164,28 +225,20 @@ class _BackupPageState extends State<BackupPage> {
                 width: halfWidth,
                 height: 50,
                 child: Align(
-                  alignment: Alignment.center,
-                  child: Consumer<HotpadCtrl>(
-                    builder: (context, hotpadCtrl, _) {
-                      return Text(
-                        '${languageProvider.getLanguageTransValue(
-                            'Total')} : ${numberFormat.format(
-                            hotpadCtrl.totalStorage.round())}MB'
-                            ' / ${languageProvider.getLanguageTransValue(
-                            'Usage')} : ${numberFormat.format(
-                            hotpadCtrl.usedStorage.round())}MB'
-                            ' / ${languageProvider.getLanguageTransValue(
-                            'Remain')} : ${numberFormat.format(
-                            (hotpadCtrl.totalStorage - hotpadCtrl.usedStorage)
-                                .round())}MB',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: (textSize - 4),
-                        ),
-                      );
-                    },
-                  )
-                ),
+                    alignment: Alignment.center,
+                    child: Consumer<HotpadCtrl>(
+                      builder: (context, hotpadCtrl, _) {
+                        return Text(
+                          '${languageProvider.getLanguageTransValue('Total')} : ${numberFormat.format(hotpadCtrl.totalStorage.round())}MB'
+                          ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(hotpadCtrl.usedStorage.round())}MB'
+                          ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format((hotpadCtrl.totalStorage - hotpadCtrl.usedStorage).round())}MB',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: (textSize - 4),
+                          ),
+                        );
+                      },
+                    )),
               ),
               SizedBox(
                 width: halfWidth,
@@ -195,8 +248,8 @@ class _BackupPageState extends State<BackupPage> {
                   child: Text(
                     isUSBConnect == true
                         ? '${languageProvider.getLanguageTransValue('Total')} : ${numberFormat.format(usbTotalStorage.round())}MB'
-                        ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(usbUsedStorage.round())}MB'
-                        ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format(usbFreeStorage.round())}MB'
+                            ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(usbUsedStorage.round())}MB'
+                            ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format(usbFreeStorage.round())}MB'
                         : languageProvider.getLanguageTransValue('Empty'),
                     style: TextStyle(
                       color: Colors.black,
@@ -209,10 +262,11 @@ class _BackupPageState extends State<BackupPage> {
           ),
           SizedBox(height: 10),
           Consumer<HotpadCtrl>(
-            builder: (context, hotpadCtrl, _){
+            builder: (context, hotpadCtrl, _) {
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  /// ### 내부 용량 ProgressBar
                   Stack(
                     children: [
                       SizedBox(
@@ -221,7 +275,8 @@ class _BackupPageState extends State<BackupPage> {
                         child: LinearProgressIndicator(
                           value: hotpadCtrl.storageProgressValue,
                           backgroundColor: Colors.white,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
                         ),
                       ),
                       Positioned.fill(
@@ -237,6 +292,8 @@ class _BackupPageState extends State<BackupPage> {
                       ),
                     ],
                   ),
+
+                  /// ### USB 용량 ProgressBar
                   Stack(
                     children: [
                       SizedBox(
@@ -245,7 +302,8 @@ class _BackupPageState extends State<BackupPage> {
                         child: LinearProgressIndicator(
                           value: usbProgressValue,
                           backgroundColor: Colors.white,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
                         ),
                       ),
                       Positioned.fill(
@@ -267,12 +325,12 @@ class _BackupPageState extends State<BackupPage> {
               );
             },
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 30),
           Container(
             margin: EdgeInsets.only(left: 30, right: 30),
-            padding: EdgeInsets.only(left: 50, top: 20, right: 30, bottom: 20),
+            padding: EdgeInsets.only(left: 30, top: 20, right: 30, bottom: 20),
             width: screenWidth,
-            height: 300,
+            height: 320,
             decoration: BoxDecoration(
               color: Color(0xFFE7E7E7),
               border: Border.all(
@@ -285,10 +343,12 @@ class _BackupPageState extends State<BackupPage> {
               children: [
                 Row(
                   children: [
+                    /// ### 복사 시작 항목 DropDownMenu
                     SizedBox(
                       width: 200,
                       child: Text(
-                        languageProvider.getLanguageTransValue('Copy start item'),
+                        languageProvider
+                            .getLanguageTransValue('Copy start item'),
                         style: TextStyle(
                           fontSize: textSize,
                         ),
@@ -301,30 +361,56 @@ class _BackupPageState extends State<BackupPage> {
                       ),
                       child: DropdownMenu(
                         width: 250,
-                        initialSelection: selectedStartItem ?? startItems.first.value,
+                        enabled: isUSBConnect,
+                        controller: startTextCtrl,
+                        // initialSelection: selectedStartItem,
+                        hintText:
+                            languageProvider.getLanguageTransValue('select...'),
                         onSelected: (value) {
+                          if(endTextCtrl.text != ''){
+                            if((subFolderList.indexOf(value!) <= subFolderList.indexOf(endTextCtrl.text))){
+                              selectedStartItem = value;
+                            }
+                            else {
+                              selectedStartItem = '';
+                            }
+                          }
+                          else{
+                            selectedStartItem = value!;
+                          }
                           setState(() {
-                            selectedStartItem = value;
+                            startTextCtrl.text = selectedStartItem;
+                            endTextCtrl.text = selectedEndItem;
+                            // 새 항목을 선택하면 파일 크기를 다시 계산합니다.
+                            _calculateSelectedSize();
                           });
                         },
                         dropdownMenuEntries: startItems,
                       ),
                     ),
                     SizedBox(width: 55),
+
+                    /// ### 최대 선택 Button
                     ElevatedButton(
-                      // onPressed: isUSBConnect ? () {} : null,  // <---!@# 잠시 주석
-                      onPressed: () {
-                        setState(() {
-                          selectedStartItem = startItems.first.value;
-                          selectedEndItem = endItems.last.value;
-                        });
-                      },
+                      onPressed: isUSBConnect
+                          ? () {
+                              setState(() {
+                                selectedStartItem = startItems.first.value;
+                                selectedEndItem = endItems.last.value;
+                                startTextCtrl.text = selectedStartItem;
+                                endTextCtrl.text = selectedEndItem;
+                                // 새 항목을 선택하면 파일 크기를 다시 계산합니다.
+                                _calculateSelectedSize();
+                              });
+                            }
+                          : null,
                       style: btnStyle,
                       child: Text(
-                        languageProvider.getLanguageTransValue('Select Maximum'),
+                        languageProvider
+                            .getLanguageTransValue('Select Maximum'),
                         style: TextStyle(
-                          // color: isUSBConnect ? Colors.black : Colors.black45,     // <---!@# 잠시 주석.
-                          color: Colors.black,
+                          color: isUSBConnect ? Colors.black : Colors.black45,
+                          fontWeight: FontWeight.bold,
                           fontSize: (textSize - 4),
                         ),
                       ),
@@ -332,27 +418,16 @@ class _BackupPageState extends State<BackupPage> {
                     SizedBox(width: 150),
                   ],
                 ),
-                SizedBox(width: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(width: 505),
-                    Text(
-                      isUSBConnect ? '${languageProvider.getLanguageTransValue('Selected')}: 1000.0MB'
-                          : '${languageProvider.getLanguageTransValue('Selected')}: 0.0MB',
-                      style: TextStyle(
-                        fontSize: textSize,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(width: 10),
-                Row(
-                  children: [
+                    // SizedBox(width: 505),
+                    /// ### 복사 마지막 항목 DropDownMenu
                     SizedBox(
                       width: 200,
-                      child:  Text(
-                        languageProvider.getLanguageTransValue('Copy last item'),
+                      child: Text(
+                        languageProvider
+                            .getLanguageTransValue('Copy last item'),
                         style: TextStyle(
                           fontSize: textSize,
                         ),
@@ -365,51 +440,53 @@ class _BackupPageState extends State<BackupPage> {
                       ),
                       child: DropdownMenu(
                         width: 250,
-                        initialSelection: selectedEndItem ?? endItems.last.value,
+                        enabled: isUSBConnect,
+                        controller: endTextCtrl,
+                        // initialSelection: selectedEndItem,
+                        hintText:
+                            languageProvider.getLanguageTransValue('select...'),
                         onSelected: (value) {
+                          if(startTextCtrl.text != ''){
+                            if((subFolderList.indexOf(value!) >= subFolderList.indexOf(startTextCtrl.text))){
+                              selectedEndItem = value;
+                            }
+                            else {
+                              selectedEndItem = '';
+                            }
+                          }
+                          else{
+                            selectedEndItem = value!;
+                          }
                           setState(() {
-                            selectedEndItem = value;
+                            startTextCtrl.text = selectedStartItem;
+                            endTextCtrl.text = selectedEndItem;
+                            // 새 항목을 선택하면 파일 크기를 다시 계산합니다.
+                            _calculateSelectedSize();
                           });
                         },
                         dropdownMenuEntries: endItems,
                       ),
                     ),
-                    SizedBox(width: 40),
-                    Checkbox(
-                      value: true,
-                      onChanged: (_) {},
-                      checkColor: Colors.black,
-                      fillColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.disabled)) {
-                              return Colors.grey;
-                            }
-                            return Colors.white;
-                          }),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      side: const BorderSide(
-                        color: Colors.black,
-                        width: 1,
-                      ),
-                    ),
+                    SizedBox(width: 55),
+
+                    /// ### 복사 시작 항목 - 복사 마지막 항목 총 용량
                     Text(
-                      languageProvider.getLanguageTransValue('Eject USB after copying is complete.'),
+                      '${languageProvider.getLanguageTransValue('Selected')}: ${selectedSize.toStringAsFixed(1)}MB',
                       style: TextStyle(
                         fontSize: textSize,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(width: 10),
                 Row(
                   children: [
                     Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
+                        /// ### 복사 진행 ProgressBar
                         Text(
-                          languageProvider.getLanguageTransValue('Process Progress'),
+                          languageProvider
+                              .getLanguageTransValue('Process Progress'),
                           style: TextStyle(
                             fontSize: (textSize - 4),
                           ),
@@ -423,7 +500,8 @@ class _BackupPageState extends State<BackupPage> {
                               child: LinearProgressIndicator(
                                 value: 0,
                                 backgroundColor: Colors.white,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF006400)),
                               ),
                             ),
                             Positioned.fill(
@@ -441,14 +519,87 @@ class _BackupPageState extends State<BackupPage> {
                         ),
                       ],
                     ),
-                    SizedBox(width: 53),
+                    SizedBox(width: 40),
+
+                    /// ### 복사 완료 후 USB 꺼내기 CheckBox
+                    Checkbox(
+                      value: isEjectCheckBox,
+                      onChanged: (value) {
+                        setState(() {
+                          isEjectCheckBox = value!;
+                        });
+                      },
+                      checkColor: Colors.black,
+                      fillColor: MaterialStateProperty.resolveWith<Color>(
+                          (Set<WidgetState> states) {
+                        if (states.contains(WidgetState.disabled)) {
+                          return Colors.grey;
+                        }
+                        return Colors.white;
+                      }),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      side: const BorderSide(
+                        color: Colors.black,
+                        width: 1,
+                      ),
+                    ),
+                    Text(
+                      languageProvider.getLanguageTransValue(
+                          'Eject USB after copying is complete.'),
+                      style: TextStyle(
+                        fontSize: textSize,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    /// ### USB로 데이터 복사 Button
                     ElevatedButton(
                       onPressed: isUSBConnect ? () {} : null,
-                      style: btnStyle,
+                      style: btnStyle1,
                       child: Text(
                         languageProvider.getLanguageTransValue('Copy to USB'),
                         style: TextStyle(
                           color: isUSBConnect ? Colors.black : Colors.black45,
+                          fontWeight: FontWeight.bold,
+                          fontSize: (textSize - 4),
+                        ),
+                      ),
+                    ),
+                    // SizedBox(width: 10),
+                    // ElevatedButton(
+                    //   onPressed: isUSBConnect ? () {} : null,
+                    //   style: btnStyle1,
+                    //   child: Text(
+                    //     languageProvider.getLanguageTransValue('Delete USB Data'),
+                    //     style: TextStyle(
+                    //       color: isUSBConnect ? Colors.black : Colors.black45,
+                    //       fontWeight: FontWeight.bold,
+                    //       fontSize: (textSize - 4),
+                    //     ),
+                    //   ),
+                    // ),
+                    SizedBox(width: 55),
+
+                    /// ### USB 안전 제거 Button
+                    ElevatedButton(
+                      onPressed: isUSBConnect
+                          ? (isEjectCheckBox ? null : _ejectUSB)
+                          : null,
+                      style: btnStyle1,
+                      child: Text(
+                        languageProvider.getLanguageTransValue('Eject USB'),
+                        style: TextStyle(
+                          color: isUSBConnect
+                              ? (isEjectCheckBox
+                                  ? Colors.black45
+                                  : Colors.black)
+                              : Colors.black45,
+                          fontWeight: FontWeight.bold,
                           fontSize: (textSize - 4),
                         ),
                       ),
@@ -458,38 +609,283 @@ class _BackupPageState extends State<BackupPage> {
               ],
             ),
           ),
-          SizedBox(height: 40),
+          SizedBox(height: 30),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              /// ### 내부 저장 Data 삭제 Button
               ElevatedButton(
-                onPressed: isUSBConnect ? () {} : null,
+                onPressed: () {
+                  _intDataDelete(context, languageProvider);
+                },
                 style: btnStyle,
                 child: Text(
-                  languageProvider.getLanguageTransValue('Delete USB Data'),
+                  languageProvider.getLanguageTransValue('Delete Int. Data'),
                   style: TextStyle(
                     color: isUSBConnect ? Colors.black : Colors.black45,
+                    fontWeight: FontWeight.bold,
                     fontSize: (textSize - 4),
                   ),
                 ),
               ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: isUSBConnect ? _ejectUSB : null,
-                style: btnStyle,
-                child: Text(
-                  languageProvider.getLanguageTransValue('Eject USB'),
-                  style: TextStyle(
-                    color: isUSBConnect ? Colors.black : Colors.black45,
-                    fontSize: (textSize - 4),
-                  ),
-                ),
-              ),
+              // SizedBox(width: 10),
+              // ElevatedButton(
+              //   onPressed: isUSBConnect ? _ejectUSB : null,
+              //   style: btnStyle,
+              //   child: Text(
+              //     languageProvider.getLanguageTransValue('Eject USB'),
+              //     style: TextStyle(
+              //       color: isUSBConnect ? Colors.black : Colors.black45,
+              //       fontSize: (textSize - 4),
+              //     ),
+              //   ),
+              // ),
               SizedBox(width: 30),
             ],
           ),
         ],
       ),
     );
+  }
+
+  /*****************************************************************************
+   *          내부 저장 데이터 삭제 다이얼로그 함수
+   *****************************************************************************////
+  Future<void> _intDataDelete( BuildContext context, LanguageProvider languageProvider) async {
+    List<String> deleteSubFolder = FileCtrl.searchSubFolder();
+    deleteSubFolder.removeWhere((value) => value == DateFormat('yyyyMM').format(DateTime.now()));
+    final hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
+
+    final TextEditingController startTextCtrl = TextEditingController();
+    final TextEditingController endTextCtrl = TextEditingController();
+
+    String deleteMsg = '';
+
+    startTextCtrl.text = '';
+    endTextCtrl.text = '';
+
+    /// ### message Text 출력 함수
+    void showDeleteMsg(StateSetter setState, String msg) async{
+      setState(() {
+        deleteMsg = languageProvider.getLanguageTransValue(msg);
+      });
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        startTextCtrl.text = '';
+        endTextCtrl.text = '';
+        deleteMsg = '';
+      });
+    }
+
+    /// ### item 선택 범위를 최대 선택 함수
+    void maxItemRange(StateSetter setState){
+      setState((){
+        startTextCtrl.text = deleteSubFolder.first;
+        endTextCtrl.text = deleteSubFolder.last;
+      });
+    }
+
+    /// ### item 선택 확인 함수
+    void checkItemRange(StateSetter setState){
+      setState((){
+        if((startTextCtrl.text != '') && (endTextCtrl.text != '')){
+          if(deleteSubFolder.indexOf(startTextCtrl.text) > deleteSubFolder.indexOf(endTextCtrl.text)){
+            showDeleteMsg(setState, "The selection is incorrect.");
+          }
+        }
+      });
+    }
+
+    /// ### 선택된 item항목 삭제 함수
+    void runDelete(StateSetter setState) {
+      int startIndex = deleteSubFolder.indexOf(startTextCtrl.text);
+      int endIndex = deleteSubFolder.indexOf(endTextCtrl.text);
+
+      if(startIndex > endIndex) {
+        return;
+      }
+
+      /// ### 삭제 재확인 다이얼로그 출력
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              languageProvider.getLanguageTransValue('Check Delete'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: defaultFontSize + 10,
+                  fontWeight: FontWeight.bold),
+            ),
+            content: SizedBox(
+              width: MediaQuery.of(context).size.width / 2,
+              child: Text(
+                '${languageProvider.getLanguageTransValue('Do you really want to delete the file/folder?')}\n'
+                '[${startTextCtrl.text} ~ ${endTextCtrl.text}]',
+                style: TextStyle(fontSize: defaultFontSize + 4),
+              ),
+            ),
+            actions: [
+              SizedBox(
+                width: 120,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    languageProvider.getLanguageTransValue('Cancel'),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              /// ### 삭제 2차 확인 버튼
+              SizedBox(
+                width: 120,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    for(int i = startIndex; i <= endIndex; i++){
+                      FileCtrl.deleteFolder(deleteSubFolder[i]);
+                    }
+                    await hotpadCtrl.updateStorageUsage();
+
+                    setState(() {
+                      startTextCtrl.text = '';
+                      endTextCtrl.text = '';
+
+                      deleteSubFolder.clear();
+                      deleteSubFolder = FileCtrl.searchSubFolder();
+                      deleteSubFolder.removeWhere((value) => value == DateFormat('yyyyMM').format(DateTime.now()));
+
+                      Navigator.of(context).pop();
+                    });
+                    showDeleteMsg(setState, "The file/folder has been deleted.");
+                  },
+                  child: Text(
+                    languageProvider.getLanguageTransValue('OK'),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    /// ### 삭제 항목 선택 다이얼로그 출력
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                languageProvider.getLanguageTransValue('Delete Internal Data'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: defaultFontSize + 10,
+                    fontWeight: FontWeight.bold),
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width / 3,
+                height: MediaQuery.of(context).size.height / 3 + 20,
+                child: Column(
+                  children: [
+                    SizedBox(height: 10),
+                    /// ### 삭제 시작 항목
+                    SizedBox(
+                      width: 300,
+                      child: Text(
+                        languageProvider.getLanguageTransValue('Delete start item'),
+                        style: TextStyle(
+                            fontSize: defaultFontSize + 4,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownMenu(
+                      width: 300,
+                      onSelected: (value) {
+                        startTextCtrl.text = value!;
+                        checkItemRange(setState);
+                      },
+                      controller: startTextCtrl,
+                      dropdownMenuEntries: deleteSubFolder
+                          .map((String value) => DropdownMenuEntry<String>(value: value, label: value))
+                          .toList(),
+                      hintText: languageProvider.getLanguageTransValue('select...'),
+                    ),
+                    SizedBox(height: 30),
+                    /// ### 삭제 마지막 항목
+                    SizedBox(
+                      width: 300,
+                      child: Text(
+                        languageProvider
+                            .getLanguageTransValue('Delete last item'),
+                        style: TextStyle(
+                            fontSize: defaultFontSize + 4,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    DropdownMenu(
+                      width: 300,
+                      onSelected: (value) {
+                        endTextCtrl.text = value!;
+                        checkItemRange(setState);
+                      },
+                      controller: endTextCtrl,
+                      dropdownMenuEntries: deleteSubFolder
+                          .map((String value) => DropdownMenuEntry<String>(value: value, label: value))
+                          .toList(),
+                      hintText:
+                          languageProvider.getLanguageTransValue('select...'),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      deleteMsg,
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                SizedBox(
+                  width: 180,
+                  /// ### 최대 선택 버튼
+                  child: ElevatedButton(
+                    onPressed: () { maxItemRange(setState); },
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Select Maximum'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 120,
+                  /// ### 삭제 1차 확인 버튼
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if ((startTextCtrl.text != '') && (endTextCtrl.text != '')) {
+                        runDelete(setState);
+                        // Navigator.of(context).pop();
+                      } else {
+                        showDeleteMsg(setState, "There are no selected items");
+                      }
+                    },
+                    child: Text(
+                      languageProvider.getLanguageTransValue('OK'),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_){
+      setState(() {});
+    });
   }
 }

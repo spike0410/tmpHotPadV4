@@ -1,5 +1,9 @@
 package com.example.hotpadapp_v4
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -146,23 +150,23 @@ class MainActivity : FlutterActivity() {
         return null
     }
 
-    private fun ejectUSBStorage(): Boolean {
+    fun ejectUSBStorage(): Boolean {
         val storageManager = getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        val usbStoragePath = getUSBStoragePath()
+        val storageVolumes: List<StorageVolume> = storageManager.storageVolumes
 
-        if (usbStoragePath != null) {
-            val storageVolumes: List<StorageVolume> = storageManager.storageVolumes
-            for (storageVolume in storageVolumes) {
-                if (storageVolume.isRemovable && storageVolume.state == Environment.MEDIA_MOUNTED) {
-                    try {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            val intent = storageVolume.createAccessIntent(null)
-                            startActivity(intent)
+        for (storageVolume in storageVolumes) {
+//            if (storageVolume.isRemovable && storageVolume.state == Environment.MEDIA_MOUNTED) {
+            if (storageVolume.isRemovable && storageVolume.state == "mounted") {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        val intent = storageVolume.createAccessIntent(null)
+                        if (intent != null) {
+                            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                             return true
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }

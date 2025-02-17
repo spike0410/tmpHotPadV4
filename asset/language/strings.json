@@ -94,7 +94,16 @@
 	"Search Graph File List" : "그래프 파일 목록 검색",
 	"Date" : "날짜",
 	"File List" : "파일 목록",
-	"select..." : "선택해주세요..."
+	"select..." : "선택해주세요...",
+  	"Delete Int. Data" : "내부 데이터 삭제",
+  	"Delete Internal Data" : "내부 데이터 삭제",
+	"Delete start item" : "삭제 시작 항목",
+	"Delete last item" : "삭제 마지막 항목",
+	"There are no selected items" : "항목을 선택하여 주세요.",
+	"The selection is incorrect." : "항목이 잘못 선택되었습니다.",
+	"The file/folder has been deleted." : "파일/폴더를 삭제하였습니다.",
+	"Check Delete" : "삭제 확인",
+	"Do you really want to delete the file/folder?": "정말로 파일/폴더를 삭제하겠습니까?"
   },
   "Eng": {
     "Channel": "Channel",
@@ -191,6 +200,15 @@
 	"Search Graph File List" : "Search Graph File List",
 	"Date" : "Date",
 	"File List" : "File List",
-	"select..." : "select..."
+	"select..." : "select...",
+  	"Delete Int. Data" : "Delete Int. Data",
+  	"Delete Internal Data" : "Delete Internal Data",
+	"Delete start item" : "Delete start item",
+	"Delete last item" : "Delete last item",
+	"There are no selected items" : "There are no selected items",
+	"The selection is incorrect." : "The selection is incorrect.",
+	"The file/folder has been deleted." : "The file/folder has been deleted.",
+	"Check Delete" : "Check Delete",
+	"Do you really want to delete the file/folder?": "Do you really want to delete the file/folder?"
   }
 }
