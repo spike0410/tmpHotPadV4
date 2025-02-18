@@ -22,6 +22,7 @@ class FileCtrl {
   static Database? _logDatabase;
   static late String _nowGraphFileName;
 
+  static String? get defaultPath => _defaultPath;
   static String get nowGraphFileName => _nowGraphFileName;
 
   /***********************************************************************

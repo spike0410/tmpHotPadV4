@@ -234,14 +234,16 @@ class _MainPageState extends State<MainPage> {
           String savedPath = await FileCtrl.screenShotsSave(pngBytes);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: savedPath.isNotEmpty
-                ? Text('${languageProvider.getLanguageTransValue(
-                'Screenshot has been saved')} : $savedPath')
-                : Text(languageProvider.getLanguageTransValue('Screenshot not saved')),
+              ? Text('${languageProvider.getLanguageTransValue('Screenshot has been saved')} : $savedPath',
+              textAlign: TextAlign.center)
+              : Text(languageProvider.getLanguageTransValue('Screenshot not saved'),
+              textAlign: TextAlign.center),
             duration: Duration(seconds: 5),
           ));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(languageProvider.getLanguageTransValue('Failed to capture image.')),
+            content: Text(languageProvider.getLanguageTransValue('Failed to capture image.'),
+              textAlign: TextAlign.center),
             duration: Duration(seconds: 5),
           ));
         }

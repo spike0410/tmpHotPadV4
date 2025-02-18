@@ -78,7 +78,7 @@ class MainActivity : FlutterActivity() {
                             val usedBytes = totalBytes - statFs.availableBytes
                             val freeBytes = statFs.availableBytes
 
-                            result.success(listOf(totalBytes, usedBytes, freeBytes))
+                            result.success(listOf(totalBytes, usedBytes, freeBytes, usbStoragePath))
                         }
                         else {
                             result.error("UNAVAILABLE", "USB storage not available", null)
