@@ -61,9 +61,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                         style: TextStyle(color: titleTextColor, fontSize: 34, fontWeight: FontWeight.bold),
                       ),
                       Consumer<HotpadCtrl>(
-                          builder: (context, hotpadCtrl, _) {
+                          builder: (context, hotpadCtrlProvider, _) {
                             return Text(
-                              hotpadCtrl.getCurrentTimeValue(),
+                              hotpadCtrlProvider.getCurrentTimeValue(),
                               style: TextStyle(fontSize: defaultFontSize),
                             );
                           },

@@ -14,6 +14,10 @@ class MessageProvider extends ChangeNotifier {
    *          데이터를 불러와서 _data 리스트에 추가하는 함수
    ***********************************************************************////
   void loadData(List<Map<String, dynamic>> data) {
+    if(_data.isNotEmpty){
+      _data.clear();
+    }
+
     for (var item in data) {
       _data.insert(0, {
         'NO.': item['id'].toString(),

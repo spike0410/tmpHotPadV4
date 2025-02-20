@@ -138,10 +138,10 @@ class GraphPageState extends State<GraphPage>
                   children: [
                     SizedBox(height: 5),
                     Consumer<HotpadCtrl>(
-                      builder: (context, hotpadCtrl, _) {
+                      builder: (context, hotpadCtrlProvider, _) {
                         return _cellRowItem(
                           index: index,
-                          strTemp: hotpadCtrl.serialCtrl.rxPackage.rtd[index],
+                          strTemp: hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index],
                           color: _isVisibleSeries[index]
                               ? bkColor[index]
                               : Colors.transparent,
@@ -479,8 +479,8 @@ class GraphPageState extends State<GraphPage>
   Widget _tempCharts() {
     return Expanded(
       child: Consumer<HotpadCtrl>(
-        builder: (context, hotpadCtrl, _) {
-          updateChartData(hotpadCtrl);
+        builder: (context, hotpadCtrlProvider, _) {
+          updateChartData(hotpadCtrlProvider);
           return Container(
             margin: EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -542,20 +542,19 @@ class GraphPageState extends State<GraphPage>
   /***********************************************************************
    *          차트 데이터를 업데이트하는 함수
    ***********************************************************************////
-  void updateChartData(HotpadCtrl hotpadCtrl) {
-    if ((hotpadCtrl.serialCtrl.serialPortStatus.index <
-            SerialPortStatus.txBusy.index) ||
+  void updateChartData(HotpadCtrl hotpadCtrlProvider) {
+    if ((hotpadCtrlProvider.serialCtrl.serialPortStatus.index < SerialPortStatus.txBusy.index) ||
         (_graphCount++ % 10 != 0)) {
       return;
     }
 
-    DateTime tmpDateTime = hotpadCtrl.serialCtrl.rxPackage.rxTime;
-    hotpadCtrl.isGraphLive= _isChartEnable;
+    DateTime tmpDateTime = hotpadCtrlProvider.serialCtrl.rxPackage.rxTime;
+    hotpadCtrlProvider.isGraphLive= _isChartEnable;
     // HotpadData/yyyyMM/Graph 폴더의 SQLite 파일에 저장
     FileCtrl.saveGraphData(
         tmpDateTime,
-        hotpadCtrl.getHeatingStatusList,
-        hotpadCtrl.serialCtrl.rxPackage.rtd);
+        hotpadCtrlProvider.getHeatingStatusList,
+        hotpadCtrlProvider.serialCtrl.rxPackage.rtd);
 
     if (_isChartEnable == false) {
       return;
@@ -563,12 +562,12 @@ class GraphPageState extends State<GraphPage>
 
     for (int index = 0; index < 10; index++) {
       double value =
-          double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0;
+          double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index]) ?? 0.0;
       _chartDataSeries[index].add(ChartData(tmpDateTime, value));
     }
 
     debugPrint(
-        "Graph Data] [$tmpDateTime] ${hotpadCtrl.serialCtrl.rxPackage.status},${hotpadCtrl.serialCtrl.rxPackage.rtd}");
+        "Graph Data] [$tmpDateTime] ${hotpadCtrlProvider.serialCtrl.rxPackage.status},${hotpadCtrlProvider.serialCtrl.rxPackage.rtd}");
 
     // 그래프가 x축의 maximum 부근에 도달하면 maximum을 확장함.
     if (tmpDateTime

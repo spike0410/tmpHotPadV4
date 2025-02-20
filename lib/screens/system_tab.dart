@@ -249,8 +249,8 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
 
                     /// ### FW Version
                     Consumer<HotpadCtrl>(
-                      builder: (context, hotpadCtrl, _){
-                        return Text(hotpadCtrl.serialCtrl.rxPackage.fwVer,
+                      builder: (context, hotpadCtrlProvider, _){
+                        return Text(hotpadCtrlProvider.serialCtrl.rxPackage.fwVer,
                             style: textStyle, textAlign: TextAlign.center);
                       },
                     ),

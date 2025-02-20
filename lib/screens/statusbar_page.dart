@@ -84,18 +84,18 @@ class StatusBarPage extends StatelessWidget {
                 ),
                 SizedBox(width: 5),
                 Consumer<HotpadCtrl>(
-                  builder: (context, hotpadCtrl, _){
+                  builder: (context, hotpadCtrlProvider, _){
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('${(hotpadCtrl.usedStorage / 1024).toStringAsFixed(1)}/${(hotpadCtrl.totalStorage / 1024).toStringAsFixed(1)} GB'),
+                        Text('${(hotpadCtrlProvider.usedStorage / 1024).toStringAsFixed(1)}/${(hotpadCtrlProvider.totalStorage / 1024).toStringAsFixed(1)} GB'),
                         Stack(
                           children: [
                             SizedBox(
                               width: 100,
                               height: 20,
                               child: LinearProgressIndicator(
-                                value: hotpadCtrl.storageProgressValue,
+                                value: hotpadCtrlProvider.storageProgressValue,
                                 backgroundColor: Colors.white,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     Color(0xFF006400)),
@@ -104,7 +104,7 @@ class StatusBarPage extends StatelessWidget {
                             Positioned.fill(
                               child: Center(
                                 child: Text(
-                                  '${(hotpadCtrl.storageProgressValue * 100).toStringAsFixed(1)}%',
+                                  '${(hotpadCtrlProvider.storageProgressValue * 100).toStringAsFixed(1)}%',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,

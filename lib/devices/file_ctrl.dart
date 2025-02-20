@@ -25,6 +25,8 @@ class FileCtrl {
   static String? get defaultPath => _defaultPath;
   static String get nowGraphFileName => _nowGraphFileName;
 
+  static MessageProvider? _messageProvider;
+
   /***********************************************************************
    *          폴더를 확인하고 필요한 파일을 생성하는 함수
    ***********************************************************************////
@@ -37,6 +39,7 @@ class FileCtrl {
         final Directory newFolder = Directory('${downloadDir.path}/$logDefaultFolder');
         _defaultPath = newFolder.path.toString();
 
+        _messageProvider = messageProvider;
         await _createSubFolder(messageProvider);        // 서브 폴더를 생성
       }
     }
@@ -98,7 +101,7 @@ class FileCtrl {
       final File imgFile = File(filePath);
 
       await imgFile.writeAsBytes(pngBytes);
-      debugPrint('Screenshot saved to $filePath');
+
       return ('$fileName.png');
     } else {
       debugPrint('Log default folder path is not set');
@@ -131,6 +134,8 @@ class FileCtrl {
       List<Map<String, dynamic>> result = await _alarmDatabase!.query('alarm');
       messageProvider.loadData(result);
     }
+
+    debugPrint('###### Create AlarmFile : $dbPath');
   }
 
   /*****************************************************************************
@@ -170,6 +175,8 @@ class FileCtrl {
         )
       ''');
     });
+
+    debugPrint('###### Create GraphFile : $dbPath');
   }
 
   /*****************************************************************************
@@ -252,6 +259,8 @@ class FileCtrl {
         )
       ''');
     });
+
+    debugPrint('###### Create LogFile : $dbPath');
   }
 
   /*****************************************************************************
@@ -337,6 +346,28 @@ class FileCtrl {
     } catch (e) {
       debugPrint("Error calculating folder size.");
       return 0;
+    }
+  }
+
+  /*****************************************************************************
+   *          모든 Database Close 함수
+   *****************************************************************************////
+  static void closeAllDatabase() async{
+    await _alarmDatabase?.close();
+    await _graphDatabase?.close();
+    await _logDatabase?.close();
+
+    _alarmDatabase = null;
+    _graphDatabase = null;
+    _logDatabase = null;
+  }
+
+  /*****************************************************************************
+   *          ReCreate Database 함수
+   *****************************************************************************////
+  static void reCreateDatabase() async{
+    if(_messageProvider != null){
+      await checkFolder(_messageProvider!);
     }
   }
 }

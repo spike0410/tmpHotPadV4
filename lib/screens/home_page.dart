@@ -19,17 +19,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final List<TextEditingController> _textEditCtrl = List.generate(totalChannel, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(totalChannel, (_) => FocusNode());
 
-  late HotpadCtrl hotpadCtrl;
+  late HotpadCtrl hotpadCtrlProvider;
 
   @override
   void initState() {
     super.initState();
     // 키보드 상태 감지를 위해 observer 등록
     WidgetsBinding.instance.addObserver(this);
-    hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
+    hotpadCtrlProvider = Provider.of<HotpadCtrl>(context, listen: false);
 
     // HotpadCtrl의 콜백 함수 설정.
-    hotpadCtrl.onPadIDTextChanged = (index, text) {
+    hotpadCtrlProvider.onPadIDTextChanged = (index, text) {
       setState(() {
         _textEditCtrl[index].text = text;
       });
@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           _onFocusLost(i);
         }
       });
-      _textEditCtrl[i].text = hotpadCtrl.getPadIDText(i);
+      _textEditCtrl[i].text = hotpadCtrlProvider.getPadIDText(i);
     }
   }
 
@@ -66,8 +66,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       child: Column(
         children: [
           Consumer<HotpadCtrl>(
-            builder: (context, hotpadCtrl, _) {
-              return _headerRowItem(languageProvider, hotpadCtrl);
+            builder: (context, hotpadCtrlProvider, _) {
+              return _headerRowItem(languageProvider, hotpadCtrlProvider);
             },
           ),
           ...List.generate(
@@ -76,20 +76,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               children: [
                 SizedBox(height: 5),
                 Consumer<HotpadCtrl>(
-                  builder: (context, hotpadCtrl, _) {
+                  builder: (context, hotpadCtrlProvider, _) {
                     return _dataRowItem(
                       index: index,
-                      statusCh: hotpadCtrl.getChannelStatus(index),
+                      statusCh: hotpadCtrlProvider.getChannelStatus(index),
                       strChannel: (index + 1).toString().padLeft(2, '0'),
-                      currentTempValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
-                      setTemp: hotpadCtrl.settingTempSelect(index),
-                      remainTotalTimeValue: hotpadCtrl.getRemainTotalTime(index),
-                      remainTimeValue: hotpadCtrl.getRemainTime(index),
+                      currentTempValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
+                      setTemp: hotpadCtrlProvider.settingTempSelect(index),
+                      remainTotalTimeValue: hotpadCtrlProvider.getRemainTotalTime(index),
+                      remainTimeValue: hotpadCtrlProvider.getRemainTime(index),
                       textEditCtrl: _textEditCtrl[index],
-                      currentValue: double.tryParse(hotpadCtrl.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
-                      strPADOhm: hotpadCtrl.serialCtrl.rxPackage.padOhm[index],
-                      strPADStatus: hotpadCtrl.getHeatingStatusString(languageProvider, hotpadCtrl.getHeatingStatus(index)),
-                      isHighlighted: hotpadCtrl.getIsPU45Enable(index),
+                      currentValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
+                      strPADOhm: hotpadCtrlProvider.serialCtrl.rxPackage.padOhm[index],
+                      strPADStatus: hotpadCtrlProvider.getHeatingStatusString(languageProvider, hotpadCtrlProvider.getHeatingStatus(index)),
+                      isHighlighted: hotpadCtrlProvider.getIsPU45Enable(index),
                       focusNode: _focusNodes[index],
                       languageProvider: languageProvider,
                     );
@@ -106,7 +106,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   /***********************************************************************
    *          헤더 행 항목을 생성하는 함수
    ***********************************************************************////
-  Widget _headerRowItem(LanguageProvider languageProvider, HotpadCtrl hotpadCtrl) {
+  Widget _headerRowItem(LanguageProvider languageProvider, HotpadCtrl hotpadCtrlProvider) {
     const List<double> headerWidth = [110, 90, 90, 100, 75, 90, 90, 90, 114, 114];
     const double headerHeight = 55;
 
@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               onPressed: (){},
               onLongPress: (){
                 for (int i = 0; i < totalChannel; i++) {
-                  hotpadCtrl.togglePU45Enable(i);
+                  hotpadCtrlProvider.togglePU45Enable(i);
                 }
               },
               child: _textDataTable(text: languageProvider.getLanguageTransValue('Channel'),
@@ -158,7 +158,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 onLongPress: (){
                   for(int i = 0; i < _textEditCtrl.length; i++){
                     _textEditCtrl[i].text = 'TEST';
-                    hotpadCtrl.setPadID(i, _textEditCtrl[i].text);
+                    hotpadCtrlProvider.setPadID(i, _textEditCtrl[i].text);
                   }
                 },
                 child: _textDataTable(text: languageProvider.getLanguageTransValue('PAD\nID'),
@@ -220,8 +220,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _progressDataTable(
-                      value: _progressConvert(double.tryParse(hotpadCtrl.serialCtrl.rxPackage.acVolt)?? 0.0, 0, ConfigFileCtrl.acVoltHigh),
-                      text: hotpadCtrl.serialCtrl.rxPackage.acVolt,
+                      value: _progressConvert(double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.acVolt)?? 0.0, 0, ConfigFileCtrl.acVoltHigh),
+                      text: hotpadCtrlProvider.serialCtrl.rxPackage.acVolt,
                       size: 18,
                       width: headerWidth[8] - 29,
                       forwardColor: Colors.red,
@@ -315,7 +315,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           isHighlighted : isHighlighted,
           child: TextButton(
             onPressed: () {
-              hotpadCtrl.togglePU45Enable(index);
+              hotpadCtrlProvider
+.togglePU45Enable(index);
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -464,20 +465,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         /// ### Heating Start Button ###
         _ctrlButton(
           width: cellWidth[8], height: cellHeight, text: languageProvider.getLanguageTransValue('Start'), size: 18,
-          isDisable: hotpadCtrl.getIsPreheatingBtn(index),
-          isRedMode: hotpadCtrl.getIsStartBtn(index),
+          isDisable: hotpadCtrlProvider.getIsPreheatingBtn(index),
+          isRedMode: hotpadCtrlProvider.getIsStartBtn(index),
           onPressed: (){
-            if (hotpadCtrl.getPadIDText(index).isEmpty) {
-              hotpadCtrl.showInstMessage(
+            if (hotpadCtrlProvider.getPadIDText(index).isEmpty) {
+              hotpadCtrlProvider.showInstMessage(
                 'Warning',
                 'CH${(index+1).toString().padLeft(2,'0')}',
-                hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+                hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
                 'W0001');
             } else {
-              hotpadCtrl.startHeating(index);
-              // hotpadCtrl.showAlarmMessage(
+              hotpadCtrlProvider.startHeating(index);
+              // hotpadCtrlProvider.showAlarmMessage(
               //   'CH${(index+1).toString().padLeft(2,'0')}',
-              //   hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+              //   hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
               //   'I0002');
             }
           },
@@ -487,20 +488,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         _ctrlButton(
           width: cellWidth[9], height: cellHeight, text: languageProvider.getLanguageTransValue('Heating'),
           size: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? (defaultFontSize + 4) : defaultFontSize,
-          isDisable: hotpadCtrl.getIsPU45Enable(index) ? true : hotpadCtrl.getIsStartBtn(index),
-          isRedMode: hotpadCtrl.getIsPreheatingBtn(index),
+          isDisable: hotpadCtrlProvider.getIsPU45Enable(index) ? true : hotpadCtrlProvider.getIsStartBtn(index),
+          isRedMode: hotpadCtrlProvider.getIsPreheatingBtn(index),
           onPressed: (){
-            if (hotpadCtrl.getPadIDText(index).isEmpty) {
-              hotpadCtrl.showInstMessage(
+            if (hotpadCtrlProvider.getPadIDText(index).isEmpty) {
+              hotpadCtrlProvider.showInstMessage(
                   'Warning',
                   'CH${(index+1).toString().padLeft(2,'0')}',
-                  hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+                  hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
                   'W0001');
             } else {
-              hotpadCtrl.startPreheating(index);
-              // hotpadCtrl.showAlarmMessage(
+              hotpadCtrlProvider.startPreheating(index);
+              // hotpadCtrlProvider.showAlarmMessage(
               //     'CH${(index+1).toString().padLeft(2,'0')}',
-              //     hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+              //     hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
               //     'I0006');
             }
           },
@@ -510,14 +511,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         _ctrlButton(
           width: cellWidth[10], height: cellHeight, text: languageProvider.getLanguageTransValue('Stop'), size: 18,
           isDisable: false,
-          isRedMode: !(hotpadCtrl.getIsStartBtn(index) || hotpadCtrl.getIsPreheatingBtn(index)),
+          isRedMode: !(hotpadCtrlProvider.getIsStartBtn(index) || hotpadCtrlProvider.getIsPreheatingBtn(index)),
           onPressed: (){
-            if(hotpadCtrl.getIsStartBtn(index) || hotpadCtrl.getIsPreheatingBtn(index)) {
+            if(hotpadCtrlProvider.getIsStartBtn(index) || hotpadCtrlProvider.getIsPreheatingBtn(index)) {
               _textEditCtrl[index].text = '';
-              hotpadCtrl.stopHeating(index);
-              hotpadCtrl.showAlarmMessage(
+              hotpadCtrlProvider.stopHeating(index);
+              hotpadCtrlProvider.showAlarmMessage(
                   'CH${(index+1).toString().padLeft(2,'0')}',
-                  hotpadCtrl.getIsPU45Enable(index) ? 'PU45' : 'PU15',
+                  hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
                   'I0008');
             }
           },
@@ -740,7 +741,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
    *          TextField에 FocusLost시 동작되는 함수
    ***********************************************************************////
   void _onFocusLost(int index){
-    hotpadCtrl.setPadID(index, _textEditCtrl[index].text);
+    hotpadCtrlProvider.setPadID(index, _textEditCtrl[index].text);
   }
 
   /***********************************************************************

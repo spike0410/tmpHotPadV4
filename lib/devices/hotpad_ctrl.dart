@@ -10,7 +10,7 @@ import '../devices/serial_ctrl.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
 
-class HotpadCtrl with ChangeNotifier {
+class HotpadCtrl with ChangeNotifier{
   final SerialCtrl serialCtrl = SerialCtrl();
   final MessageProvider messageProvider;
   BuildContext? _context;
@@ -168,9 +168,9 @@ class HotpadCtrl with ChangeNotifier {
     }
     else{
       _remainTotalTime[index] = (ConfigFileCtrl.pu45Ramp1stTime +
-                                ConfigFileCtrl.pu45Hold1stTime +
-                                ConfigFileCtrl.pu45Ramp2ndTime +
-                                ConfigFileCtrl.pu45Hold2ndTime) * 60;
+          ConfigFileCtrl.pu45Hold1stTime +
+          ConfigFileCtrl.pu45Ramp2ndTime +
+          ConfigFileCtrl.pu45Hold2ndTime) * 60;
     }
     _remainTime[index] = _remainTotalTime[index];
     _heatingStatus[index] = HeatingStatus.rising1st;
@@ -291,7 +291,7 @@ class HotpadCtrl with ChangeNotifier {
    *****************************************************************************////
   void startIsolate() async {
     final receivePort = ReceivePort();
-    _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
+    _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);  // <---!@# Test
     receivePort.listen((message) {
       if (message == 'sendData') {
         serialCtrl.txPackage.setHTOperate(_chStatus);
@@ -317,7 +317,6 @@ class HotpadCtrl with ChangeNotifier {
       sendPort.send('updateTime');
       sendPort.send('decrementRemainTime');
     });
-
     Timer.periodic(Duration(minutes: 1), (timer) {
       sendPort.send('updateStorage');
     });
@@ -391,7 +390,7 @@ class HotpadCtrl with ChangeNotifier {
     }
     else{
       if((_heatingStatus[index] == HeatingStatus.rising1st)
-      || (_heatingStatus[index] == HeatingStatus.holding1st)){
+          || (_heatingStatus[index] == HeatingStatus.holding1st)){
         tmpStr =  ConfigFileCtrl.pu45Target1stTemp.toStringAsFixed(1);
       }
       else{
@@ -404,7 +403,7 @@ class HotpadCtrl with ChangeNotifier {
 
   /*****************************************************************************
    *          남은 시간 감소 함수
-   *          
+   *
    *    - Heating/Preheating Button 동작시 RemainTime 제어
    *****************************************************************************////
   void _decrementRemainTime() {

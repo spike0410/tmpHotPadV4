@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
+import '../devices/hotpad_ctrl.dart';
 import '../providers/language_provider.dart';
 
 class TempCalTab extends StatefulWidget {
@@ -197,13 +198,18 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
                           ),
                         ),
                         DataCell(
-                          SizedBox(
-                            width: 120,
-                            child: Text(
-                              'Temp ${index + 1}',textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
+                          Consumer<HotpadCtrl>(
+                            builder: (context, hotpadCtrlProvider, _) {
+                              return SizedBox(
+                                width: 120,
+                                child: Text(
+                                  hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index],
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            },
+                          )
                         ),
                         DataCell(
                           SizedBox(

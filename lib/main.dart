@@ -1,12 +1,14 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
+import 'package:hotpadapp_v4/devices/usb_copy_ctrl.dart';
 import 'package:syncfusion_flutter_core/core.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import '../devices/hotpad_ctrl.dart';
 import '../constant/user_style.dart';
 import '../screens/alarm_page.dart';
 import '../screens/backup_page.dart';
@@ -22,7 +24,7 @@ import '../providers/authentication_provider.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
 
-void main() async {
+Future main() async {
   // 플러그인(ex. 파일시스템 접근, 카메라, GPS 등등)이 네이티브 코드와 통신할 수 있도록 초기화하는 역할
   ui.DartPluginRegistrant.ensureInitialized();
   // Flutter의 위젯 바인딩이 초기화되었는지 확인
@@ -34,12 +36,13 @@ void main() async {
   final languageProvider = LanguageProvider();
   final authProvider = AuthenticationProvider();
   final messageProvider = MessageProvider();
-  final hotpadCtrl = HotpadCtrl(messageProvider: messageProvider);
+  final hotpadCtrlProvider = HotpadCtrl(messageProvider: messageProvider);
+  final usbCopyCtrlProvider = UsbCopyCtrl();
 
   await FileCtrl.checkFolder(messageProvider);          // 폴더 확인 및 생성
   await ConfigFileCtrl.check();                         // Hotpad Setup Data check & load
   await languageProvider.setLanguageFromDeviceConfig(); // 언어 데이터 가져오기
-  await hotpadCtrl.initialize();                        // Hotpad 컨트롤러 초기화
+  await hotpadCtrlProvider.initialize();                        // Hotpad 컨트롤러 초기화
 
   // Syncfusion license 등록
   SyncfusionLicense.registerLicense(
@@ -52,7 +55,9 @@ void main() async {
         ChangeNotifierProvider(create: (context) => languageProvider),
         ChangeNotifierProvider(create: (context) => authProvider),
         ChangeNotifierProvider(create: (context) => messageProvider),
-        ChangeNotifierProvider(create: (context) => hotpadCtrl),
+        ChangeNotifierProvider(create: (context) => usbCopyCtrlProvider),
+        ChangeNotifierProvider(create: (context) => hotpadCtrlProvider
+),
       ],
       child: MyApp(),
     ),
@@ -121,10 +126,10 @@ class _MainPageState extends State<MainPage> {
 
     // 위젯이 빌드된 후 컨텍스트 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final hotpadCtrl = Provider.of<HotpadCtrl>(context, listen: false);
-      hotpadCtrl.setContext(context);
-      hotpadCtrl.serialStart();
-      hotpadCtrl.showAlarmMessage('SYS', '-', 'I0001');
+      final hotpadCtrlProvider = Provider.of<HotpadCtrl>(context, listen: false);
+      hotpadCtrlProvider.setContext(context);
+      hotpadCtrlProvider.serialStart();
+      hotpadCtrlProvider.showAlarmMessage('SYS', '-', 'I0001');
     });
 
     splashScreenDelay();
@@ -260,39 +265,66 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return RepaintBoundary(
       key: _repaintBoundaryKey,
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
-        appBar: MenuBarPage(
-            barHeight: barHeight,
-            title: _appBarTitle,
-            imagePath: _appBarImage,
-            selectedIndex: _selectedIndex,
-            onItemTapped: _onItemTapped,
-            onCapturePressed: _capturePng,
-            graphPageKey: _graphPageKey,
-        ),
-        body: PageView(
-          controller: _pageController,
-          physics: NeverScrollableScrollPhysics(),    // 스와이프 동작을 막음
-          onPageChanged: (index) {
-            setState(() {
-              _selectedIndex = index;
-              _updateAppBar(index);
-            });
-          },
-          children: [
-            HomePage(),
-            GraphPage(key: _graphPageKey),
-            SettingsPage(),
-            AlarmPage(),
-            BackupPage(),
-            ControlPage(),
-          ],
-        ),
-        bottomNavigationBar: StatusBarPage(
-          barHeight: barHeight,
-          onCtrlPressed: _navigateToControlPage,
-        ),
+      child: Stack(
+        children: [
+          Scaffold(
+            resizeToAvoidBottomInset: true,
+            appBar: MenuBarPage(
+              barHeight: barHeight,
+              title: _appBarTitle,
+              imagePath: _appBarImage,
+              selectedIndex: _selectedIndex,
+              onItemTapped: _onItemTapped,
+              onCapturePressed: _capturePng,
+              graphPageKey: _graphPageKey,
+            ),
+            body: PageView(
+              controller: _pageController,
+              physics: NeverScrollableScrollPhysics(),    // 스와이프 동작을 막음
+              onPageChanged: (index) {
+                setState(() {
+                  _selectedIndex = index;
+                  _updateAppBar(index);
+                });
+              },
+              children: [
+                HomePage(),
+                GraphPage(key: _graphPageKey),
+                SettingsPage(),
+                AlarmPage(),
+                BackupPage(),
+                ControlPage(),
+              ],
+            ),
+            bottomNavigationBar: StatusBarPage(
+              barHeight: barHeight,
+              onCtrlPressed: _navigateToControlPage,
+            ),
+          ),
+          Consumer<UsbCopyCtrl>(
+            builder: (context, usbCopyCtrlProvider, child) {
+              if (usbCopyCtrlProvider.isCopying) {
+                return Stack(
+                  children: [
+                    Opacity(
+                      opacity: 0.3,
+                      child: ModalBarrier(dismissible: false, color: Colors.black),
+                    ),
+                    Center(
+                      child: SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: CircularProgressIndicator(strokeWidth: 15),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return SizedBox.shrink();
+              }
+            },
+          ),
+        ],
       ),
     );
   }
