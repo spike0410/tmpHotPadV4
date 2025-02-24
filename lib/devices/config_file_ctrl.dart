@@ -21,7 +21,7 @@ class ConfigFileCtrl {
   static const String _modeProfileConfigKey = 'modeProfileConfig';
   static const String _tempCalConfigKey = 'tempCalConfig';
   static const String _diagnosisConfigKey = 'diagnosisConfig';
-  static const String _isTempCalDataKey = 'isTempCalData';
+  // static const String _isTempCalDataKey = 'isTempCalData';
   static const String _tempCalDataKey = 'tempCalData';
   static const String _isACCalDataKey = 'isACCalData';
   static const String _acVoltCalDataKey = 'acVoltCalData';
@@ -78,7 +78,7 @@ class ConfigFileCtrl {
   static int tempCalOhm = 0;
   static int tempCalTime = 0;
   static int tempCalGain = 0;
-  static bool isTempCal = false;
+  // static bool isTempCal = false;
   static List<double> tempCalData = [];
 
   /*******************************************************************
@@ -139,7 +139,7 @@ class ConfigFileCtrl {
   static Future<void> _saveDefaults(SharedPreferences prefs) async {
     debugPrint("_saveDefaults");
 
-    final isTempCal = prefs.getBool(_isTempCalDataKey);
+    // final isTempCal = prefs.getBool(_isTempCalDataKey);
     final isACPwrCal = prefs.getBool(_isACCalDataKey);
 
     await prefs.setString(_languageKey, 'Kor');
@@ -160,9 +160,9 @@ class ConfigFileCtrl {
     await prefs.setString(_tempCalConfigKey, jsonEncode(_defaultTempCalConfig));
     await prefs.setString(_diagnosisConfigKey, jsonEncode(_defaultDiagnosisConfig));
 
-    if(isTempCal == null || !isTempCal) {
-      await prefs.setString(_tempCalDataKey, jsonEncode(_defaultTempCalData));
-    }
+    // if(isTempCal == null || !isTempCal) {
+    await prefs.setString(_tempCalDataKey, jsonEncode(_defaultTempCalData));
+    // }
 
     if(isACPwrCal == null || !isACPwrCal) {
       await prefs.setString(_acVoltCalDataKey, jsonEncode(_defaultACVoltCalData));
@@ -177,6 +177,7 @@ class ConfigFileCtrl {
     await _getDeviceConfigData(prefs);
     await _getModeProfileConfigData(prefs);
     await _getTempCalConfigData(prefs);
+    await _getTempCalData(prefs);
     await _getDiagnosisConfigData(prefs);
     await _getACPowerConfigData(prefs);
   }
@@ -297,8 +298,20 @@ class ConfigFileCtrl {
     tempCalOhm = tempCalConfig.firstWhere((map) => map.containsKey('TargetOhm'), orElse: () => {},)['TargetOhm'];
     tempCalTime = tempCalConfig.firstWhere((map) => map.containsKey('Time'), orElse: () => {},)['Time'];
     tempCalGain = tempCalConfig.firstWhere((map) => map.containsKey('Gain'), orElse: () => {},)['Gain'];
-    isTempCal = prefs.getBool(_isTempCalDataKey)?? false;
-    tempCalData = List<double>.from(jsonDecode(prefs.getString(_tempCalDataKey) ?? '[]'));
+    // // isTempCal = prefs.getBool(_isTempCalDataKey)?? false;
+    // tempCalData = List<double>.from(jsonDecode(prefs.getString(_tempCalDataKey) ?? '[]'));
+  }
+  /*******************************************************************
+   *               get Temp. Calibration Data
+   *******************************************************************////
+  static Future<void> _getTempCalData(SharedPreferences prefs) async {
+    final String? jTempCalDataList = prefs.getString(_tempCalDataKey);
+
+    if (jTempCalDataList != null) {
+      tempCalData = List<double>.from(jsonDecode(jTempCalDataList));
+    }
+
+    debugPrint("### TempCalData ###\n$tempCalData");
   }
 
   /*******************************************************************
@@ -452,11 +465,20 @@ class ConfigFileCtrl {
     tempCalConfig.add({'Time': tempCalTime});
     tempCalConfig.add({'Gain': tempCalGain});
 
-    // tempCalData = List<double>.from(jsonDecode(prefs.getString(_tempCalDataKey) ?? '[]'));
-
     debugPrint("setTempCalConfigData]\n${tempCalConfig.map((map) => map.toString()).join(',\n')}");
 
     await prefs.setString(_tempCalConfigKey, jsonEncode(tempCalConfig));
+  }
+
+  /*******************************************************************
+   *               set Temp. Calibration Data
+   *******************************************************************////
+  static Future<void> setTempCalData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(_tempCalDataKey, jsonEncode(tempCalData));
+
+    debugPrint("setTempCalData] : $tempCalData");
   }
 
   /*******************************************************************
@@ -510,15 +532,8 @@ class ConfigFileCtrl {
     acVoltCalData.add({'Gain': acVoltCalGain});
 
     debugPrint("setACPowerConfigData]\n${acVoltCalData.map((map) => map.toString()).join(',\n')}");
-
-    // acCurrentOffsetCalData = List<double>.from(jsonDecode(prefs.getString(_acCurrentOffsetCalDataKey) ?? '[]'));
-    // acCurrentGainCalData = List<double>.from(jsonDecode(prefs.getString(_acCurrentGainCalDataKey) ?? '[]'));
-    //
-    // isACPwrCal = prefs.getBool(_isACCalDataKey)?? false;
-
     await prefs.setString(_acVoltCalDataKey, jsonEncode(acVoltCalData));
   }
-
   /*******************************************************************
    *                Configuration Default Data
    *******************************************************************////

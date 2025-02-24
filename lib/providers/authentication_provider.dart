@@ -61,28 +61,31 @@ class AuthenticationProvider with ChangeNotifier {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(languageProvider.getLanguageTransValue('Enter Password')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  hintText: 'Password',
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width / 3,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  onSubmitted: (_) => authenticate(setState), // 가상 키보드의 확인 버튼을 눌렀을 때
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ],
-                onSubmitted: (_) => authenticate(setState), // 가상 키보드의 확인 버튼을 눌렀을 때
-              ),
-              SizedBox(height: 10),
-              Text(
-                passwordMsg,
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-              ),
-            ],
+                SizedBox(height: 10),
+                Text(
+                  passwordMsg,
+                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           ),
           actions: [
             SizedBox(
@@ -91,9 +94,10 @@ class AuthenticationProvider with ChangeNotifier {
                 onPressed: () {
                   Navigator.of(context).pop(false);
                 },
+                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                 child: Text(
                   languageProvider.getLanguageTransValue('Cancel'),
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -101,9 +105,10 @@ class AuthenticationProvider with ChangeNotifier {
               width: 120,
               child: ElevatedButton(
                 onPressed: () => authenticate(setState), // OK 버튼을 눌렀을 때
+                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                 child: Text(
                   languageProvider.getLanguageTransValue('OK'),
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ),

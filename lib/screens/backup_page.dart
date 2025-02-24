@@ -602,7 +602,8 @@ class _BackupPageState extends State<BackupPage> {
                 style: btnStyle,
                 child: Text(languageProvider.getLanguageTransValue('Delete Int. Data'),
                   style: TextStyle(
-                    color: isUSBConnect ? Colors.black : Colors.black45,
+                    // color: isUSBConnect ? Colors.black : Colors.black45,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: (textSize - 4),
                   ),
@@ -696,8 +697,10 @@ class _BackupPageState extends State<BackupPage> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text(languageProvider.getLanguageTransValue('Cancel'),
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                  child: Text(
+                    languageProvider.getLanguageTransValue('Cancel'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -723,9 +726,10 @@ class _BackupPageState extends State<BackupPage> {
                     });
                     showDeleteMsg(setState, "The file/folder has been deleted.");
                   },
+                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                   child: Text(
                     languageProvider.getLanguageTransValue('OK'),
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -749,7 +753,7 @@ class _BackupPageState extends State<BackupPage> {
                     fontWeight: FontWeight.bold),
               ),
               content: SizedBox(
-                width: MediaQuery.of(context).size.width / 3,
+                // width: MediaQuery.of(context).size.width / 2,
                 height: MediaQuery.of(context).size.height / 3 + 20,
                 child: Column(
                   children: [
@@ -813,8 +817,23 @@ class _BackupPageState extends State<BackupPage> {
                   /// ### 최대 선택 버튼
                   child: ElevatedButton(
                     onPressed: () { maxItemRange(setState); },
-                    child: Text(languageProvider.getLanguageTransValue('Select Maximum'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Select Maximum'),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Cancel'),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -829,8 +848,10 @@ class _BackupPageState extends State<BackupPage> {
                         showDeleteMsg(setState, "There are no selected items");
                       }
                     },
-                    child: Text(languageProvider.getLanguageTransValue('OK'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                    child: Text(
+                      languageProvider.getLanguageTransValue('OK'),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

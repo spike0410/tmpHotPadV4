@@ -301,9 +301,9 @@ class _MainPageState extends State<MainPage> {
               onCtrlPressed: _navigateToControlPage,
             ),
           ),
-          Consumer<UsbCopyCtrl>(
-            builder: (context, usbCopyCtrlProvider, child) {
-              if (usbCopyCtrlProvider.isCopying) {
+          Consumer2<UsbCopyCtrl, HotpadCtrl>(
+            builder: (context, usbCopyCtrlProvider, hotpadCtrlProvider,child) {
+              if (usbCopyCtrlProvider.isIndicator || hotpadCtrlProvider.isIndicator) {
                 return Stack(
                   children: [
                     Opacity(

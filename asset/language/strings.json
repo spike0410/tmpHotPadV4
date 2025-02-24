@@ -105,7 +105,8 @@
 	"The selection is incorrect." : "항목이 잘못 선택되었습니다.",
 	"The file/folder has been deleted." : "파일/폴더를 삭제하였습니다.",
 	"Check Delete" : "삭제 확인",
-	"Do you really want to delete the file/folder?": "정말로 파일/폴더를 삭제하겠습니까?"
+	"Do you really want to delete the file/folder?": "정말로 파일/폴더를 삭제하겠습니까?",
+	"Are you sure you want to reset the temperature calibration values?" : "정말로 온도 교정값을 초기화 하시겠습니까?"
   },
   "Eng": {
     "Channel": "Channel",
@@ -213,6 +214,7 @@
 	"The selection is incorrect." : "The selection is incorrect.",
 	"The file/folder has been deleted." : "The file/folder has been deleted.",
 	"Check Delete" : "Check Delete",
-	"Do you really want to delete the file/folder?": "Do you really want to delete the file/folder?"
+	"Do you really want to delete the file/folder?": "Do you really want to delete the file/folder?",
+	"Are you sure you want to reset the temperature calibration values?" : "Are you sure you want to reset the temperature calibration values?"
   }
 }

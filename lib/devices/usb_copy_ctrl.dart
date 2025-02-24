@@ -2,10 +2,12 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../constant/user_style.dart';
 import '../devices/file_ctrl.dart';
+import 'package:provider/provider.dart';
 
 class UsbCopyCtrl with ChangeNotifier{
   late String _startPath;
@@ -15,12 +17,16 @@ class UsbCopyCtrl with ChangeNotifier{
   late int _fileCount;
   double _copyProgressValue = 0;
   Isolate? _isolate;
-  bool _isCopying = false;
+  bool _isIndicator = false;
   bool _isEjectCheckBox = false;
 
   late Future<void> Function() _ejectUSB;
 
-  bool get isCopying => _isCopying;
+  bool get isIndicator => _isIndicator;
+  set isIndicator(bool val){
+    _isIndicator = val;
+    notifyListeners();
+  }
   double get copyProgressValue => _copyProgressValue;
   set copyProgressValue(double val){
     _copyProgressValue = val;
@@ -79,7 +85,7 @@ class UsbCopyCtrl with ChangeNotifier{
     // receivePort로부터 수신된 메시지를 처리하기 위해 listen 함수
     subscription = receivePort.listen((msg) async {
       if(msg == 'startCopy'){
-        _isCopying = true;
+        _isIndicator = true;
         notifyListeners();
         FileCtrl.closeAllDatabase();
         await _copyDataToUsb(_startPath, _endPath, _usbPath).then((_){
@@ -92,7 +98,7 @@ class UsbCopyCtrl with ChangeNotifier{
         subscription?.cancel();                       // 더 이상 listen을 하지 않음.
         _isolate?.kill(priority: Isolate.immediate);  // Isolate를 종료함
         _isolate = null;                              // 참조를 해제
-        _isCopying = false;
+        _isIndicator = false;
         notifyListeners();
 
         if(_isEjectCheckBox){

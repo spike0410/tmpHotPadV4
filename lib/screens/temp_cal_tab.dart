@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -14,26 +14,31 @@ class TempCalTab extends StatefulWidget {
   _TempCalTabState createState() => _TempCalTabState();
 }
 
-class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
+class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
   // 채널 선택 여부를 저장하는 리스트
-  final List<bool> _isChannelChecked = List<bool>.filled(10, false);
+  final List<bool> _isChannelChecked = List<bool>.filled(10, true);
+
   // 스크롤 컨트롤러 생성
   final ScrollController _scrollController = ScrollController();
+
   // TextEditingController와 FocusNode 생성
   final List<TextEditingController> _textEditCtrl =
-  List.generate(3, (_) => TextEditingController());
+      List.generate(3, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(3, (_) => FocusNode());
+
   // 설정 값을 저장하는 리스트
-  final List<dynamic> _configValue = List<dynamic>.filled(3, null, growable: false);
+  final List<dynamic> _configValue =
+      List<dynamic>.filled(3, null, growable: false);
 
   String _strRefTemp = '';
   double _calProgressValue = 0;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     // 키보드 상태 감지를 위해 observer 등록
     WidgetsBinding.instance.addObserver(this);
+    final hotpadCtrlProvider = Provider.of<HotpadCtrl>(context, listen: false);
 
     // 저장된 설정 값을 _configValue에 저장
     _configValue[0] = ConfigFileCtrl.tempCalOhm;
@@ -47,14 +52,16 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
       });
       _focusNodes[i].addListener(() {
         if (!_focusNodes[i].hasFocus) {
-          _onFocusLost(i);
+          _onFocusLost(i, hotpadCtrlProvider);
         }
       });
       _textEditCtrl[i].text = _configValue[i].toString();
     }
 
-    _strRefTemp = ohmToTemp(_configValue[0]);
-    _calProgressValue = 0.10;
+    _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage
+        .ohmToTemp(_configValue[0].toDouble())
+        .toStringAsFixed(1);
+    _calProgressValue = 0;
   }
 
   /***********************************************************************
@@ -67,15 +74,17 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
-  void _onFocusLost(int index) async{
-    String tmpStr ='';
+  void _onFocusLost(int index, HotpadCtrl hotpadCtrlProvider) async {
+    String tmpStr = '';
 
     tmpStr = _configValue[index].toString();
     _textEditCtrl[index].text = tmpStr;
 
-    if(index == 0){
+    if (index == 0) {
       setState(() {
-        _strRefTemp = ohmToTemp(_configValue[0]);
+        _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage
+            .ohmToTemp(_configValue[0].toDouble())
+            .toStringAsFixed(1);
       });
     }
 
@@ -85,33 +94,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
     ConfigFileCtrl.tempCalGain = _configValue[2];
 
     await ConfigFileCtrl.setTempCalConfigData();
-  }
-
-  /***********************************************************************
-   *          저항 값을 온도로 변환하는 함수
-   ***********************************************************************////
-  String ohmToTemp(int resistance) {
-    const double R0 = 100.0; // PT100의 0°C에서의 저항값
-    const double A = 3.9083e-3;
-    const double B = -5.775e-7;
-    const double C = -4.183e-12; // 0°C 이하에서만 사용
-    double t = 0;
-
-    if (resistance >= R0) {
-      // 0°C 이상
-      t = (-A + sqrt(A * A - 4 * B * (1 - resistance / R0))) / (2 * B);
-    } else {
-      // 0°C 이하
-      t = -200.0; // 초기 추정값
-      double delta;
-      do {
-        final double R_t = R0 * (1 + A * t + B * t * t + C * (t - 100) * t * t);
-        final double dR_dt = R0 * (A + 2 * B * t + C * (3 * t * t - 200 * t));
-        delta = (resistance - R_t) / dR_dt;
-        t += delta;
-      } while (delta.abs() > 0.0001); // 수렴 조건
-    }
-    return t.toStringAsFixed(1);
   }
 
   @override
@@ -147,7 +129,9 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
         height: (screenHeight - barHeight * 2 - tabBarHeight),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? AssetImage(setupTempCalPathKor) : AssetImage(setupTempCalPath),
+            image: (ConfigFileCtrl.deviceConfigLanguage == 'Kor')
+                ? AssetImage(setupTempCalPathKor)
+                : AssetImage(setupTempCalPath),
             fit: BoxFit.cover,
           ),
         ),
@@ -157,23 +141,44 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
             SizedBox(width: 85),
             Column(
               children: [
-                SizedBox(height: 70),
+                SizedBox(height: 13),
                 /*************************************
                  *      Calibration DataTable
                  *************************************/
                 DataTable(
                   // border: TableBorder.all(color: Colors.red),    // 모양 확인용.
-                  headingRowHeight: 7,
+                  headingRowHeight: 65,
                   dataRowHeight: 48.4,
+
                   /// ### Header Text
-                  columns: const <DataColumn>[
-                    DataColumn(label: Text('')),
-                    DataColumn(label: Text('')),
-                    DataColumn(label: Text('')),
+                  columns: <DataColumn>[
+                    // DataColumn(label: Text('')),
+                    DataColumn(
+                      label: SizedBox(
+                        width: 120,
+                        height: 40,
+                        child: FilledButton(
+                          onPressed: (){},
+                          onLongPress: (){
+                            setState(() {
+                              for(int i = 0; i < totalChannel; i++){
+                                _isChannelChecked[i] = !_isChannelChecked[i];
+                              }
+                            });
+                          },
+                          style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.transparent)),
+                          child: null,
+                        ),
+                      ),
+                    ),
+                    const DataColumn(label: Text('')),
+                    const DataColumn(label: Text('')),
                   ],
+
                   /// ### Cell Text
-                  rows: List<DataRow>.generate(totalChannel, (index) =>
-                    DataRow(
+                  rows: List<DataRow>.generate(
+                    totalChannel,
+                    (index) => DataRow(
                       cells: <DataCell>[
                         DataCell(
                           SizedBox(
@@ -197,25 +202,21 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
                             ),
                           ),
                         ),
-                        DataCell(
-                          Consumer<HotpadCtrl>(
-                            builder: (context, hotpadCtrlProvider, _) {
-                              return SizedBox(
-                                width: 120,
-                                child: Text(
-                                  hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              );
-                            },
-                          )
-                        ),
+                        DataCell(Consumer<HotpadCtrl>(
+                          builder: (context, hotpadCtrlProvider, _) {
+                            return SizedBox(
+                              width: 120,
+                              child: Text(hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            );
+                          },
+                        )),
                         DataCell(
                           SizedBox(
                             width: 120,
                             child: Text(
-                              // 'CalValue ${index + 1}',
                               ConfigFileCtrl.tempCalData[index].toStringAsFixed(2),
                               textAlign: TextAlign.center,
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -282,7 +283,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
                           width: 170,
                           height: 30,
                           child: LinearProgressIndicator(
-                            // value: progressStorageValue,
                             value: _calProgressValue,
                             backgroundColor: Colors.white,
                             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E90FF)),
@@ -311,10 +311,9 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
                   children: [
                     SizedBox(width: 60),
                     ElevatedButton(
-                      onPressed: (){},      // <---!@#
+                      onPressed: () {_runCalData();},
                       style: btnStyle,
-                      child: Text(
-                        languageProvider.getLanguageTransValue('Start Calibration'),
+                      child: Text(languageProvider.getLanguageTransValue('Start Calibration'),
                         style: TextStyle(
                           fontSize: (defaultFontSize + 6),
                           fontWeight: FontWeight.bold,
@@ -328,10 +327,11 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
                   children: [
                     SizedBox(width: 60),
                     ElevatedButton(
-                      onPressed: (){},      // <---!@#
+                      onPressed: () {
+                        _initCalData(context, languageProvider);
+                      },
                       style: btnStyle,
-                      child: Text(
-                        languageProvider.getLanguageTransValue('Reset Calibration'),
+                      child: Text(languageProvider.getLanguageTransValue('Reset Calibration'),
                         style: TextStyle(
                           fontSize: (defaultFontSize + 6),
                           fontWeight: FontWeight.bold,
@@ -351,11 +351,11 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
   /***********************************************************************
    *          기본 TextField를 생성하는 함수
    ***********************************************************************////
-  Widget _setPositionTextField({
-    required int index,
-    double width = 90,
-    double height = 35,
-    int maxRange = 120}) {
+  Widget _setPositionTextField(
+      {required int index,
+      double width = 90,
+      double height = 35,
+      int maxRange = 120}) {
     return SizedBox(
       width: width,
       height: height,
@@ -382,6 +382,108 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver{
       ),
     );
   }
+  /***********************************************************************
+   *          온도 교정 함수
+   ***********************************************************************////
+  void _runCalData() async{
+    int count = 0;
+    int defaultCalOhm = ConfigFileCtrl.tempCalOhm;
+    List<double> tmpCalList = List.filled(totalChannel, 0.0);
+    HotpadCtrl hotpadCtrlProvider = Provider.of<HotpadCtrl>(context, listen: false);
+    _calProgressValue = 0;
+    hotpadCtrlProvider.isIndicator = true;
+
+    /// ### 이전 캘리브레이션 데이터 값을 초기화
+    setState(() {
+      for(int i = 0; i < totalChannel; i++){
+        ConfigFileCtrl.tempCalData[i] = 0;
+      }
+    });
+    await Future.delayed(Duration(seconds: 2));
+
+    /// ### 1초 간격으로 캘리브레이션 시작
+    Timer.periodic(Duration(seconds: 1), (timer){
+      count++;
+      setState(() {
+        _calProgressValue = count.toDouble() / ConfigFileCtrl.tempCalTime.toDouble();
+      });
+      for(int i = 0; i < totalChannel; i++){
+        if(_isChannelChecked[i] == true){
+          double tmpCal = defaultCalOhm - hotpadCtrlProvider.serialCtrl.rxPackage.rtdOhm[i];
+          tmpCalList[i] += tmpCal;
+        }
+      }
+
+      /// ### 캘리브레이션 데이터를 적용 및 저장
+      if(count == ConfigFileCtrl.tempCalTime){
+        // count = ConfigFileCtrl.tempCalTime;
+        timer.cancel();
+        setState(() {
+          for(int i = 0; i < totalChannel; i++){
+            ConfigFileCtrl.tempCalData[i] = tmpCalList[i] / ConfigFileCtrl.tempCalTime;
+          }
+        });
+        hotpadCtrlProvider.isIndicator = false;
+        ConfigFileCtrl.setTempCalData();
+      }
+    });
+
+  }
+  /***********************************************************************
+   *          온도 교정 초기화 ShowDialog 함수
+   ***********************************************************************////
+  Future<void> _initCalData(BuildContext context, LanguageProvider languageProvider) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            languageProvider.getLanguageTransValue('Reset Calibration'),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width / 2,
+            child: Text(languageProvider.getLanguageTransValue('Are you sure you want to reset the temperature calibration values?')),
+          ),
+          actions: [
+            SizedBox(
+              width: 120,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                child: Text(
+                  languageProvider.getLanguageTransValue('Cancel'),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 120,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    for(int i = 0; i < totalChannel; i++){
+                      ConfigFileCtrl.tempCalData[i] = 0;
+                    }
+                  });
+                  ConfigFileCtrl.setTempCalData();
+                  Navigator.of(context).pop();
+                },
+                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                child: Text(
+                  languageProvider.getLanguageTransValue('OK'),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 /***********************************************************************
@@ -393,8 +495,10 @@ class _CustomRangeTextInputFormatter extends TextInputFormatter {
   _CustomRangeTextInputFormatter({required this.max});
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue,
-      TextEditingValue newValue,) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) {
       return newValue;
     }

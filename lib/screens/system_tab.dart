@@ -544,9 +544,10 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                     child: Text(
                       languageProvider.getLanguageTransValue('Cancel'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -554,9 +555,10 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                   width: 120,
                   child: ElevatedButton(
                     onPressed: () => authenticate(setState),
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                     child: Text(
                       languageProvider.getLanguageTransValue('Change'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

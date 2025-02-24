@@ -65,12 +65,15 @@ class StatusBarPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 3),
-                Text(
-                  '${languageProvider.getLanguageTransValue('Internal Power')} : '
-                      '${hotpadCtrlProvider.serialCtrl.rxPackage.dcVolt}V/'
-                      '${hotpadCtrlProvider.serialCtrl.rxPackage.dcCrnt}A',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                SizedBox(
+                  width: 160,
+                  child: Text(
+                    '${languageProvider.getLanguageTransValue('Internal Power')} : '
+                        '${hotpadCtrlProvider.serialCtrl.rxPackage.dcVolt}V/'
+                        '${hotpadCtrlProvider.serialCtrl.rxPackage.dcCrnt}A',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

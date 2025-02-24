@@ -15,8 +15,7 @@ class GraphPage extends StatefulWidget {
   State<GraphPage> createState() => GraphPageState();
 }
 
-class GraphPageState extends State<GraphPage>
-    with AutomaticKeepAliveClientMixin {
+class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin {
   late ZoomPanBehavior _zoomPanBehavior;
   late TrackballBehavior _trackballBehavior;
   late DateTimeAxis _dateTimeAxis;
@@ -24,21 +23,17 @@ class GraphPageState extends State<GraphPage>
   late int _graphCount;
   final List<bool> _isVisibleSeries = List.filled(10, true);
   final List<List<ChartData>> _chartDataSeries = List.generate(10, (_) => []);
+  final List<List<ChartData>> _liveCharDataSeries = List.generate(10, (_) => []);
   final List<Color> bkColor = [
-    Colors.white,
-    Color(0xFF808080),
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.yellow,
-    Color(0xFFFF00FF),
-    Color(0xFF00FFFF),
-    Colors.orange,
-    Color(0xFF4682B4),
+    Colors.white, Color(0xFF808080), Colors.red, Colors.green, Colors.blue,
+    Colors.yellow, Color(0xFFFF00FF), Color(0xFF00FFFF), Colors.orange, Color(0xFF4682B4),
   ];
 
   late bool _isChartEnable;
   late String chartTitle;
+  late int _liveCount;
+
+  static const int defaultLiveCount = 10;        // defaultLiveCount * 10sec
 
   @override
   bool get wantKeepAlive => true;
@@ -50,6 +45,7 @@ class GraphPageState extends State<GraphPage>
     _isChartEnable = true;
     _graphCount = 0;
     chartTitle = '';
+    _liveCount = 0;
 
     // 그래프 확대/축소 및 이동 동작 설정
     _zoomPanBehavior = ZoomPanBehavior(
@@ -67,6 +63,9 @@ class GraphPageState extends State<GraphPage>
     );
 
     _dateTime = DateTime.now();
+    _dateTime = DateTime(
+        _dateTime.year, _dateTime.month, _dateTime.day,
+        _dateTime.hour, 0, 0);
 
     // 그래프의 X축 설정
     _setXAxis(_dateTime, _dateTime.add(Duration(minutes: 120)), interval: 10);
@@ -141,10 +140,8 @@ class GraphPageState extends State<GraphPage>
                       builder: (context, hotpadCtrlProvider, _) {
                         return _cellRowItem(
                           index: index,
-                          strTemp: hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index],
-                          color: _isVisibleSeries[index]
-                              ? bkColor[index]
-                              : Colors.transparent,
+                          strTemp: hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index],
+                          color: _isVisibleSeries[index] ? bkColor[index] : Colors.transparent,
                         );
                       },
                     ),
@@ -177,11 +174,7 @@ class GraphPageState extends State<GraphPage>
             child: Text(
               languageProvider.getLanguageTransValue('Select\nunselect/all'),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle( color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -192,11 +185,7 @@ class GraphPageState extends State<GraphPage>
           child: Text(
             languageProvider.getLanguageTransValue('Temp\n[℃]'),
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -221,18 +210,12 @@ class GraphPageState extends State<GraphPage>
             children: [
               Checkbox(
                 value: _isVisibleSeries[index],
-                onChanged: (bool? value) {
-                  _updateVisibleSeries(index, value!);
-                },
+                onChanged: (bool? value) {_updateVisibleSeries(index, value!);},
               ),
               Text(
                 'CH${(index + 1).toString().padLeft(2, '0')}',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -244,11 +227,7 @@ class GraphPageState extends State<GraphPage>
           child: Text(
             strTemp,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -307,16 +286,7 @@ class GraphPageState extends State<GraphPage>
               size: 22,
               color: (_isChartEnable == true) ? Colors.black45 : Colors.black,
             ),
-            onPressed: (_isChartEnable == true) ? null : () {
-                DateTime minDate = DateTime.now();
-                DateTime maxDate = minDate.add(Duration(minutes: 120));
-
-                setState(() {
-                  chartTitle = '';
-                  _isChartEnable = true;
-                  _setXAxis(minDate, maxDate);
-                });
-              },
+            onPressed: (_isChartEnable == true) ? null : () {liveChartInit();},
             style: ElevatedButton.styleFrom(fixedSize: Size(110, 35)),
             label: Text(
               languageProvider.getLanguageTransValue('Live'),
@@ -347,18 +317,12 @@ class GraphPageState extends State<GraphPage>
               size: 22,
               color: Colors.black,
             ),
-            onPressed: () {
-              _searchGraphFile(context, languageProvider);
-            },
-            style: ElevatedButton.styleFrom(
-              fixedSize: Size(110, 35),
-            ),
+            onPressed: () {_searchGraphFile(context, languageProvider);},
+            style: ElevatedButton.styleFrom(fixedSize: Size(110, 35)),
             label: Text(
               languageProvider.getLanguageTransValue('Search'),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         )
@@ -374,11 +338,21 @@ class GraphPageState extends State<GraphPage>
     List<String> selectedFiles = [];
     String? selectPath;
     String? selectFileName;
+    String msgText = '';
 
     void updateFileList(String path){
       selectedFiles = FileCtrl.searchGraphFileList(path);
       String nowFile = FileCtrl.nowGraphFileName;
       selectedFiles.removeWhere((file) => file == nowFile);
+    }
+
+    /// ### message Text 출력 함수
+    void showMessage(StateSetter setState, String msg) async{
+      setState(() {
+        msgText = languageProvider.getLanguageTransValue(msg);
+      });
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {msgText = '';});
     }
 
     showDialog(
@@ -393,7 +367,6 @@ class GraphPageState extends State<GraphPage>
                 style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold),
               ),
               content: SizedBox(
-                width: MediaQuery.of(context).size.width / 3,
                 height: MediaQuery.of(context).size.height / 3,
                 child: Column(
                   children: [
@@ -402,9 +375,7 @@ class GraphPageState extends State<GraphPage>
                     /// ### Graph Date
                     SizedBox(
                       width: 300,
-                      child: Text(
-                        languageProvider.getLanguageTransValue('Date'),
-                        // textAlign: TextAlign.center,
+                      child: Text(languageProvider.getLanguageTransValue('Date'),
                         style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -428,9 +399,7 @@ class GraphPageState extends State<GraphPage>
                     /// ### Graph File List
                     SizedBox(
                       width: 300,
-                      child: Text(
-                        languageProvider.getLanguageTransValue('File List'),
-                        // textAlign: TextAlign.center,
+                      child: Text(languageProvider.getLanguageTransValue('File List'),
                         style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -443,6 +412,8 @@ class GraphPageState extends State<GraphPage>
                           .toList(),
                       hintText: languageProvider.getLanguageTransValue('select...'),
                     ),
+                    SizedBox(height: 10),
+                    Text(msgText, style: TextStyle(color: Colors.red)),
                   ],
                 ),
               ),
@@ -450,16 +421,38 @@ class GraphPageState extends State<GraphPage>
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      _isChartEnable = false;
-                      List<Map<String, dynamic>> graphData = await FileCtrl.loadGraphData(selectPath!, selectFileName!);
-                      chartTitle = 'File : $selectFileName';
-                      drawGraphDataFile(graphData);
+                    onPressed: () {
                       Navigator.of(context).pop();
                     },
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
+                    child: Text(
+                      languageProvider.getLanguageTransValue('Cancel'),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if((selectPath != null) && (selectFileName != null)){
+                        _isChartEnable = false;
+                        _liveCharDataSeries.clear();
+                        _liveCharDataSeries.addAll(_chartDataSeries);
+
+                        List<Map<String, dynamic>> graphData = await FileCtrl.loadGraphData(selectPath!, selectFileName!);
+                        chartTitle = 'File : $selectFileName';
+                        drawGraphDataFile(graphData);
+                        Navigator.of(context).pop();
+                      }
+                      else{
+                        showMessage(setState, "There are no selected items");
+                      }
+                    },
+                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                     child: Text(
                       languageProvider.getLanguageTransValue('OK'),
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -511,26 +504,21 @@ class GraphPageState extends State<GraphPage>
                 decimalPlaces: 0,
                 minorGridLines: MinorGridLines(color: Colors.transparent),
                 majorTickLines: MajorTickLines(size: 10),
-                minorTickLines:
-                    MinorTickLines(size: 5, width: 1, color: Colors.white),
+                minorTickLines: MinorTickLines(size: 5, width: 1, color: Colors.white),
                 minorTicksPerInterval: 5,
                 labelStyle: TextStyle(color: Colors.white),
                 maximum: 120,
               ),
 
               /// ### Series ###
-              series: List<FastLineSeries<ChartData, DateTime>>.generate(
-                10,
+              series: List<FastLineSeries<ChartData, DateTime>>.generate(10,
                 (index) => FastLineSeries<ChartData, DateTime>(
                   name: 'CH${(index + 1).toString().padLeft(2, '0')}',
                   dataSource: _chartDataSeries[index],
                   markerSettings: MarkerSettings(isVisible: false),
                   xValueMapper: (ChartData data, _) => data.time,
                   yValueMapper: (ChartData data, _) => data.value,
-                  color: _isVisibleSeries[index]
-                      ? bkColor[index]
-                      : Colors.transparent,
-                ),
+                  color: _isVisibleSeries[index] ? bkColor[index] : Colors.transparent),
               ),
             ),
           );
@@ -554,24 +542,30 @@ class GraphPageState extends State<GraphPage>
     FileCtrl.saveGraphData(
         tmpDateTime,
         hotpadCtrlProvider.getHeatingStatusList,
-        hotpadCtrlProvider.serialCtrl.rxPackage.rtd);
+        hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp);
 
-    if (_isChartEnable == false) {
-      return;
-    }
-
-    for (int index = 0; index < 10; index++) {
-      double value =
-          double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index]) ?? 0.0;
-      _chartDataSeries[index].add(ChartData(tmpDateTime, value));
+    for (int index = 0; index < totalChannel; index++) {
+      double value = double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index]) ?? 0.0;
+      if (_isChartEnable == false) {
+        _liveCharDataSeries[index].add(ChartData(tmpDateTime, value));
+      }
+      else{
+        _chartDataSeries[index].add(ChartData(tmpDateTime, value));
+      }
     }
 
     debugPrint(
-        "Graph Data] [$tmpDateTime] ${hotpadCtrlProvider.serialCtrl.rxPackage.status},${hotpadCtrlProvider.serialCtrl.rxPackage.rtd}");
+        "Graph Data] [$tmpDateTime] ${hotpadCtrlProvider.serialCtrl.rxPackage.status},${hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp}");
+
+    if (_isChartEnable == false) {
+      if(_liveCount++ >= defaultLiveCount){
+          liveChartInit();
+      }
+      return;
+    }
 
     // 그래프가 x축의 maximum 부근에 도달하면 maximum을 확장함.
-    if (tmpDateTime
-        .isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
+    if (tmpDateTime.isAfter(_dateTimeAxis.maximum!.subtract(Duration(minutes: 1)))) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         DateTime tmpMax = DateTime.now().add(Duration(minutes: 60));
         int durationInTime = tmpMax.difference(_dateTimeAxis.minimum!).inMinutes;
@@ -598,13 +592,15 @@ class GraphPageState extends State<GraphPage>
     }
 
     DateTime minDate = DateTime.parse(data[0]['time']);
+    minDate = DateTime(minDate.year, minDate.month, minDate.day,
+        minDate.hour, 0, 0);
     DateTime lastDate = DateTime.parse(data[(data.length-1)]['time']);
     DateTime maxDate = minDate.add(Duration(minutes: 120));
     Duration diff = lastDate.difference(maxDate);
 
     if(!diff.isNegative){
-      int tmpVal = (diff.inMinutes % 60) + 1;
-      maxDate = maxDate.add(Duration(minutes: (60 * tmpVal)));
+      maxDate = DateTime(lastDate.year, lastDate.month, lastDate.day,
+          (lastDate.hour + 1), 0, 0);
     }
 
     _setXAxis(minDate, maxDate);
@@ -635,6 +631,36 @@ class GraphPageState extends State<GraphPage>
       edgeLabelPlacement: EdgeLabelPlacement.shift,
       labelStyle: TextStyle(color: Colors.white),
     );
+  }
+
+  void liveChartInit(){
+    _chartDataSeries.clear();
+    _chartDataSeries.addAll(_liveCharDataSeries);
+    _liveCharDataSeries.clear();
+
+    DateTime minDate = _chartDataSeries.first.first.time;
+    DateTime maxDate = _chartDataSeries.first.last.time;
+    minDate = DateTime(minDate.year, minDate.month, minDate.day,
+        minDate.hour, 0, 0);
+    DateTime tmpDate = minDate.add(Duration(minutes: 120));
+    Duration diff = tmpDate.difference(maxDate);
+
+    if(diff.isNegative) {
+      maxDate = DateTime(maxDate.year, maxDate.month, maxDate.day,
+          (maxDate.hour + 1), 0, 0);
+    }
+    else{
+      maxDate = tmpDate;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState((){
+        chartTitle = '';
+        _isChartEnable = true;
+        _liveCount = 0;
+        _setXAxis(minDate, maxDate);
+      });
+    });
   }
 }
 

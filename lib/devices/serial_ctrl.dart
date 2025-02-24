@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import 'package:xml/xml.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../devices/hotpad_ctrl.dart';
 import '../constant/user_style.dart';
+import '../devices/config_file_ctrl.dart';
 
 enum SerialPortStatus {
   none, noFound, noOpen, portOpen, disconnected,
@@ -19,7 +21,8 @@ enum SerialPortStatus {
 class TxPackage {
   final String _header = "STR";
   final List<String> _operate = List.filled(10, '0');
-  List<int> _cmd = List.filled(10, 0);
+  // List<int> _cmd = List.filled(10, 0);
+  List<int> _cmd = List.filled(10, 2);      // <---!@# Test
   List<int> _maxTemp = List.filled(10, 0);
   int _operateFAN = 0;
   int _bootmode = 0;
@@ -86,31 +89,61 @@ class TxPackage {
  *          수신 패키지 클래스
  *****************************************************************************////
 class RxPackage {
+  /// ### RTD Constant ###
+  static const double kVRef = 3300.0;                           // mV
+  static const double kADCResolution = 4096.0;
+  static const double kRTDGain = 11.0;
+  static const double kRRtd = 1000.0;                           // ohm
+  static const double kRdivH = 1000.0;                          // ohm
+  static const double kRdivL = 5100.0;                          // ohm
+  /// ### AC Constant ###
+  static const double kACSens = 132;                            // mV/A
+  static const double kACGain = 0.5;
+  static const double kACVf = (300 * 2);                        // diode Vf(mV) x 2
+  static const double kN = 85;                                  // 권선비
+  /// ### DC Constant ###
+  static const double kDCR1 = 10000;                            // DC R1 ohm
+  static const double kDCR2 = 2700;                             // DC R2 ohm
+  static const double kDCVoltGain = (kDCR1 + kDCR2) / kDCR2;    // R1//R2 전압분배
+  static const double kRshunt = 0.003;                          // Rshut ohm
+  static const double kDCSens = 200;                            // V/V
+  static const double kDCCrntGain = kDCSens * kRshunt;          // V/A
+  static const double kSqrt2 = 1.41421356237309;  // sqrt(2)
+  static const double kVdiv = (kVRef * kRdivL/(kRdivL+kRdivH));
+  static const double kVlsb = (kVRef/kADCResolution);
+
   DateTime _rxTime = DateTime.now();
   final List<String> _status = List.filled(10, '0');
-  final List<String> _rtd = List.filled(10, '0');
-  final List<String> _padCrnt = List.filled(10, '0.0');
+  final List<String> _rawRTD = List.filled(10, '0');
+  final List<String> _rtdTemp = List.filled(10, '0');
+  final List<double> _rtdOhm = List.filled(10, 0);
+  final List<String> _rawPadCrnt = List.filled(10, '0');
+  final List<double> _padCrnt = List.filled(10, 0.0);
   final List<String> _padCmd = List.filled(10, '0.0');
   final List<String> _padCrntOhm = List.filled(10, '0');
   String _acVolt = '';
+  double _acVoltValue = 0.0;
+  double _acTotalCurrent = 0.0;
   String _dcVolt = '';
   String _dcCrnt = '';
   String _intTemp = '';
-  int _acFreqSel = 0;
+  double _acFreqSel = 0;
   int _statusFAN = 0;
   String _fwVer = '0.0.0';
 
   DateTime get rxTime => _rxTime;
   List<String> get status => _status;
-  List<String> get rtd => _rtd;
-  List<String> get padCurrent => _padCrnt;
+  List<String> get rtdTemp => _rtdTemp;
+  List<double> get rtdOhm => _rtdOhm;
+  List<double> get padCurrent => _padCrnt;
   List<String> get padCmd => _padCmd;
   List<String> get padOhm => _padCrntOhm;
   String get acVolt => _acVolt;
+  double get acVoltValue => _acVoltValue;
+  double get acTotalCurrent => _acTotalCurrent;
   String get dcVolt => _dcVolt;
   String get dcCrnt => _dcCrnt;
   String get intTemp => _intTemp;
-  int get acFreqSel => _acFreqSel;
   int get statusFAN => _statusFAN;
   String get fwVer => _fwVer;
 
@@ -120,39 +153,140 @@ class RxPackage {
   void setRxPackageData(List<String> data) {
     _rxTime = DateTime.now();
 
+    _acVoltValue = _convertRawACVolt(data[40]);
+    _acVolt = _acVoltValue.toStringAsFixed(1);
+    _dcVolt = _convertRawDCVolt(data[41]);
+    _dcCrnt = _convertRawDCCrnt(data[42]);
+    _intTemp = _convertRawIntTemp(data[43]);
+    _acFreqSel = (data[44] == '0') ? 120.0 : 100.0;
+    _statusFAN = int.tryParse(data[45]) ?? 0;
+    _fwVer = data[46];
+
     for (int i = 0; i < _status.length; i++) {
       _status[i] = data[i];
     }
-    for (int i = 0; i < _rtd.length; i++) {
-      _rtd[i] = data[10 + i];
-    }
-    for (int i = 0; i < _padCrnt.length; i++) {
-      _padCrnt[i] = data[20 + i];
+    for (int i = 0; i < _rtdTemp.length; i++) {
+      _rawRTD[i] = data[10 + i];
     }
     for (int i = 0; i < _padCmd.length; i++) {
       _padCmd[i] = data[30 + i];
     }
+    for (int i = 0; i < _padCrnt.length; i++) {
+      _rawPadCrnt[i] = data[20 + i];
+    }
 
-    _acVolt = data[40];
-    _dcVolt = data[41];
-    _dcCrnt = data[42];
-    _intTemp = data[43];
-    _acFreqSel = int.tryParse(data[44]) ?? 0;
-    _statusFAN = int.tryParse(data[45]) ?? 0;
-    _fwVer = data[46];
-    _padCurrentToOhm(_padCrnt);
+    _padRawRtdToTemp(_rawRTD);
+    _padRawCrntToPadData(_rawPadCrnt);
+  }
+  /*****************************************************************************
+   *          AC Voltage로 변환하는 함수
+   *****************************************************************************////
+  double _convertRawACVolt(String data){
+    double tmpVolt = 0.0;
+
+    double? dVadc = double.tryParse(data)! * kVlsb;
+    double dVdc = dVadc / kACGain;
+    double dVtrans = (dVdc + kACVf) / kSqrt2;
+    tmpVolt = dVtrans * kN / 1000;
+
+    return tmpVolt;
+  }
+  /*****************************************************************************
+   *          DC Voltage로 변환하는 함수
+   *****************************************************************************////
+  String _convertRawDCVolt(String data){
+    double tmpVolt = 0.0;
+
+    double? dVadc = double.tryParse(data)! * kVlsb;
+    tmpVolt = dVadc * kDCVoltGain / 1000;
+
+    return tmpVolt.toStringAsFixed(1);
+  }
+  /*****************************************************************************
+   *          DC Current로 변환하는 함수
+   *****************************************************************************////
+  String _convertRawDCCrnt(String data){
+    double tmpCrnt = 0.0;
+
+    double? dVadc = double.tryParse(data)! * kVlsb;
+    tmpCrnt = dVadc * kDCCrntGain / 1000;
+
+    if(tmpCrnt > 1){
+      return tmpCrnt.toStringAsFixed(1);
+    }
+    else{
+      return tmpCrnt.toStringAsFixed(3);
+    }
+  }
+  /*****************************************************************************
+   *          패드 RawRTD를 온도로 변환하는 함수
+   *****************************************************************************////
+  void _padRawRtdToTemp(List<String> list) {
+    for (int i = 0; i < list.length; i++) {
+      double dVadc = double.tryParse(list[i])! * kVlsb;
+      double dVo = dVadc / kRTDGain;
+      double dVrtd = dVo + kVdiv;
+      _rtdOhm[i] = kRRtd*(kVRef - dVrtd) / dVrtd + ConfigFileCtrl.tempCalData[i];
+      _rtdTemp[i] = ohmToTemp(_rtdOhm[i]).toStringAsFixed(1);
+    }
+  }
+  /*****************************************************************************
+   *          패드 RawCrnt를 패드 저항과 전류 변환하는 함수
+   *****************************************************************************////
+  void _padRawCrntToPadData(List<String> list) {
+    double dItotal = 0.0;
+    for (int i = 0; i < list.length; i++) {
+      double dVadc = double.tryParse(list[i])! * kVlsb;
+      double dIac = dVadc / kACSens;
+      double dIpad = dIac * (double.tryParse(_padCmd[i])! / _acFreqSel);
+      int iRpad = 0;
+      if(dIac > 0){
+        iRpad = (_acVoltValue / dIac).toInt();
+      }
+      dItotal += dIpad;
+
+      _padCrntOhm[i] = iRpad.toString();
+      _padCrnt[i] = dIpad;
+    }
+
+   _acTotalCurrent = dItotal * _acVoltValue;
+  }
+  /*****************************************************************************
+   *          Int.Temp로 변환하는 함수
+   *****************************************************************************////
+  String _convertRawIntTemp(String data){
+    double tmpTemp = 0.0;
+
+    double? dVadc = double.tryParse(data)! * kVlsb;
+
+    return '25.4';
   }
 
-  /*****************************************************************************
-   *          패드 전류를 저항으로 변환하는 함수
-   *****************************************************************************////
-  void _padCurrentToOhm(List<String> list) {
-    for (int i = 0; i < list.length; i++) {
-      double tmpPadOhm = 0;
-      double dCurrentVal = double.tryParse(list[i]) ?? 0.0;
-      tmpPadOhm = dCurrentVal * 10;   // <---!@# 테스트
-      _padCrntOhm[i] = tmpPadOhm.toStringAsFixed(0);
+  /***********************************************************************
+   *          저항 값을 온도로 변환하는 함수
+   ***********************************************************************////
+  double ohmToTemp(double resistance) {
+    const double kR0 = 100.0; // PT100의 0°C에서의 저항값
+    const double kA = 3.9083e-3;
+    const double kB = -5.775e-7;
+    const double kC = -4.183e-12; // 0°C 이하에서만 사용
+    double t = 0;
+
+    if (resistance >= kR0) {
+      // 0°C 이상
+      t = (-kA + sqrt(kA * kA - 4 * kB * (1 - resistance / kR0))) / (2 * kB);
+    } else {
+      // 0°C 이하
+      t = -200.0; // 초기 추정값
+      double delta;
+      do {
+        final double kRt = kR0 * (1 + kA * t + kB * t * t + kC * (t - 100) * t * t);
+        final double dRdt = kR0 * (kA + 2 * kB * t + kC * (3 * t * t - 200 * t));
+        delta = (resistance - kRt) / dRdt;
+        t += delta;
+      } while (delta.abs() > 0.0001); // 수렴 조건
     }
+    return t;
   }
 }
 
@@ -307,4 +441,6 @@ class SerialCtrl{
       debugPrint('T<<<[${DateTime.now()}] $dataToSend');
     }
   }
+
+
 }

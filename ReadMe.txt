@@ -1,3 +1,35 @@
+### 25/02/24
+	1. Serial Data Conversion
+		- RawRTD(ADC) -> Temperature
+		- RawPADCurrent(ADC) -> PAD Current & Ohm
+		- RawACVoltage(ADC) -> AC Voltage
+		- RawDCVoltage(ADC) -> DC Voltage
+		- RawDCCurrent(ADC) -> DC Current
+		- RawIntTemp(ADC) -> Int.Temperature
+	
+	2. Setup Page - Temp.Calibration
+		- 채널 선택 버튼 LongPress시 모든 채널의 상태가 반전
+		- 온도 교정 초기화 버튼 클릭시 인스턴트 메세지가 출력되며 다시 확인
+		- 온도 교정 시작 버튼 클릭시 Indicator가 활성화되면서 Calibration 실행
+			--> Calibration 후 데이터는 저장 및 즉시 RTD 온도에 적용
+		
+	3. 기타 수정 사항
+		- Graph Page
+			--> 저장된 그래프 출력이 100초 후 Live 화면으로 변할 때 오류가 발생하여 수정
+		- Home Page
+			--> PAD 전류가 1A보다 작은 경우 소수점 3자리, 큰 경우 소수점 1자리 출력
+			--> AC Power 1W보다 작은 경우 소수점 3자리, 큰 경우 소수점 1자리 출력
+			--> AC Power Progress 연산을 Control Page의 과전류값 * 10ch로 계산
+			--> 앱시작시 _progressDataTable()함수의 매개변수가 NaN 또는 isInfinite일 경우
+				final validValue = value.isNaN || value.isInfinite ? 0.0 : value.clamp(0.0, 1.0);
+				위와 같이 하여 NaN이나 무한대일 경우 0.0으로 설정되고, 유효한 범위로 제한한다.
+		
+### 25/02/21
+	1. 기타 기능 수정
+		- Graph Page의 Search에서 항목을 선택하지 않은 상태에서 확인버튼을 누를 경우 오류 발생 수정
+		- Setup Page의 Calibration 리스트에 Temp 항목 수정
+		- Setup_Ctrl.dart에 ohmToTemp()함수를 hotpag_ctrl.dart로 이동
+		
 ### 25/02/20
 	1. Backup Page
 		- USB 데이터 복사 기능 구현

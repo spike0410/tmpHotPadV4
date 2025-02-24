@@ -74,8 +74,8 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
               ),
               Row(
                 children: [
-                  selectedIndex <= 7        // <---!@# Test
-                  // selectedIndex == 0
+                  // selectedIndex <= 7        // <---!@# Test
+                  selectedIndex == 0
                     ? Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

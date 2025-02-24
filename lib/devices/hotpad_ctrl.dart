@@ -34,6 +34,13 @@ class HotpadCtrl with ChangeNotifier{
   double _usedStorage = 0.0;
   double _storageProgressValue = 0.0;
   static const platform = MethodChannel('internal_storage');
+  bool _isIndicator = false;
+
+  bool get isIndicator => _isIndicator;
+  set isIndicator(bool val){
+    _isIndicator = val;
+    notifyListeners();
+  }
 
   set isGraphLive(bool val) => _isGraphLive = val;
   double get totalStorage => _totalStorage;
@@ -411,7 +418,7 @@ class HotpadCtrl with ChangeNotifier{
       if (_chStatus[index] == ChannelStatus.start) {
         if (_isPU45Enable[index] == false) { // PU15
           if (_isPreheatingBtn[index] == false) { // heating
-            if ((double.tryParse(serialCtrl.rxPackage.rtd[index]) ?? 0.0) >= ConfigFileCtrl.pu15TargetTemp) {
+            if ((double.tryParse(serialCtrl.rxPackage.rtdTemp[index]) ?? 0.0) >= ConfigFileCtrl.pu15TargetTemp) {
               _remainTime[index] -= 1;
               _heatingStatus[index] = HeatingStatus.holding1st;
             }
@@ -506,7 +513,7 @@ class HotpadCtrl with ChangeNotifier{
     tmpLog[1] = _isGraphLive.toString();
     tmpLog[2] = _sPU45Enable.join(',');
     tmpLog[3] = _heatingStatus.toList().join(',').replaceAll('HeatingStatus.', '');
-    tmpLog[4] = serialCtrl.rxPackage.rtd.join(',');
+    tmpLog[4] = serialCtrl.rxPackage.rtdTemp.join(',');
     tmpLog[5] = serialCtrl.rxPackage.padCurrent.join(',');
     tmpLog[6] = serialCtrl.rxPackage.padCmd.join(',');
     tmpLog[7] = serialCtrl.rxPackage.padOhm.join(',');

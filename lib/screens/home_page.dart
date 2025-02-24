@@ -81,12 +81,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       index: index,
                       statusCh: hotpadCtrlProvider.getChannelStatus(index),
                       strChannel: (index + 1).toString().padLeft(2, '0'),
-                      currentTempValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtd[index]) ?? 0.0,
+                      currentTempValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index]) ?? 0.0,
                       setTemp: hotpadCtrlProvider.settingTempSelect(index),
                       remainTotalTimeValue: hotpadCtrlProvider.getRemainTotalTime(index),
                       remainTimeValue: hotpadCtrlProvider.getRemainTime(index),
                       textEditCtrl: _textEditCtrl[index],
-                      currentValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
+                      // currentValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
+                      currentValue: hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index],
                       strPADOhm: hotpadCtrlProvider.serialCtrl.rxPackage.padOhm[index],
                       strPADStatus: hotpadCtrlProvider.getHeatingStatusString(languageProvider, hotpadCtrlProvider.getHeatingStatus(index)),
                       isHighlighted: hotpadCtrlProvider.getIsPU45Enable(index),
@@ -220,7 +221,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _progressDataTable(
-                      value: _progressConvert(double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.acVolt)?? 0.0, 0, ConfigFileCtrl.acVoltHigh),
+                      value: _progressConvert(hotpadCtrlProvider.serialCtrl.rxPackage.acVoltValue, 0, ConfigFileCtrl.acVoltHigh),
                       text: hotpadCtrlProvider.serialCtrl.rxPackage.acVolt,
                       size: 18,
                       width: headerWidth[8] - 29,
@@ -267,8 +268,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _progressDataTable(
-                      value: 0.2,
-                      text: '2201W',
+                      value: _progressConvert(
+                          hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent,
+                          0,
+                          hotpadCtrlProvider.serialCtrl.rxPackage.acVoltValue*(ConfigFileCtrl.acCurrentHigh * totalChannel)),
+                      text: hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent == 0
+                          ? '${hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent.toStringAsFixed(1)}W'
+                          : hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent > 1 ?
+                            '${hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent.toStringAsFixed(1)}W'
+                          : '${hotpadCtrlProvider.serialCtrl.rxPackage.acTotalCurrent.toStringAsFixed(3)}W',
                       size: 18,
                       width: headerWidth[8] - 29,
                       forwardColor: Color(0xFFFFD700),
@@ -433,7 +441,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           child: _progressDataTable(
               value: _progressConvert(currentValue, 0, ConfigFileCtrl.acCurrentHigh),
               width: (cellWidth[5] - 10),
-              text: currentValue.toStringAsFixed(1),
+              text: (currentValue == 0)
+                  ? currentValue.toStringAsFixed(1) : ((currentValue > 1)
+                  ? currentValue.toStringAsFixed(1) : currentValue.toStringAsFixed(3)),
               size: 18,
               isProgressText: false,
               fontWeight: FontWeight.bold),
@@ -683,6 +693,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     double size = defaultFontSize,
     FontWeight fontWeight = FontWeight.normal,
   }) {
+    final validValue = value.isNaN || value.isInfinite ? 0.0 : value.clamp(0.0, 1.0);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -694,7 +706,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               width: width,
               height: 18,
               child: LinearProgressIndicator(
-                value: value,
+                value: validValue,
                 backgroundColor: backgroundColor,
                 valueColor: AlwaysStoppedAnimation<Color>(forwardColor),
               ),
@@ -703,7 +715,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               Positioned.fill(
                 child: Center(
                   child: Text(
-                    '${(value * 100).round()}%',
+                    '${(validValue * 100).round()}%',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
