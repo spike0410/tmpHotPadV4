@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -13,10 +12,10 @@ class BackupPage extends StatefulWidget {
   const BackupPage({super.key});
 
   @override
-  _BackupPageState createState() => _BackupPageState();
+  BackupPageState createState() => BackupPageState();
 }
 
-class _BackupPageState extends State<BackupPage> {
+class BackupPageState extends State<BackupPage> {
   static const platform = MethodChannel('usb_storage');
   bool isUSBConnect = false;
   double usbProgressValue = 0;
@@ -50,7 +49,6 @@ class _BackupPageState extends State<BackupPage> {
       }
     });
   }
-
   /***********************************************************************
    *          USB Storage 용량 확인 함수
    ***********************************************************************////
@@ -73,7 +71,6 @@ class _BackupPageState extends State<BackupPage> {
       debugPrint("Failed to get USB storage info: '${e.message}'.");
     }
   }
-
   /***********************************************************************
    *          USB 안전 제거 함수
    ***********************************************************************////
@@ -90,7 +87,6 @@ class _BackupPageState extends State<BackupPage> {
       debugPrint("Failed to eject USB storage: '${e.message}'.");
     }
   }
-
   /*****************************************************************************
    *          DropDownMenu에 선택된 항목으로 파일 크기를 계산하는 함수
    *****************************************************************************////
@@ -132,15 +128,15 @@ class _BackupPageState extends State<BackupPage> {
 
     List<String> subFolderList = FileCtrl.searchSubFolder();
 
-    final List<DropdownMenuEntry<String>> startItems
-    = subFolderList.map((String value) =>
-        DropdownMenuEntry<String>(value: value, label: value))
-        .toList();
+    final List<DropdownMenuEntry<String>> startItems =
+      subFolderList.map((String value) =>
+      DropdownMenuEntry<String>(value: value, label: value))
+      .toList();
 
-    final List<DropdownMenuEntry<String>> endItems
-    = subFolderList.map((String value) =>
-        DropdownMenuEntry<String>(value: value, label: value))
-        .toList();
+    final List<DropdownMenuEntry<String>> endItems =
+      subFolderList.map((String value) =>
+      DropdownMenuEntry<String>(value: value, label: value))
+      .toList();
     final TextEditingController startTextCtrl = TextEditingController();
     final TextEditingController endTextCtrl = TextEditingController();
 
@@ -228,10 +224,7 @@ class _BackupPageState extends State<BackupPage> {
                         '${languageProvider.getLanguageTransValue('Total')} : ${numberFormat.format(hotpadCtrlProvider.totalStorage.round())}MB'
                             ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(hotpadCtrlProvider.usedStorage.round())}MB'
                             ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format((hotpadCtrlProvider.totalStorage - hotpadCtrlProvider.usedStorage).round())}MB',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: (textSize - 4),
-                        ),
+                        style: TextStyle(color: Colors.black,fontSize: (textSize - 4)),
                       );
                     },
                   ),
@@ -248,10 +241,7 @@ class _BackupPageState extends State<BackupPage> {
                         ' / ${languageProvider.getLanguageTransValue('Usage')} : ${numberFormat.format(usbUsedStorage.round())}MB'
                         ' / ${languageProvider.getLanguageTransValue('Remain')} : ${numberFormat.format(usbFreeStorage.round())}MB'
                         : languageProvider.getLanguageTransValue('Empty'),
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: (textSize - 4),
-                    ),
+                    style: TextStyle(color: Colors.black,fontSize: (textSize - 4)),
                   ),
                 ),
               ),
@@ -272,18 +262,14 @@ class _BackupPageState extends State<BackupPage> {
                         child: LinearProgressIndicator(
                           value: hotpadCtrlProvider.storageProgressValue,
                           backgroundColor: Colors.white,
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
                         ),
                       ),
                       Positioned.fill(
                         child: Center(
                           child: Text(
                             '${(hotpadCtrlProvider.storageProgressValue * 100).toStringAsFixed(1)}%',
-                            style: TextStyle(
-                              fontSize: textSize,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: textSize, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -306,10 +292,7 @@ class _BackupPageState extends State<BackupPage> {
                           child: Text(isUSBConnect == true
                               ? '${(usbProgressValue * 100).toStringAsFixed(1)}%'
                               : '',
-                            style: TextStyle(
-                              fontSize: textSize,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: textSize, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -327,10 +310,7 @@ class _BackupPageState extends State<BackupPage> {
             height: 320,
             decoration: BoxDecoration(
               color: Color(0xFFE7E7E7),
-              border: Border.all(
-                color: Colors.black,
-                width: 1,
-              ),
+              border: Border.all(color: Colors.black, width: 1),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -379,21 +359,20 @@ class _BackupPageState extends State<BackupPage> {
                     /// ### 최대 선택 Button
                     ElevatedButton(
                       onPressed: isUSBConnect
-                          ? () {
-                        setState(() {
-                          selectedStartItem = startItems.first.value;
-                          selectedEndItem = endItems.last.value;
-                          startTextCtrl.text = selectedStartItem;
-                          endTextCtrl.text = selectedEndItem;
-                          // 새 항목을 선택하면 파일 크기를 다시 계산합니다.
-                          _calculateSelectedSize();
-                        });
-                      }
-                          : null,
+                        ? () {
+                          setState(() {
+                            selectedStartItem = startItems.first.value;
+                            selectedEndItem = endItems.last.value;
+                            startTextCtrl.text = selectedStartItem;
+                            endTextCtrl.text = selectedEndItem;
+                            // 새 항목을 선택하면 파일 크기를 다시 계산합니다.
+                            _calculateSelectedSize();
+                          });
+                        }
+                        : null,
                       style: btnStyle,
                       child: Text(languageProvider.getLanguageTransValue('Select Maximum'),
-                        style: TextStyle(
-                          color: isUSBConnect ? Colors.black : Colors.black45,
+                        style: TextStyle(color: isUSBConnect ? Colors.black : Colors.black45,
                           fontWeight: FontWeight.bold,
                           fontSize: (textSize - 4),
                         ),
@@ -499,20 +478,14 @@ class _BackupPageState extends State<BackupPage> {
                         });
                       },
                       checkColor: Colors.black,
-                      fillColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<WidgetState> states) {
-                            if (states.contains(WidgetState.disabled)) {
-                              return Colors.grey;
-                            }
-                            return Colors.white;
-                          }),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      side: const BorderSide(
-                        color: Colors.black,
-                        width: 1,
-                      ),
+                      fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+                          if (states.contains(WidgetState.disabled)) {
+                            return Colors.grey;
+                          }
+                          return Colors.white;
+                        }),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                      side: const BorderSide(color: Colors.black,width: 1),
                     ),
                     Text(languageProvider.getLanguageTransValue('Eject USB after copying is complete.'),
                       style: TextStyle(fontSize: textSize),
@@ -554,8 +527,7 @@ class _BackupPageState extends State<BackupPage> {
                         : null,
                       style: btnStyle1,
                       child: Text(languageProvider.getLanguageTransValue('Copy to USB'),
-                        style: TextStyle(
-                          color: isUSBConnect ? Colors.black : Colors.black45,
+                        style: TextStyle(color: isUSBConnect ? Colors.black : Colors.black45,
                           fontWeight: FontWeight.bold,
                           fontSize: (textSize - 4),
                         ),
@@ -596,17 +568,10 @@ class _BackupPageState extends State<BackupPage> {
             children: [
               /// ### 내부 저장 Data 삭제 Button
               ElevatedButton(
-                onPressed: () {
-                  _intDataDelete(context, languageProvider);
-                },
+                onPressed: () {_intDataDelete(context, languageProvider);},
                 style: btnStyle,
                 child: Text(languageProvider.getLanguageTransValue('Delete Int. Data'),
-                  style: TextStyle(
-                    // color: isUSBConnect ? Colors.black : Colors.black45,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: (textSize - 4),
-                  ),
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: (textSize - 4)),
                 ),
               ),
               SizedBox(width: 30),
@@ -616,7 +581,6 @@ class _BackupPageState extends State<BackupPage> {
       ),
     );
   }
-
   /*****************************************************************************
    *          내부 저장 데이터 삭제 다이얼로그 함수
    *****************************************************************************////
@@ -678,15 +642,12 @@ class _BackupPageState extends State<BackupPage> {
             title: Text(
               languageProvider.getLanguageTransValue('Check Delete'),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: defaultFontSize + 10,
-                  fontWeight: FontWeight.bold),
-            ),
+              style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold)),
             content: SizedBox(
               width: MediaQuery.of(context).size.width / 2,
               child: Text(
                 '${languageProvider.getLanguageTransValue('Do you really want to delete the file/folder?')}\n'
-                    '[${startTextCtrl.text} ~ ${endTextCtrl.text}]',
+                '[${startTextCtrl.text} ~ ${endTextCtrl.text}]',
                 style: TextStyle(fontSize: defaultFontSize + 4),
               ),
             ),
@@ -694,9 +655,7 @@ class _BackupPageState extends State<BackupPage> {
               SizedBox(
                 width: 120,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: () {Navigator.of(context).pop();},
                   style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                   child: Text(
                     languageProvider.getLanguageTransValue('Cancel'),
@@ -727,8 +686,7 @@ class _BackupPageState extends State<BackupPage> {
                     showDeleteMsg(setState, "The file/folder has been deleted.");
                   },
                   style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                  child: Text(
-                    languageProvider.getLanguageTransValue('OK'),
+                  child: Text(languageProvider.getLanguageTransValue('OK'),
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -745,13 +703,9 @@ class _BackupPageState extends State<BackupPage> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(
-                languageProvider.getLanguageTransValue('Delete Internal Data'),
+              title: Text(languageProvider.getLanguageTransValue('Delete Internal Data'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: defaultFontSize + 10,
-                    fontWeight: FontWeight.bold),
-              ),
+                style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold)),
               content: SizedBox(
                 // width: MediaQuery.of(context).size.width / 2,
                 height: MediaQuery.of(context).size.height / 3 + 20,
@@ -762,10 +716,7 @@ class _BackupPageState extends State<BackupPage> {
                     SizedBox(
                       width: 300,
                       child: Text(languageProvider.getLanguageTransValue('Delete start item'),
-                        style: TextStyle(
-                            fontSize: defaultFontSize + 4,
-                            fontWeight: FontWeight.bold),
-                      ),
+                        style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold)),
                     ),
                     SizedBox(height: 10),
                     DropdownMenu(
@@ -785,10 +736,7 @@ class _BackupPageState extends State<BackupPage> {
                     SizedBox(
                       width: 300,
                       child: Text(languageProvider.getLanguageTransValue('Delete last item'),
-                        style: TextStyle(
-                            fontSize: defaultFontSize + 4,
-                            fontWeight: FontWeight.bold),
-                      ),
+                        style: TextStyle(fontSize: defaultFontSize + 4, fontWeight: FontWeight.bold)),
                     ),
                     SizedBox(height: 10),
                     DropdownMenu(
@@ -801,13 +749,10 @@ class _BackupPageState extends State<BackupPage> {
                       dropdownMenuEntries: deleteSubFolder
                           .map((String value) => DropdownMenuEntry<String>(value: value, label: value))
                           .toList(),
-                      hintText:
-                      languageProvider.getLanguageTransValue('select...'),
+                      hintText: languageProvider.getLanguageTransValue('select...'),
                     ),
                     SizedBox(height: 10),
-                    Text(deleteMsg,
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                    ),
+                    Text(deleteMsg, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -818,8 +763,7 @@ class _BackupPageState extends State<BackupPage> {
                   child: ElevatedButton(
                     onPressed: () { maxItemRange(setState); },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Select Maximum'),
+                    child: Text(languageProvider.getLanguageTransValue('Select Maximum'),
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -831,8 +775,7 @@ class _BackupPageState extends State<BackupPage> {
                       Navigator.of(context).pop();
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Cancel'),
+                    child: Text(languageProvider.getLanguageTransValue('Cancel'),
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -849,8 +792,7 @@ class _BackupPageState extends State<BackupPage> {
                       }
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('OK'),
+                    child: Text(languageProvider.getLanguageTransValue('OK'),
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),

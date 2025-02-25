@@ -70,7 +70,6 @@ class TxPackage {
   void setBootMode(int bootmode) {
     _bootmode = bootmode;
   }
-
   /*****************************************************************************
    *          송신 패키지 데이터를 생성하는 함수
    *****************************************************************************////
@@ -146,7 +145,6 @@ class RxPackage {
   String get intTemp => _intTemp;
   int get statusFAN => _statusFAN;
   String get fwVer => _fwVer;
-
   /*****************************************************************************
    *          수신 패키지 데이터를 설정하는 함수
    *****************************************************************************////
@@ -261,7 +259,6 @@ class RxPackage {
 
     return '25.4';
   }
-
   /***********************************************************************
    *          저항 값을 온도로 변환하는 함수
    ***********************************************************************////
@@ -289,7 +286,6 @@ class RxPackage {
     return t;
   }
 }
-
 /*****************************************************************************
  *          시리얼 제어 클래스
  *****************************************************************************////
@@ -321,7 +317,6 @@ class SerialCtrl{
   void setContext(BuildContext context) {
     _context = context;
   }
-
   /*****************************************************************************
    *          USBtoSerial 장치 검색 함수
    *
@@ -342,7 +337,6 @@ class SerialCtrl{
     }
     debugPrint('Loaded device filters: $deviceFilters');
   }
-
   /*****************************************************************************
    *          사용 가능한 시리얼 포트를 찾는 함수
    *****************************************************************************////
@@ -363,7 +357,6 @@ class SerialCtrl{
     serialPortStatus = SerialPortStatus.noFound;
     debugPrint('### Status : $serialPortStatus');
   }
-
   /*****************************************************************************
    *          시리얼 포트를 여는 함수
    *****************************************************************************////
@@ -384,8 +377,7 @@ class SerialCtrl{
 
     await _port!.setDTR(false);
     await _port!.setRTS(false);
-    await _port!.setPortParameters(
-        115200, UsbPort.DATABITS_8, UsbPort.STOPBITS_1, UsbPort.PARITY_NONE);
+    await _port!.setPortParameters(115200, UsbPort.DATABITS_8, UsbPort.STOPBITS_1, UsbPort.PARITY_NONE);
 
     _transaction = Transaction.stringTerminated(
         _port!.inputStream as Stream<Uint8List>, Uint8List.fromList([13, 10]));
@@ -396,7 +388,6 @@ class SerialCtrl{
     serialPortStatus = SerialPortStatus.connect;
     debugPrint('### Status : $serialPortStatus');
   }
-
   /*****************************************************************************
    *          시리얼 포트를 닫는 함수
    *****************************************************************************////
@@ -405,9 +396,7 @@ class SerialCtrl{
     _transaction?.dispose();
     await _port?.close();
     _port = null;
-    // _isolate?.kill(priority: Isolate.immediate);
   }
-
   /*****************************************************************************
    *          데이터 수신 여부를 확인하는 함수
    *****************************************************************************////
@@ -427,7 +416,6 @@ class SerialCtrl{
       serialClose().then((_) => getDevice());
     }
   }
-
   /*****************************************************************************
    *          데이터를 전송하는 함수
    *****************************************************************************////
@@ -441,6 +429,4 @@ class SerialCtrl{
       debugPrint('T<<<[${DateTime.now()}] $dataToSend');
     }
   }
-
-
 }

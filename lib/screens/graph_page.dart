@@ -63,9 +63,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     );
 
     _dateTime = DateTime.now();
-    _dateTime = DateTime(
-        _dateTime.year, _dateTime.month, _dateTime.day,
-        _dateTime.hour, 0, 0);
+    int divMin = (_dateTime.minute / 10).toInt() * 10;
+    _dateTime = DateTime(_dateTime.year, _dateTime.month, _dateTime.day,
+          _dateTime.hour, divMin, 0);
 
     // 그래프의 X축 설정
     _setXAxis(_dateTime, _dateTime.add(Duration(minutes: 120)), interval: 10);
@@ -75,7 +75,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
   void dispose() {
     super.dispose();
   }
-
   /***********************************************************************
    *          그래프 Series의 가시성 업데이트하는 함수
    ***********************************************************************////
@@ -84,7 +83,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       _isVisibleSeries[index] = isVisible;
     });
   }
-
   /***********************************************************************
    *          모든 그래프 Series의 가시성 토글 함수
    ***********************************************************************////
@@ -95,21 +93,18 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       }
     });
   }
-
   /***********************************************************************
    *          그래프 확대 함수
    ***********************************************************************////
   void zoomIn() {
     _zoomPanBehavior.zoomIn();
   }
-
   /***********************************************************************
    *          그래프 축소 함수
    ***********************************************************************////
   void zoomOut() {
     _zoomPanBehavior.zoomOut();
   }
-
   /***********************************************************************
    *          그래프 확대/축소를 초기화하는 함수
    ***********************************************************************////
@@ -158,7 +153,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       ],
     );
   }
-
   /***********************************************************************
    *          헤더 행 항목을 생성하는 함수
    ***********************************************************************////
@@ -191,7 +185,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       ],
     );
   }
-
   /***********************************************************************
    *          각 데이터 행 항목을 생성하는 함수
    ***********************************************************************////
@@ -224,8 +217,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
         _cellItem(
           width: 100,
           height: 43,
-          child: Text(
-            strTemp,
+          child: Text(strTemp,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
           ),
@@ -233,7 +225,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       ],
     );
   }
-
   /***********************************************************************
    *          각 셀 항목을 생성하는 함수
    ***********************************************************************////
@@ -261,7 +252,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       child: child,
     );
   }
-
   /***********************************************************************
    *          검색 버튼을 생성하는 함수
    ***********************************************************************////
@@ -329,7 +319,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       ],
     );
   }
-
   /***********************************************************************
    *          그래프 파일 Searching 함수
    ***********************************************************************////
@@ -425,8 +414,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                       Navigator.of(context).pop();
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Cancel'),
+                    child: Text(languageProvider.getLanguageTransValue('Cancel'),
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -442,7 +430,10 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
                         List<Map<String, dynamic>> graphData = await FileCtrl.loadGraphData(selectPath!, selectFileName!);
                         chartTitle = 'File : $selectFileName';
-                        drawGraphDataFile(graphData);
+                        drawGraphDataFile(graphData, languageProvider);
+
+                        // context가 유효한지 확인
+                        if(!context.mounted) return;
                         Navigator.of(context).pop();
                       }
                       else{
@@ -450,8 +441,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
                       }
                     },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('OK'),
+                    child: Text(languageProvider.getLanguageTransValue('OK'),
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -465,7 +455,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       setState(() { });
     });
   }
-
   /***********************************************************************
    *          온도 차트를 생성하는 함수
    ***********************************************************************////
@@ -526,7 +515,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       ),
     );
   }
-
   /***********************************************************************
    *          차트 데이터를 업데이트하는 함수
    ***********************************************************************////
@@ -575,12 +563,21 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       });
     }
   }
-
-/***********************************************************************
- *          Graph Data File 그래프 그리기 함수
- ***********************************************************************////
-  void drawGraphDataFile(List<Map<String, dynamic>> data){
+  /***********************************************************************
+   *          Graph Data File 그래프 그리기 함수
+   ***********************************************************************////
+  void drawGraphDataFile(List<Map<String, dynamic>> data, LanguageProvider languageProvider){
     List<List<ChartData>> tmpCharDataSeries = List.generate(10, (_) => []);
+
+    if(data.isEmpty){
+      liveChartInit();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(languageProvider.getLanguageTransValue('The file does not contain any data.'),
+            textAlign: TextAlign.center),
+        duration: Duration(seconds: 3),
+      ));
+      return;
+    }
 
     for(int i = 0; i < (data.length - 1); i++){
       DateTime time = DateTime.parse(data[i]['time']);
@@ -600,7 +597,7 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
     if(!diff.isNegative){
       maxDate = DateTime(lastDate.year, lastDate.month, lastDate.day,
-          (lastDate.hour + 1), 0, 0);
+          lastDate.hour, ((lastDate.minute/10).toInt() + 1) * 10, 0);
     }
 
     _setXAxis(minDate, maxDate);
@@ -610,10 +607,9 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
       _chartDataSeries.addAll(tmpCharDataSeries);
     });
   }
-
-/***********************************************************************
- *          Graph x축 설정 함수
- ***********************************************************************////
+  /***********************************************************************
+   *          Graph x축 설정 함수
+   ***********************************************************************////
   void _setXAxis(DateTime minDate, DateTime maxDate, {int? interval}){
     // 그래프 x축 Range 계산
     Duration diff = maxDate.difference(minDate);
@@ -640,17 +636,14 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
 
     DateTime minDate = _chartDataSeries.first.first.time;
     DateTime maxDate = _chartDataSeries.first.last.time;
-    minDate = DateTime(minDate.year, minDate.month, minDate.day,
-        minDate.hour, 0, 0);
     DateTime tmpDate = minDate.add(Duration(minutes: 120));
     Duration diff = tmpDate.difference(maxDate);
 
-    if(diff.isNegative) {
-      maxDate = DateTime(maxDate.year, maxDate.month, maxDate.day,
-          (maxDate.hour + 1), 0, 0);
+    if(!diff.isNegative) {
+      maxDate = tmpDate;
     }
     else{
-      maxDate = tmpDate;
+      maxDate = tmpDate.add(Duration(hours: (tmpDate.hour + 1)));
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -663,7 +656,6 @@ class GraphPageState extends State<GraphPage> with AutomaticKeepAliveClientMixin
     });
   }
 }
-
 /***********************************************************************
  *          차트 데이터 구조 클래스
  ***********************************************************************////

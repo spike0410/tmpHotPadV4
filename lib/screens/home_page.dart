@@ -86,7 +86,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       remainTotalTimeValue: hotpadCtrlProvider.getRemainTotalTime(index),
                       remainTimeValue: hotpadCtrlProvider.getRemainTime(index),
                       textEditCtrl: _textEditCtrl[index],
-                      // currentValue: double.tryParse(hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index]) ?? 0.0,
                       currentValue: hotpadCtrlProvider.serialCtrl.rxPackage.padCurrent[index],
                       strPADOhm: hotpadCtrlProvider.serialCtrl.rxPackage.padOhm[index],
                       strPADStatus: hotpadCtrlProvider.getHeatingStatusString(languageProvider, hotpadCtrlProvider.getHeatingStatus(index)),
@@ -103,7 +102,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ),
     );
   }
-
   /***********************************************************************
    *          헤더 행 항목을 생성하는 함수
    ***********************************************************************////
@@ -291,7 +289,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ],
     );
   }
-
   /***********************************************************************
    *          데이터 행 항목을 생성하는 함수
    ***********************************************************************////
@@ -323,38 +320,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           isHighlighted : isHighlighted,
           child: TextButton(
             onPressed: () {
-              hotpadCtrlProvider
-.togglePU45Enable(index);
+              hotpadCtrlProvider.togglePU45Enable(index);
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 if (statusCh == ChannelStatus.stop)
-                  Image.asset(
-                    width: 20,
-                    height: 20,
-                    iconLEDGreyPath,
-                  )
+                  Image.asset(width: 20, height: 20, iconLEDGreyPath)
                 else if (statusCh == ChannelStatus.start)
-                  Image.asset(
-                    width: 20,
-                    height: 20,
-                    iconLEDGreenPath,
-                  )
+                  Image.asset(width: 20, height: 20, iconLEDGreenPath)
                 else if (statusCh == ChannelStatus.error)
-                    Image.asset(
-                      width: 20,
-                      height: 20,
-                      iconLEDRedPath,
-                    )
+                    Image.asset(width: 20, height: 20, iconLEDRedPath)
                   else
-                    Image.asset(
-                      width: 20,
-                      height: 20,
-                      iconLEDGreyPath,
-                    ),
-                _textDataTable(
-                    text: 'CH$strChannel', fontWeight: FontWeight.bold),
+                    Image.asset(width: 20, height: 20, iconLEDGreyPath),
+                _textDataTable(text: 'CH$strChannel', fontWeight: FontWeight.bold),
               ],
             ),
           ),
@@ -379,11 +358,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           width: cellWidth[2],
           height: cellHeight,
           isHighlighted : isHighlighted,
-          child: _textDataTable(
-            text: setTemp,
-            size: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          child: _textDataTable(text: setTemp, size: 20, fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 5),
         /// ### Remain Time ###
@@ -410,9 +385,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             controller: textEditCtrl,
             focusNode: focusNode,
             maxLength: 6,
-            buildCounter: (BuildContext context,
-                {int? currentLength, int? maxLength, bool? isFocused}) =>
-            null,
+            buildCounter: (BuildContext context,{int? currentLength, int? maxLength, bool? isFocused}) => null,
             textAlign: TextAlign.center,
             decoration: InputDecoration(
               border: InputBorder.none,
@@ -421,15 +394,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               errorBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               hintText: '---',
-              hintStyle: TextStyle(
-                color: Colors.black54,
-                fontSize: defaultFontSize,
-              ),
+              hintStyle: TextStyle(color: Colors.black54, fontSize: defaultFontSize),
             ),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(width: 5),
@@ -454,11 +421,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           width: cellWidth[6],
           height: cellHeight,
           isHighlighted : isHighlighted,
-          child: _textDataTable(
-            text: strPADOhm,
-            size: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          child: _textDataTable(text: strPADOhm, size: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 5),
         /// ### Operation Status ###
@@ -466,10 +429,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           width: cellWidth[7],
           height: cellHeight,
           isHighlighted : isHighlighted,
-          child: _textDataTable(
-            text: strPADStatus,
-            fontWeight: FontWeight.bold,
-          ),
+          child: _textDataTable(text: strPADStatus, fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 6),
         /// ### Heating Start Button ###
@@ -486,10 +446,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 'W0001');
             } else {
               hotpadCtrlProvider.startHeating(index);
-              // hotpadCtrlProvider.showAlarmMessage(
-              //   'CH${(index+1).toString().padLeft(2,'0')}',
-              //   hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
-              //   'I0002');
             }
           },
         ),
@@ -509,10 +465,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   'W0001');
             } else {
               hotpadCtrlProvider.startPreheating(index);
-              // hotpadCtrlProvider.showAlarmMessage(
-              //     'CH${(index+1).toString().padLeft(2,'0')}',
-              //     hotpadCtrlProvider.getIsPU45Enable(index) ? 'PU45' : 'PU15',
-              //     'I0006');
             }
           },
         ),
@@ -536,7 +488,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ],
     );
   }
-
   /***********************************************************************
    *          헤더 아이템 생성하는 함수
    ***********************************************************************////
@@ -563,7 +514,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       child: child,
     );
   }
-
   /***********************************************************************
    *          데이터 아이템 생성하는 함수
    ***********************************************************************////
@@ -608,7 +558,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       child: child,
     );
   }
-
   /***********************************************************************
    *          Heating, Preheating, Stop 기본 버튼 함수
    ***********************************************************************////
@@ -643,15 +592,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             borderRadius: BorderRadius.all(Radius.circular(5)),
           ),
         ),
-        child: _textDataTable(
-          text: text,
-          size: size,
-          fontWeight: FontWeight.bold,
-        ),
+        child: _textDataTable(text: text, size: size, fontWeight: FontWeight.bold),
       ),
     );
   }
-
   /***********************************************************************
    *          Heating, Preheating, Stop 기본 버튼 함수의 그라데이션
    ***********************************************************************////
@@ -664,7 +608,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             Color(0xFFF02020),
             Color(0xFFE02020),
             Color(0xFFB02020),
-            // Color(0xFFFF5050),
           ]);
     } else {
       return LinearGradient(
@@ -674,11 +617,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             Color(0xFF00F000),
             Color(0xFF00E000),
             Color(0xFF00C000),
-            // Color(0xFF70FF70),
           ]);
     }
   }
-
   /***********************************************************************
    *          기본 ProgressBar 함수
    ***********************************************************************////
@@ -714,12 +655,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             if (isProgressText)
               Positioned.fill(
                 child: Center(
-                  child: Text(
-                    '${(validValue * 100).round()}%',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Text('${(validValue * 100).round()}%',
+                    style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -728,7 +665,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ],
     );
   }
-
   /***********************************************************************
    *          기본 Text 함수
    ***********************************************************************////
@@ -741,21 +677,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return Text(
       text,
       textAlign: TextAlign.center,
-      style: TextStyle(
-        color: color,
-        fontSize: size,
-        fontWeight: fontWeight,
-      ),
+      style: TextStyle(color: color, fontSize: size, fontWeight: fontWeight),
     );
   }
-
   /***********************************************************************
    *          TextField에 FocusLost시 동작되는 함수
    ***********************************************************************////
   void _onFocusLost(int index){
     hotpadCtrlProvider.setPadID(index, _textEditCtrl[index].text);
   }
-
   /***********************************************************************
    *          ProgressBar의 Value 사용되는 데이터로 변환
    ***********************************************************************////
@@ -771,7 +701,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     return tmpVal;
   }
-
   /***********************************************************************
    *          RemainTime의 출력 포멧
    ***********************************************************************////

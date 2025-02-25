@@ -56,7 +56,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
       }
     }
   }
-
   /***********************************************************************
    *          설정 값을 업데이트하는 함수
    ***********************************************************************////
@@ -67,7 +66,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
       _configValue[index] = int.tryParse(value) ?? 0;
     }
   }
-
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
@@ -146,7 +144,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 183),
-
                 /// ### Temp1
                 _setPositionTextField(index: 1, maxRange: 999, isEnabled: authProvider.isAuthenticated),
                 SizedBox(width: 530),
@@ -155,12 +152,8 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
                     authProvider.showPasswordPrompt(context, languageProvider, ConfigFileCtrl.deviceConfigUserPassword);
                   },
                   style: btnStyle,
-                  child: Text(
-                    languageProvider.getLanguageTransValue('Change Setting'),
-                    style: TextStyle(
-                      fontSize: (defaultFontSize + 2),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Text(languageProvider.getLanguageTransValue('Change Setting'),
+                    style: TextStyle(fontSize: (defaultFontSize + 2), fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -169,7 +162,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 856),
-
                 /// ### Preheat Time
                 _setPositionTextField(index: 0, width: 84, maxRange: 999, isEnabled: authProvider.isAuthenticated),
               ],
@@ -178,7 +170,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 495),
-
                 /// ### Hold Time1
                 _setPositionTextField(index: 2, width: 84, maxRange: 999, isEnabled: authProvider.isAuthenticated),
               ],
@@ -192,7 +183,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 183),
-
                 /// ### Temp2
                 _setPositionTextField(index: 4, maxRange: 999, isEnabled: authProvider.isAuthenticated),
               ],
@@ -201,7 +191,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 183),
-
                 /// ### Temp1
                 _setPositionTextField(index: 3, maxRange: 999, isEnabled: authProvider.isAuthenticated),
               ],
@@ -210,19 +199,15 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
             Row(
               children: [
                 SizedBox(width: 321),
-
                 /// ### Step Rising1
                 _setPositionTextField(index: 5, width: 80, maxRange: 999, isEnabled: authProvider.isAuthenticated),
                 SizedBox(width: 86),
-
                 /// ### Step Holding1
                 _setPositionTextField(index: 6, width: 80, maxRange: 999, isEnabled: authProvider.isAuthenticated),
                 SizedBox(width: 90),
-
                 /// ### Step Rising2
                 _setPositionTextField(index: 7, width: 80, maxRange: 999, isEnabled: authProvider.isAuthenticated),
                 SizedBox(width: 91),
-
                 /// ### Step Holding2
                 _setPositionTextField(index: 8, width: 80, maxRange: 999, isEnabled: authProvider.isAuthenticated),
               ],
@@ -232,7 +217,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
       ),
     );
   }
-
   /***********************************************************************
    *          TextField를 생성하는 함수
    ***********************************************************************////
@@ -256,14 +240,10 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
           fillColor: isEnabled ? Colors.grey[300] : Colors.grey,
         ),
         inputFormatters: [
-          // FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
           LengthLimitingTextInputFormatter(4),
           _CustomRangeTextInputFormatter(max: maxRange),
         ],
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.top,
         keyboardType: TextInputType.number,
@@ -271,7 +251,6 @@ class _TempSettingsTabState extends State<TempSettingsTab> with WidgetsBindingOb
     );
   }
 }
-
 /***********************************************************************
  *          TextField에 입력된 최대값 설정 클래스
  ***********************************************************************////

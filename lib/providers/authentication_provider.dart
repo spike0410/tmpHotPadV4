@@ -21,7 +21,6 @@ class AuthenticationProvider with ChangeNotifier {
     _isAuthenticated = false;
     notifyListeners();
   }
-
   /***********************************************************************
    *          비밀번호 입력 프롬프트를 표시하는 함수
    *
@@ -52,7 +51,6 @@ class AuthenticationProvider with ChangeNotifier {
         });
       }
     }
-
     /***********************************************************************
      *          비밀번호 입력 다이얼로그를 표시
      ***********************************************************************////
@@ -91,9 +89,7 @@ class AuthenticationProvider with ChangeNotifier {
             SizedBox(
               width: 120,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(false);
-                },
+                onPressed: () { Navigator.of(context).pop(false); },
                 style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                 child: Text(
                   languageProvider.getLanguageTransValue('Cancel'),

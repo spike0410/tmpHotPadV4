@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
+import '../devices/hotpad_ctrl.dart';
 import '../devices/config_file_ctrl.dart';
 import '../providers/language_provider.dart';
 
@@ -47,10 +47,7 @@ class StatusBarPage extends StatelessWidget {
             // 컨트롤러 번호 텍스트
             Text(
               '${languageProvider.getLanguageTransValue('Controller No.')} ${ConfigFileCtrl.deviceConfigNumber.toString().padLeft(3,'0')}',
-              style: TextStyle(
-                fontSize: (defaultFontSize + 4),
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: (defaultFontSize + 4), fontWeight: FontWeight.bold),
             ),
             SizedBox(width: 50),
             // 내부 온도 및 전력 텍스트
@@ -60,9 +57,7 @@ class StatusBarPage extends StatelessWidget {
               children: [
                 Text(
                   '${languageProvider.getLanguageTransValue('Internal Temp.')} : ${hotpadCtrlProvider.serialCtrl.rxPackage.intTemp}℃',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 3),
                 SizedBox(
@@ -71,9 +66,7 @@ class StatusBarPage extends StatelessWidget {
                     '${languageProvider.getLanguageTransValue('Internal Power')} : '
                         '${hotpadCtrlProvider.serialCtrl.rxPackage.dcVolt}V/'
                         '${hotpadCtrlProvider.serialCtrl.rxPackage.dcCrnt}A',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -100,18 +93,14 @@ class StatusBarPage extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: hotpadCtrlProvider.storageProgressValue,
                                 backgroundColor: Colors.white,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    Color(0xFF006400)),
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF006400)),
                               ),
                             ),
                             Positioned.fill(
                               child: Center(
                                 child: Text(
                                   '${(hotpadCtrlProvider.storageProgressValue * 100).toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),

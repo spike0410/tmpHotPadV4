@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hotpadapp_v4/devices/config_file_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:provider/provider.dart';
+import '../devices/config_file_ctrl.dart';
 import '../providers/language_provider.dart';
 import '../constant/user_style.dart';
 
@@ -33,8 +33,7 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
         final String text = controller.text.toString();
         controller.value = controller.value.copyWith(
           text: text,
-          selection:
-              TextSelection(baseOffset: text.length, extentOffset: text.length),
+          selection: TextSelection(baseOffset: text.length, extentOffset: text.length),
           composing: TextRange.empty,
         );
       });
@@ -89,36 +88,29 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
                 child: Text(
                   languageProvider.getLanguageTransValue('CH01 PIT Control'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: (defaultFontSize + 4),
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: (defaultFontSize + 4), fontWeight: FontWeight.bold),
                 ),
               ),
               SizedBox(height: 10),
               _rowItem(
                   name: languageProvider.getLanguageTransValue('P Gain'),
                   fontSize: 18,
-                  child: _setPositionTextField(
-                      index: 0, width: 100, maxRange: 100)),
+                  child: _setPositionTextField(index: 0, width: 100, maxRange: 100)),
               SizedBox(height: stepHeight),
               _rowItem(
                   name: languageProvider.getLanguageTransValue('I Gain'),
                   fontSize: 18,
-                  child: _setPositionTextField(
-                      index: 1, width: 100, maxRange: 100)),
+                  child: _setPositionTextField(index: 1, width: 100, maxRange: 100)),
               SizedBox(height: stepHeight),
               _rowItem(
                   name: languageProvider.getLanguageTransValue('T Gain'),
                   fontSize: 18,
-                  child: _setPositionTextField(
-                      index: 2, width: 100, maxRange: 100)),
+                  child: _setPositionTextField(index: 2, width: 100, maxRange: 100)),
               SizedBox(height: stepHeight),
               _rowItem(
                   name: languageProvider.getLanguageTransValue('Target Temp.'),
                   fontSize: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? 18 : defaultFontSize,
-                  child: _setPositionTextField(
-                      index: 3, enable: false, width: 100, maxRange: 100)),
+                  child: _setPositionTextField(index: 3, enable: false, width: 100, maxRange: 100)),
               SizedBox(height: stepHeight),
               _rowItem(
                 name: languageProvider.getLanguageTransValue('Current Temp.'),
@@ -126,38 +118,32 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
                 child: _textItem(text: '26.7'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                name: languageProvider.getLanguageTransValue('Error'),
+              _rowItem(name: languageProvider.getLanguageTransValue('Error'),
                 fontSize: 18,
                 child: _textItem(text: '46.1'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                name: languageProvider.getLanguageTransValue('P Calc.'),
+              _rowItem(name: languageProvider.getLanguageTransValue('P Calc.'),
                 fontSize: 18,
                 child: _textItem(text: '6.0'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                name: languageProvider.getLanguageTransValue('I Calc.'),
+              _rowItem(name: languageProvider.getLanguageTransValue('I Calc.'),
                 fontSize: 18,
                 child: _textItem(text: '62.5'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                name: languageProvider.getLanguageTransValue('T Calc.'),
+              _rowItem(name: languageProvider.getLanguageTransValue('T Calc.'),
                 fontSize: 18,
                 child: _textItem(text: '0.0'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                name: languageProvider.getLanguageTransValue('PIT Calc.'),
+              _rowItem(name: languageProvider.getLanguageTransValue('PIT Calc.'),
                 fontSize: 18,
                 child: _textItem(text: '2'),
               ),
               SizedBox(height: stepHeight),
-              _rowItem(
-                  name: languageProvider.getLanguageTransValue('Manual Out'),
+              _rowItem(name: languageProvider.getLanguageTransValue('Manual Out'),
                   fontSize: 18,
                   child: _setPositionTextField(
                       index: 4,
@@ -192,7 +178,6 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       ),
     );
   }
-
   /***********************************************************************
    *          행 항목을 생성하는 함수
    ***********************************************************************////
@@ -206,17 +191,13 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
         Text(
           name,
           textAlign: TextAlign.end,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: fontSize,fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 10),
         child,
       ],
     );
   }
-
   /***********************************************************************
    *          Text 항목을 생성하는 함수
    ***********************************************************************////
@@ -231,14 +212,10 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       alignment: Alignment.center,
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: defaultFontSize,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold),
       ),
     );
   }
-
   /***********************************************************************
    *          rowRadioItem을 생성하는 함수
    ***********************************************************************////
@@ -248,10 +225,7 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       children: [
         Text(
           languageProvider.getLanguageTransValue('Output'),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 7),
         Column(
@@ -284,7 +258,6 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       ],
     );
   }
-
   /***********************************************************************
    *          titleRadio 버튼을 생성하는 함수
    ***********************************************************************////
@@ -306,16 +279,12 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
           ),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
-
   /***********************************************************************
    *          TextField를 생성하는 함수
    ***********************************************************************////
@@ -362,7 +331,6 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       ),
     );
   }
-
   /***********************************************************************
    *          컨트롤 버튼을 생성하는 함수
    ***********************************************************************////
@@ -389,9 +357,7 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
         onPressed: () {},
         style: TextButton.styleFrom(
           fixedSize: Size(width, height),
-          //foregroundColor: Colors.transparent,
           backgroundColor: Colors.transparent,
-          // backgroundColor: Colors.grey,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(5)),
           ),
@@ -407,7 +373,6 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
       ),
     );
   }
-
   /***********************************************************************
    *          온도 차트를 생성하는 함수
    ***********************************************************************////
@@ -437,31 +402,21 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
             rangePadding: ChartRangePadding.roundStart,
             plotOffsetEnd: 10,
             edgeLabelPlacement: EdgeLabelPlacement.shift,
-            // intervalType: DateTimeIntervalType.seconds,
-            // interval: 1,
-            labelStyle: TextStyle(
-              color: Colors.white,
-            ),
+            labelStyle: TextStyle(color: Colors.white),
           ),
 
           /// ### Y-axis ###
           primaryYAxis: NumericAxis(
             decimalPlaces: 0,
-            minorGridLines: MinorGridLines(
-              color: Colors.transparent,
-            ),
-            majorTickLines: MajorTickLines(
-              size: 10,
-            ),
+            minorGridLines: MinorGridLines(color: Colors.transparent),
+            majorTickLines: MajorTickLines(size: 10),
             minorTickLines: MinorTickLines(
               size: 5,
               width: 1,
               color: Colors.white,
             ),
             minorTicksPerInterval: 5,
-            labelStyle: TextStyle(
-              color: Colors.white,
-            ),
+            labelStyle: TextStyle(color: Colors.white),
             maximum: 120,
           ),
         ),
@@ -469,7 +424,6 @@ class _CtrlTempControlState extends State<CtrlTempControl> with WidgetsBindingOb
     );
   }
 }
-
 /***********************************************************************
  *          TextField에 입력된 최대값 설정 클래스
  ***********************************************************************////

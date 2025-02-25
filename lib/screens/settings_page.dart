@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../devices/config_file_ctrl.dart';
 import '../screens/temp_settings_tab.dart';
@@ -31,11 +30,7 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     // TabController 초기화
-    _tabCtrl = TabController(
-      length: 3,
-      initialIndex: 0,
-      vsync: this,
-    );
+    _tabCtrl = TabController(length: 3, initialIndex: 0, vsync: this);
     // Tab 변경 Listener 추가
     _tabCtrl.addListener(() async {
       if (_tabCtrl.indexIsChanging) {
@@ -64,7 +59,6 @@ class _SettingsPageState extends State<SettingsPage> with SingleTickerProviderSt
       }
     });
   }
-
   /***********************************************************************
    *          TabBar 생성하는 함수
    ***********************************************************************////

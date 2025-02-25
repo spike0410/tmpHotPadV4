@@ -19,10 +19,10 @@ class AlarmTable extends StatefulWidget {
   const AlarmTable({super.key});
 
   @override
-  _AlarmTableState createState() => _AlarmTableState();
+  AlarmTableState createState() => AlarmTableState();
 }
 
-class _AlarmTableState extends State<AlarmTable> {
+class AlarmTableState extends State<AlarmTable> {
   final TextStyle _textStyle = TextStyle(
     color: Colors.white,
   );
@@ -36,9 +36,7 @@ class _AlarmTableState extends State<AlarmTable> {
     return Container(
       margin: EdgeInsets.all(10),
       height: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.black,
-      ),
+      decoration: BoxDecoration(color: Colors.black),
       /**********************************
        *        ScrollBar
        **********************************/
@@ -48,7 +46,6 @@ class _AlarmTableState extends State<AlarmTable> {
           primary: true,
           scrollDirection: Axis.vertical,
           padding: EdgeInsets.only(right: 22),
-
           /**********************************
            *        DataTable
            **********************************/
@@ -60,7 +57,6 @@ class _AlarmTableState extends State<AlarmTable> {
               },
             ),
             headingRowHeight: 40,
-            // dataRowHeight: 35,
             headingTextStyle: _textStyle,
             dataTextStyle: _textStyle,
             /**********************************
@@ -76,8 +72,7 @@ class _AlarmTableState extends State<AlarmTable> {
               DataColumn(
                   label: SizedBox(
                       width: 50,
-                      child: Text(
-                          languageProvider.getLanguageTransValue('Channel'),
+                      child: Text(languageProvider.getLanguageTransValue('Channel'),
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
               DataColumn(
@@ -89,15 +84,13 @@ class _AlarmTableState extends State<AlarmTable> {
               DataColumn(
                   label: SizedBox(
                       width: 372,
-                      child: Text(
-                          languageProvider.getLanguageTransValue('Descriptions'),
+                      child: Text(languageProvider.getLanguageTransValue('Descriptions'),
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
               DataColumn(
                   label: SizedBox(
                       width: 125,
-                      child: Text(
-                          languageProvider.getLanguageTransValue('Date Time'),
+                      child: Text(languageProvider.getLanguageTransValue('Date Time'),
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)))),
             ],

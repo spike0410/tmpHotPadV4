@@ -17,18 +17,13 @@ class TempCalTab extends StatefulWidget {
 class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
   // 채널 선택 여부를 저장하는 리스트
   final List<bool> _isChannelChecked = List<bool>.filled(10, true);
-
   // 스크롤 컨트롤러 생성
   final ScrollController _scrollController = ScrollController();
-
   // TextEditingController와 FocusNode 생성
-  final List<TextEditingController> _textEditCtrl =
-      List.generate(3, (_) => TextEditingController());
+  final List<TextEditingController> _textEditCtrl = List.generate(3, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(3, (_) => FocusNode());
-
   // 설정 값을 저장하는 리스트
-  final List<dynamic> _configValue =
-      List<dynamic>.filled(3, null, growable: false);
+  final List<dynamic> _configValue = List<dynamic>.filled(3, null, growable: false);
 
   String _strRefTemp = '';
   double _calProgressValue = 0;
@@ -58,19 +53,15 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
       _textEditCtrl[i].text = _configValue[i].toString();
     }
 
-    _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage
-        .ohmToTemp(_configValue[0].toDouble())
-        .toStringAsFixed(1);
+    _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage.ohmToTemp(_configValue[0].toDouble()).toStringAsFixed(1);
     _calProgressValue = 0;
   }
-
   /***********************************************************************
    *          설정 값을 업데이트하는 함수
    ***********************************************************************////
   void _updateConfig(int index, String value) {
     _configValue[index] = int.tryParse(value) ?? 0;
   }
-
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
@@ -82,9 +73,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
 
     if (index == 0) {
       setState(() {
-        _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage
-            .ohmToTemp(_configValue[0].toDouble())
-            .toStringAsFixed(1);
+        _strRefTemp = hotpadCtrlProvider.serialCtrl.rxPackage.ohmToTemp(_configValue[0].toDouble()).toStringAsFixed(1);
       });
     }
 
@@ -148,11 +137,11 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                 DataTable(
                   // border: TableBorder.all(color: Colors.red),    // 모양 확인용.
                   headingRowHeight: 65,
-                  dataRowHeight: 48.4,
+                  dataRowMinHeight: 48.4,
+                  dataRowMaxHeight: 48.4,
 
                   /// ### Header Text
                   columns: <DataColumn>[
-                    // DataColumn(label: Text('')),
                     DataColumn(
                       label: SizedBox(
                         width: 120,
@@ -194,8 +183,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                                     });
                                   },
                                 ),
-                                Text(
-                                  'CH ${(index + 1).toString().padLeft(2, '0')}',
+                                Text('CH ${(index + 1).toString().padLeft(2, '0')}',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
@@ -206,7 +194,8 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                           builder: (context, hotpadCtrlProvider, _) {
                             return SizedBox(
                               width: 120,
-                              child: Text(hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index],
+                              child: Text(
+                                hotpadCtrlProvider.serialCtrl.rxPackage.rtdTemp[index],
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
@@ -249,10 +238,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                     /// ### Ref.temp
                     Text(
                       _strRefTemp,
-                      style: TextStyle(
-                        fontSize: (defaultFontSize + 4),
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(fontSize: (defaultFontSize + 4), fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -292,10 +278,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                           child: Center(
                             child: Text(
                               '${(_calProgressValue * 100).round()}%',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -314,10 +297,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                       onPressed: () {_runCalData();},
                       style: btnStyle,
                       child: Text(languageProvider.getLanguageTransValue('Start Calibration'),
-                        style: TextStyle(
-                          fontSize: (defaultFontSize + 6),
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: (defaultFontSize + 6), fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -332,10 +312,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                       },
                       style: btnStyle,
                       child: Text(languageProvider.getLanguageTransValue('Reset Calibration'),
-                        style: TextStyle(
-                          fontSize: (defaultFontSize + 6),
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: (defaultFontSize + 6), fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -347,7 +324,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
       ),
     );
   }
-
   /***********************************************************************
    *          기본 TextField를 생성하는 함수
    ***********************************************************************////
@@ -365,17 +341,14 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
         decoration: InputDecoration(
           border: OutlineInputBorder(),
           filled: true,
-          fillColor: Colors.grey,
+          fillColor: Colors.grey[300],
         ),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(4),
           _CustomRangeTextInputFormatter(max: maxRange),
         ],
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.top,
         keyboardType: TextInputType.number,
@@ -416,7 +389,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
 
       /// ### 캘리브레이션 데이터를 적용 및 저장
       if(count == ConfigFileCtrl.tempCalTime){
-        // count = ConfigFileCtrl.tempCalTime;
         timer.cancel();
         setState(() {
           for(int i = 0; i < totalChannel; i++){
@@ -427,7 +399,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
         ConfigFileCtrl.setTempCalData();
       }
     });
-
   }
   /***********************************************************************
    *          온도 교정 초기화 ShowDialog 함수
@@ -437,8 +408,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            languageProvider.getLanguageTransValue('Reset Calibration'),
+          title: Text(languageProvider.getLanguageTransValue('Reset Calibration'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: defaultFontSize + 10, fontWeight: FontWeight.bold),
           ),
@@ -450,12 +420,9 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
             SizedBox(
               width: 120,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () {Navigator.of(context).pop();},
                 style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(
-                  languageProvider.getLanguageTransValue('Cancel'),
+                child: Text(languageProvider.getLanguageTransValue('Cancel'),
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -473,8 +440,7 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
                   Navigator.of(context).pop();
                 },
                 style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(
-                  languageProvider.getLanguageTransValue('OK'),
+                child: Text(languageProvider.getLanguageTransValue('OK'),
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -485,7 +451,6 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
     );
   }
 }
-
 /***********************************************************************
  *          TextField에 입력된 최대값 설정 클래스
  ***********************************************************************////

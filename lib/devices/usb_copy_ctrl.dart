@@ -2,12 +2,10 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
-import 'package:hotpadapp_v4/devices/hotpad_ctrl.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../constant/user_style.dart';
 import '../devices/file_ctrl.dart';
-import 'package:provider/provider.dart';
 
 class UsbCopyCtrl with ChangeNotifier{
   late String _startPath;
@@ -32,7 +30,6 @@ class UsbCopyCtrl with ChangeNotifier{
     _copyProgressValue = val;
     notifyListeners();
   }
-
   /*****************************************************************************
    *          USB로 데이터를 복사하기 위한 파라미터 전달 및 시작 함수
    *****************************************************************************////
@@ -110,7 +107,6 @@ class UsbCopyCtrl with ChangeNotifier{
       }
     });
   }
-
   /*****************************************************************************
    *          Isolate 시작 함수
    *****************************************************************************////
@@ -118,7 +114,6 @@ class UsbCopyCtrl with ChangeNotifier{
     // Isolate가 시작되면 'startCopy' 메시지를 전송
     sendPort.send('startCopy');
   }
-
   /*****************************************************************************
    *          선택된 항목의 데이터를 USB로 복사를 제어하는 함수
    *****************************************************************************////
@@ -228,7 +223,6 @@ class UsbCopyCtrl with ChangeNotifier{
 
     return total;
   }
-
   /*****************************************************************
    *            USB 메모리에 선택된 항목의 폴더를 생성하는 함수
    *
@@ -325,7 +319,6 @@ class UsbCopyCtrl with ChangeNotifier{
         finally{
           source.deleteSync();
           fileProgressValueOperate();
-
         }
       }
     }

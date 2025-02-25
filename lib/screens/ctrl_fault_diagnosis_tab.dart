@@ -73,7 +73,6 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
       }
     }
   }
-
   /***********************************************************************
    *          설정 값을 업데이트하는 함수
    ***********************************************************************////
@@ -86,7 +85,6 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
       _configValue[index] = int.tryParse(value) ?? 0;
     }
   }
-
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
@@ -148,9 +146,7 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery
-        .of(context)
-        .size;
+    final Size screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
 
     return SingleChildScrollView(
@@ -246,7 +242,6 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
       ),
     );
   }
-
   /***********************************************************************
    *          TextField를 생성하는 함수
    ***********************************************************************////
@@ -278,11 +273,7 @@ class _CtrlFaultDiagnosisTabState extends State<CtrlFaultDiagnosisTab> with Widg
           LengthLimitingTextInputFormatter(5),
           _CustomRangeTextInputFormatter(max: maxRange),
         ],
-        style: TextStyle(
-          fontSize: defaultFontSize,
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: defaultFontSize, color: Colors.black, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.center,
         keyboardType: TextInputType.number,

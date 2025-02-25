@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hotpadapp_v4/devices/file_ctrl.dart';
 import 'package:intl/intl.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
+import '../devices/file_ctrl.dart';
 import '../devices/serial_ctrl.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
@@ -16,9 +16,8 @@ class HotpadCtrl with ChangeNotifier{
   BuildContext? _context;
   Isolate? _isolate;
 
-  List<bool> _isPU45Enable = List.filled(totalChannel, false);
-  bool _isGraphLive = true;
   final List<String> _sPU45Enable = List.filled(totalChannel, '0');
+  List<bool> _isPU45Enable = List.filled(totalChannel, false);
   List<bool> _isStartBtn = List.filled(totalChannel, false);
   List<bool> _isPreheatingBtn = List.filled(totalChannel, false);
   List<String> _padIDText = List.filled(totalChannel, '');
@@ -29,6 +28,7 @@ class HotpadCtrl with ChangeNotifier{
   List<double> _remainTotalTime = List.filled(totalChannel, -1);
   List<List<String>> _logDataList = [];
 
+  bool _isGraphLive = true;
   String _currentTime = '';
   double _totalStorage = 0.0;
   double _usedStorage = 0.0;
@@ -160,7 +160,6 @@ class HotpadCtrl with ChangeNotifier{
     _padIDText[index] = text;
     _updateStatus();
   }
-
   /*****************************************************************************
    *          히팅 시작 함수
    *****************************************************************************////
@@ -184,7 +183,6 @@ class HotpadCtrl with ChangeNotifier{
     _chStatus[index] = ChannelStatus.start;
     _updateStatus();
   }
-
   /*****************************************************************************
    *          예열 시작 함수
    *****************************************************************************////
@@ -199,7 +197,6 @@ class HotpadCtrl with ChangeNotifier{
     _chStatus[index] = ChannelStatus.start;
     _updateStatus();
   }
-
   /*****************************************************************************
    *          히팅 종료 함수
    *****************************************************************************////
@@ -220,16 +217,14 @@ class HotpadCtrl with ChangeNotifier{
 
     _updateStatus();
   }
-
   /*****************************************************************************
    *          인스턴트 메시지 다이얼로그 표시 함수
    *****************************************************************************////
-  void showInstMessage(String title, String channel, String padMode, String code) {
+  void showInstMessage(String title, String channel, String padMode, String code, {int duration = 3}) {
     if (_context != null) {
-      messageProvider.showInstMessageDialog(_context!, title, channel, padMode, code);
+      messageProvider.showInstMessageDialog(_context!, title, channel, padMode, code, duration);
     }
   }
-
   /*****************************************************************************
    *          알람 메시지 표시 함수
    *****************************************************************************////
@@ -238,7 +233,6 @@ class HotpadCtrl with ChangeNotifier{
       messageProvider.alarmMessage(_context!, channel, padMode, code);
     }
   }
-
   /*****************************************************************************
    *          상태 업데이트 함수
    *****************************************************************************////
@@ -256,7 +250,6 @@ class HotpadCtrl with ChangeNotifier{
     await ConfigFileCtrl.setHomePageStatusData();
     notifyListeners();
   }
-
   /*****************************************************************************
    *          히팅 상태 문자열 반환 함수
    *****************************************************************************////
@@ -292,13 +285,12 @@ class HotpadCtrl with ChangeNotifier{
 
     return languageProvider.getStatusLanguageTransValue(tmpStr);
   }
-
   /*****************************************************************************
    *          Isolate 시작 함수
    *****************************************************************************////
   void startIsolate() async {
     final receivePort = ReceivePort();
-    _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);  // <---!@# Test
+    _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
     receivePort.listen((message) {
       if (message == 'sendData') {
         serialCtrl.txPackage.setHTOperate(_chStatus);
@@ -317,7 +309,9 @@ class HotpadCtrl with ChangeNotifier{
       }
     });
   }
-
+  /*****************************************************************************
+   *          Isolate 진입 함수
+   *****************************************************************************////
   static void _isolateEntry(SendPort sendPort) async {
     Timer.periodic(Duration(seconds: 1), (timer) {
       sendPort.send('sendData');
@@ -328,7 +322,6 @@ class HotpadCtrl with ChangeNotifier{
       sendPort.send('updateStorage');
     });
   }
-
   /*****************************************************************************
    *          데이터 수신 시 호출되는 함수
    *****************************************************************************////
@@ -360,14 +353,12 @@ class HotpadCtrl with ChangeNotifier{
 
   String getCurrentTime() {
     notifyListeners();
-
     return DateFormat('yyyy.MM.dd HH:mm:ss').format(DateTime.now());
   }
 
   String getCurrentTimeValue() {
     return _currentTime;
   }
-
   /*****************************************************************************
    *          스토리지 사용량 업데이트 함수
    *****************************************************************************////
@@ -383,7 +374,9 @@ class HotpadCtrl with ChangeNotifier{
       debugPrint("Failed to get USB storage info: '${e.message}'.");
     }
   }
-
+  /*****************************************************************************
+   *          PU15와 PU45의 상태에 따른 설정 온도 전달 함수
+   *****************************************************************************////
   String settingTempSelect(int index)
   {
     String tmpStr = '';
@@ -407,7 +400,6 @@ class HotpadCtrl with ChangeNotifier{
 
     return tmpStr;
   }
-
   /*****************************************************************************
    *          남은 시간 감소 함수
    *
@@ -448,7 +440,6 @@ class HotpadCtrl with ChangeNotifier{
           _heatingStatus[index] = HeatingStatus.stop;
         }
       }
-
       // HeatingStatus 변경에 따라 메세지 출력
       if(_heatingStatus[index] != _oldHeatingStatus[index]){
         String codeStr = '';
@@ -489,7 +480,6 @@ class HotpadCtrl with ChangeNotifier{
       }
     }
   }
-
   /*****************************************************************************
    *          Log Data를 SQLite 형식으로 파일 저장
    *
@@ -530,5 +520,4 @@ class HotpadCtrl with ChangeNotifier{
     _isolate?.kill(priority: Isolate.immediate);
     super.dispose();
   }
-
 }

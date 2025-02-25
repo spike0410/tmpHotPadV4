@@ -30,7 +30,6 @@ class MessageProvider extends ChangeNotifier {
       debugPrint("## Alarm File : $item");
     }
   }
-
   /***********************************************************************
    *          인스턴트 메시지 다이얼로그를 표시하는 함수
    ***********************************************************************////
@@ -38,7 +37,8 @@ class MessageProvider extends ChangeNotifier {
       String title,
       String ch,
       String padMode,
-      String message) {
+      String message,
+      int duration) {
     // 기존 타이머를 취소합니다.
     _timer?.cancel();
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
@@ -48,7 +48,7 @@ class MessageProvider extends ChangeNotifier {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        _timer = Timer(Duration(seconds: 3), () {
+        _timer = Timer(Duration(seconds: duration), () {
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
           }
@@ -75,7 +75,6 @@ class MessageProvider extends ChangeNotifier {
       _timer?.cancel();
     });
   }
-
   /***********************************************************************
    *          알람 메시지를 처리하고 저장하는 함수
    ***********************************************************************////

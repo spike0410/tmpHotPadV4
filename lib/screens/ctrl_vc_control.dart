@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hotpadapp_v4/constant/user_style.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../constant/user_style.dart';
 import '../providers/language_provider.dart';
 import '../devices/config_file_ctrl.dart';
 
@@ -51,14 +51,12 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
     _textEditCtrl[2].text = _configValue[2].toStringAsFixed(3);
     _textEditCtrl[3].text = '';
   }
-
   /***********************************************************************
    *          설정 값을 업데이트하는 함수
    ***********************************************************************////
   void _updateConfig(int index, String value) {
     _configValue[index] = double.tryParse(value) ?? 0.0;
   }
-
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
@@ -130,13 +128,8 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                   ),
                   child: Align(
                     alignment: Alignment.center,
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Voltage Calibration'),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: textSize,
-                        // fontWeight: FontWeight.bold,
-                      ),
+                    child: Text(languageProvider.getLanguageTransValue('Voltage Calibration'),
+                      style: TextStyle(color: Colors.white,fontSize: textSize),
                     ),
                   ),
                 ),
@@ -147,8 +140,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                     _rowItem(
                         name: '${languageProvider.getLanguageTransValue('Applied V')}(V)',
                         fontSize: 16,
-                        child: _setPositionTextField(
-                            index: 0, width: 100, height: 40, maxRange: 999)),
+                        child: _setPositionTextField(index: 0, width: 100, height: 40, maxRange: 999)),
                     SizedBox(width: 40),
                     _rowItem(
                       name: '${languageProvider.getLanguageTransValue('Measured V')}(V) :',
@@ -164,14 +156,12 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                     _rowItem(
                         name: languageProvider.getLanguageTransValue('Offset'),
                         fontSize: 16,
-                        child: _setPositionTextField(
-                            index: 1, width: 100, height: 40, maxRange: 999)),
+                        child: _setPositionTextField(index: 1, width: 100, height: 40, maxRange: 999)),
                     SizedBox(width: 40),
                     _rowItem(
                         name: languageProvider.getLanguageTransValue('Gain'),
                         fontSize: 16,
-                        child: _setPositionTextField(
-                            index: 2, width: 100, height: 40, maxRange: 999)),
+                        child: _setPositionTextField(index: 2, width: 100, height: 40, maxRange: 999)),
                   ],
                 ),
                 SizedBox(height: 20),
@@ -216,11 +206,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                     alignment: Alignment.center,
                     child: Text(
                       languageProvider.getLanguageTransValue('Current Calibration'),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: textSize,
-                        // fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: textSize),
                     ),
                   ),
                 ),
@@ -231,8 +217,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                     _rowItem(
                         name: '${languageProvider.getLanguageTransValue('Applied A')}[0.5~4.0A]',
                         fontSize: 16,
-                        child: _setPositionTextField(
-                            index: 3, width: 100, height: 40, maxRange: 999)),
+                        child: _setPositionTextField(index: 3, width: 100, height: 40, maxRange: 999)),
                     SizedBox(width: 20),
                     _rowItem(
                       name: '${languageProvider.getLanguageTransValue('Measured A')}(A) :',
@@ -252,8 +237,7 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
                   child: DataTable(
                     headingRowHeight: 20,
                     horizontalMargin: 10,
-                    // columnSpacing: 10,
-                    headingRowColor: MaterialStatePropertyAll(homeHeaderColor),
+                    headingRowColor: WidgetStatePropertyAll(homeHeaderColor),
                     border: TableBorder.all(color: Colors.black),
                     columns: [
                       DataColumn(
@@ -303,7 +287,6 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
       ),
     );
   }
-
   /***********************************************************************
    *          행 항목을 생성하는 함수
    ***********************************************************************////
@@ -317,17 +300,13 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
         Text(
           name,
           textAlign: TextAlign.end,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.bold),
         ),
         SizedBox(width: 10),
         child,
       ],
     );
   }
-
   /***********************************************************************
    *          TextField를 생성하는 함수
    ***********************************************************************////
@@ -360,7 +339,6 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
           fillColor: Colors.white,
         ),
         inputFormatters: [
-          // FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(5),
           _CustomRangeTextInputFormatter(max: maxRange),
         ],
@@ -375,7 +353,6 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
       ),
     );
   }
-
   /***********************************************************************
    *          사용자 TextItem을 생성하는 함수
    ***********************************************************************////
@@ -389,16 +366,11 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
       width: width,
       height: height,
       alignment: Alignment.center,
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: size,
-          fontWeight: FontWeight.bold,
-        ),
+      child: Text(text,
+        style: TextStyle(fontSize: size, fontWeight: FontWeight.bold),
       ),
     );
   }
-
   /***********************************************************************
    *          사용자 BtnTextItem을 생성하는 함수
    ***********************************************************************////
@@ -413,25 +385,20 @@ class _CtrlVCControlState extends State<CtrlVCControl> with WidgetsBindingObserv
         onPressed: () {},
         style: ButtonStyle(
           backgroundColor: WidgetStatePropertyAll(color),
-          shape: MaterialStateProperty.all(
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(color: Colors.black, width: 1),
             ),
           ),
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+        child: Text(text,
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 }
-
 /***********************************************************************
  *          TextField에 입력된 최대값 설정 클래스
  ***********************************************************************////

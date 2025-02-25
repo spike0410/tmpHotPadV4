@@ -42,7 +42,6 @@ class _ControlPageState extends State<ControlPage>
       });
     });
   }
-
   /***********************************************************************
    *          TabBar를 생성하는 함수
    ***********************************************************************////
@@ -61,8 +60,7 @@ class _ControlPageState extends State<ControlPage>
         height: tabBarHeight,
         child: Container(
           decoration: BoxDecoration(
-            color:
-            activeTabIndex == 0 ? tabSelectedColor : tabUnselectedColor,
+            color: activeTabIndex == 0 ? tabSelectedColor : tabUnselectedColor,
           ),
           child: Align(
             alignment: Alignment.center,
@@ -74,8 +72,7 @@ class _ControlPageState extends State<ControlPage>
         height: tabBarHeight,
         child: Container(
           decoration: BoxDecoration(
-            color:
-            activeTabIndex == 1 ? tabSelectedColor : tabUnselectedColor,
+            color: activeTabIndex == 1 ? tabSelectedColor : tabUnselectedColor,
           ),
           child: Align(
             alignment: Alignment.center,
@@ -87,8 +84,7 @@ class _ControlPageState extends State<ControlPage>
         height: tabBarHeight,
         child: Container(
           decoration: BoxDecoration(
-            color:
-            activeTabIndex == 2 ? tabSelectedColor : tabUnselectedColor,
+            color: activeTabIndex == 2 ? tabSelectedColor : tabUnselectedColor,
           ),
           child: Align(
             alignment: Alignment.center,
@@ -100,8 +96,7 @@ class _ControlPageState extends State<ControlPage>
         height: tabBarHeight,
         child: Container(
           decoration: BoxDecoration(
-            color:
-            activeTabIndex == 3 ? tabSelectedColor : tabUnselectedColor,
+            color: activeTabIndex == 3 ? tabSelectedColor : tabUnselectedColor,
           ),
           child: Align(
             alignment: Alignment.center,

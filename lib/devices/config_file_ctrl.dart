@@ -21,7 +21,6 @@ class ConfigFileCtrl {
   static const String _modeProfileConfigKey = 'modeProfileConfig';
   static const String _tempCalConfigKey = 'tempCalConfig';
   static const String _diagnosisConfigKey = 'diagnosisConfig';
-  // static const String _isTempCalDataKey = 'isTempCalData';
   static const String _tempCalDataKey = 'tempCalData';
   static const String _isACCalDataKey = 'isACCalData';
   static const String _acVoltCalDataKey = 'acVoltCalData';
@@ -78,7 +77,6 @@ class ConfigFileCtrl {
   static int tempCalOhm = 0;
   static int tempCalTime = 0;
   static int tempCalGain = 0;
-  // static bool isTempCal = false;
   static List<double> tempCalData = [];
 
   /*******************************************************************
@@ -139,7 +137,6 @@ class ConfigFileCtrl {
   static Future<void> _saveDefaults(SharedPreferences prefs) async {
     debugPrint("_saveDefaults");
 
-    // final isTempCal = prefs.getBool(_isTempCalDataKey);
     final isACPwrCal = prefs.getBool(_isACCalDataKey);
 
     await prefs.setString(_languageKey, 'Kor');
@@ -160,9 +157,7 @@ class ConfigFileCtrl {
     await prefs.setString(_tempCalConfigKey, jsonEncode(_defaultTempCalConfig));
     await prefs.setString(_diagnosisConfigKey, jsonEncode(_defaultDiagnosisConfig));
 
-    // if(isTempCal == null || !isTempCal) {
     await prefs.setString(_tempCalDataKey, jsonEncode(_defaultTempCalData));
-    // }
 
     if(isACPwrCal == null || !isACPwrCal) {
       await prefs.setString(_acVoltCalDataKey, jsonEncode(_defaultACVoltCalData));
@@ -170,7 +165,9 @@ class ConfigFileCtrl {
       await prefs.setString(_acCurrentGainCalDataKey, jsonEncode(_defaultACCurrentGainCalData));
     }
   }
-
+  /*******************************************************************
+   *               All Setting load
+   *******************************************************************////
   static Future<void> _loadData(SharedPreferences prefs) async {
     await _getLanguageData(prefs);
     await _getHomePageStatusData(prefs);
@@ -181,7 +178,6 @@ class ConfigFileCtrl {
     await _getDiagnosisConfigData(prefs);
     await _getACPowerConfigData(prefs);
   }
-
   /*******************************************************************
    *               get Home Page Status
    *******************************************************************////
@@ -240,7 +236,6 @@ class ConfigFileCtrl {
     debugPrint("### HomePageStatusData[RemainTotalTime]###\n$remainTotalTimeList");
     debugPrint("### HomePageStatusData[padID]###\n$padIDList");
   }
-
   /*******************************************************************
    *               get Device Configuration
    *******************************************************************////
@@ -249,7 +244,6 @@ class ConfigFileCtrl {
 
     debugPrint("### LanguageData###\n$deviceConfigLanguage");
   }
-
   /*******************************************************************
    *               get Device Configuration
    *******************************************************************////
@@ -265,7 +259,6 @@ class ConfigFileCtrl {
     deviceConfigFANStartTemp = deviceConfig.firstWhere((map) => map.containsKey('FANStartTemp'), orElse: () => {},)['FANStartTemp']?.toDouble()?? 0.0;
     deviceConfigFANDeltaTemp = deviceConfig.firstWhere((map) => map.containsKey('FANDeltaTemp'), orElse: () => {},)['FANDeltaTemp']?.toDouble()?? 0.0;
   }
-
   /*******************************************************************
    *               get Mode Profile Configuration
    *******************************************************************////
@@ -285,7 +278,6 @@ class ConfigFileCtrl {
     pu45Hold1stTime = modeProfileConfig.firstWhere((map) => map.containsKey('PU45Hold1stTime'), orElse: () => {},)['PU45Hold1stTime'];
     pu45Hold2ndTime = modeProfileConfig.firstWhere((map) => map.containsKey('PU45Hold2ndTime'), orElse: () => {},)['PU45Hold2ndTime'];
   }
-
   /*******************************************************************
    *               get Temp. Calibration Configuration
    *******************************************************************////
@@ -298,8 +290,6 @@ class ConfigFileCtrl {
     tempCalOhm = tempCalConfig.firstWhere((map) => map.containsKey('TargetOhm'), orElse: () => {},)['TargetOhm'];
     tempCalTime = tempCalConfig.firstWhere((map) => map.containsKey('Time'), orElse: () => {},)['Time'];
     tempCalGain = tempCalConfig.firstWhere((map) => map.containsKey('Gain'), orElse: () => {},)['Gain'];
-    // // isTempCal = prefs.getBool(_isTempCalDataKey)?? false;
-    // tempCalData = List<double>.from(jsonDecode(prefs.getString(_tempCalDataKey) ?? '[]'));
   }
   /*******************************************************************
    *               get Temp. Calibration Data
@@ -313,7 +303,6 @@ class ConfigFileCtrl {
 
     debugPrint("### TempCalData ###\n$tempCalData");
   }
-
   /*******************************************************************
    *               get Diagnosis Configuration
    *******************************************************************////
@@ -353,7 +342,6 @@ class ConfigFileCtrl {
     pu45OverStopDelay = diagnosisConfig.firstWhere((map) => map.containsKey('PU45OverStopDelay'), orElse: () => {},)['PU45OverStopDelay'];
 
   }
-
   /*******************************************************************
    *               get AC Power Configuration
    *******************************************************************////
@@ -371,7 +359,6 @@ class ConfigFileCtrl {
     acVoltCalGain = acVoltCalData.firstWhere((map) => map.containsKey('Gain'), orElse: () => {},)['Gain']?.toDouble()?? 0.0;
 
   }
-
   /*******************************************************************
    *               set Home Page Status
    *******************************************************************////
@@ -398,7 +385,6 @@ class ConfigFileCtrl {
     debugPrint("### setHomePageStatusData[remainTotalTimeList]\n$remainTotalTimeList");
     debugPrint("### setHomePageStatusData[padID]\n$padIDList");
   }
-
   /*******************************************************************
    *               set Language
    *******************************************************************////
@@ -409,11 +395,11 @@ class ConfigFileCtrl {
 
     debugPrint("setLanguageData]\n$deviceConfigLanguage");
 
+    // context가 유효한지 확인
+    if(!context.mounted) return;
     // 언어 변경 시 LanguageProvider의 setLanguage 호출
     await Provider.of<LanguageProvider>(context, listen: false).setLanguage(deviceConfigLanguage);
-
   }
-
   /*******************************************************************
    *               set Device Configuration
    *******************************************************************////
@@ -431,7 +417,6 @@ class ConfigFileCtrl {
 
     await prefs.setString(_deviceConfigKey, jsonEncode(deviceConfig));
   }
-
   /*******************************************************************
    *               set Mode Profile Configuration
    *******************************************************************////
@@ -453,7 +438,6 @@ class ConfigFileCtrl {
 
     await prefs.setString(_modeProfileConfigKey, jsonEncode(modeProfileConfig));
   }
-
   /*******************************************************************
    *               set Temp. Calibration Configuration
    *******************************************************************////
@@ -469,7 +453,6 @@ class ConfigFileCtrl {
 
     await prefs.setString(_tempCalConfigKey, jsonEncode(tempCalConfig));
   }
-
   /*******************************************************************
    *               set Temp. Calibration Data
    *******************************************************************////
@@ -480,7 +463,6 @@ class ConfigFileCtrl {
 
     debugPrint("setTempCalData] : $tempCalData");
   }
-
   /*******************************************************************
    *               set Diagnosis Configuration
    *******************************************************************////
@@ -520,7 +502,6 @@ class ConfigFileCtrl {
 
     await prefs.setString(_diagnosisConfigKey, jsonEncode(diagnosisConfig));
   }
-
   /*******************************************************************
    *               set AC Power Configuration
    *******************************************************************////

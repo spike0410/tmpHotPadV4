@@ -5,16 +5,16 @@ const swVersion = '4.0.0';
 /*****************************************************************
  *                       Color Style
  *****************************************************************////
-const backgroundColor = Color(0xFFC0C0C0);    // Background Color
-const barBackgroundColor = Color(0xFFF0F0F0);   // Gradient Color
-const gBarBackgroundColor = Color(0xFF808080);   // Gradient Color
+const backgroundColor = Color(0xFFC0C0C0);        // Background Color
+const barBackgroundColor = Color(0xFFF0F0F0);     // Gradient Color
+const gBarBackgroundColor = Color(0xFF808080);    // Gradient Color
 const textBarColor = Color(0xFF000080);
 const gTextBarColor = Color(0xFF006DC6);
 const tabSelectedColor = backgroundColor;
 const tabUnselectedColor = Color(0xFFFFFFFF);
 const homeHeaderColor = Color(0xFFA5A5A5);
-const pu45SelectColor = Color(0xFF3060FF);      // Home Page - PU45 Select Color
-const gpu45SelectColor = Color(0xFF002070);     // Home Page - PU45 Select Gradient Color
+const pu45SelectColor = Color(0xFF3060FF);        // Home Page - PU45 Select Color
+const gpu45SelectColor = Color(0xFF002070);       // Home Page - PU45 Select Gradient Color
 
 /*****************************************************************
  *                       Text Style

@@ -18,8 +18,7 @@ class SystemTab extends StatefulWidget {
 
 class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
-  final List<TextEditingController> _textEditCtrl =
-      List.generate(3, (_) => TextEditingController());
+  final List<TextEditingController> _textEditCtrl = List.generate(3, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(3, (_) => FocusNode());
   final List<dynamic> _configValue = List<dynamic>.filled(3, null, growable: false);
   Timer? _timer;
@@ -79,7 +78,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     _timer?.cancel();
     super.dispose();
   }
-
   /***********************************************************************
    *          네트워크 정보와 OS 버전을 초기화하는 함수
    ***********************************************************************////
@@ -87,7 +85,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     await _getNetworkInfo();
     await _getOSVersion();
   }
-
   /***********************************************************************
    *          OS 버전을 가져오는 함수
    ***********************************************************************////
@@ -104,7 +101,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
       });
     }
   }
-
   /***********************************************************************
    *          네트워크 정보를 가져오는 함수
    ***********************************************************************////
@@ -126,7 +122,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
       }
     }
   }
-
   /***********************************************************************
    *          설정 값을 업데이트하는 함수
    ***********************************************************************////
@@ -137,7 +132,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
       _configValue[index] = int.tryParse(value) ?? 0;
     }
   }
-
   /***********************************************************************
    *          Focus를 잃었을 때 호출되는 함수
    ***********************************************************************////
@@ -163,17 +157,12 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenHeight = screenSize.height;
-    final TextStyle textStyle = TextStyle(
-      fontSize: defaultFontSize,
-      fontWeight: FontWeight.bold,
-    );
+    final TextStyle textStyle = TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold);
     final ButtonStyle btnStyle = ElevatedButton.styleFrom(
       foregroundColor: Colors.black,
       minimumSize: Size(250, 45),
       // 텍스트 색상 설정
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
     );
     final languageProvider = Provider.of<LanguageProvider>(context);
 
@@ -204,7 +193,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### Controller No.
                     _setPositionTextField(index: 0, width: 140, maxRange: 9999),
                   ],
@@ -213,7 +201,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### Serial No.
                     Text(_strSerialNo,
                         style: textStyle, textAlign: TextAlign.center),
@@ -223,7 +210,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### MAC
                     Text(_strMAC,
                         style: textStyle, textAlign: TextAlign.center),
@@ -233,7 +219,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### IP Address
                     Text(_strIPAddress,
                         style: textStyle, textAlign: TextAlign.center),
@@ -246,7 +231,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### FW Version
                     Consumer<HotpadCtrl>(
                       builder: (context, hotpadCtrlProvider, _){
@@ -260,7 +244,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 185),
-
                     /// ### SW Version
                     Text(_strSWVer,
                         style: textStyle, textAlign: TextAlign.center),
@@ -270,7 +253,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 60),
-
                     /// ### AC Frequency
                     Text(_strACFrequency,
                         style: textStyle, textAlign: TextAlign.center),
@@ -288,7 +270,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 135),
-
                     /// ### OS Version
                     Text(_strOSVer,
                         style: textStyle, textAlign: TextAlign.center),
@@ -301,7 +282,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 230),
-
                     /// ### Fan Start Temp.
                     _setPositionTextField(index: 1, width: 70, maxRange: 999),
                   ],
@@ -310,7 +290,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 230),
-
                     /// ### Fan Start Temp.
                     _setPositionTextField(index: 2, width: 70, maxRange: 999),
                   ],
@@ -327,18 +306,12 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 85),
-
                     /// ### Change Password Button.
                     ElevatedButton(
                       onPressed: () => _showChangePasswordDialog(context),
                       style: btnStyle,
-                      child: Text(
-                        languageProvider
-                            .getLanguageTransValue('Change Password'),
-                        style: TextStyle(
-                          fontSize: (defaultFontSize + 2),
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Text(languageProvider.getLanguageTransValue('Change Password'),
+                        style: TextStyle(fontSize: (defaultFontSize + 2), fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -347,12 +320,9 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 Row(
                   children: [
                     SizedBox(width: 132),
-
                     /// ### System 종료.
                     IconButton(
-                      onPressed: () {
-                        SystemNavigator.pop();
-                      }, // 앱 종료.
+                      onPressed: () {SystemNavigator.pop();}, // 앱 종료.
                       icon: Image.asset(iconPowerPath, width: 82, height: 82),
                     ),
                   ],
@@ -364,7 +334,6 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
       ),
     );
   }
-
   /***********************************************************************
    *          기본 TextField를 생성하는 함수
    ***********************************************************************////
@@ -382,30 +351,24 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
         decoration: InputDecoration(
           border: OutlineInputBorder(),
           filled: true,
-          fillColor: Colors.grey,
+          fillColor: Colors.grey[300],
         ),
         inputFormatters: [
-          // FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
           LengthLimitingTextInputFormatter(4),
           _CustomRangeTextInputFormatter(max: maxRange),
         ],
-        style: TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
         textAlignVertical: TextAlignVertical.top,
         keyboardType: TextInputType.number,
       ),
     );
   }
-
   /***********************************************************************
    *          비밀번호 변경 다이얼로그를 표시하는 함수
    ***********************************************************************////
   Future<void> _showChangePasswordDialog(BuildContext context) async {
-    final LanguageProvider languageProvider =
-        Provider.of<LanguageProvider>(context, listen: false);
+    final LanguageProvider languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     final TextEditingController currentPasswordController = TextEditingController();
     final TextEditingController newPasswordController = TextEditingController();
     final TextEditingController confirmPasswordController = TextEditingController();
@@ -431,8 +394,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
           }
           await ConfigFileCtrl.setDeviceConfigData();
           setState(() {
-            passwordMsg =
-                languageProvider.getLanguageTransValue('Saving the password.');
+            passwordMsg = languageProvider.getLanguageTransValue('Saving the password.');
           });
           _timer = Timer(Duration(seconds: 3), () {
             if (Navigator.of(context).canPop()) {
@@ -445,8 +407,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
             currentPasswordController.clear();
             newPasswordController.clear();
             confirmPasswordController.clear();
-            passwordMsg = languageProvider
-                .getLanguageTransValue('The new password does not match.');
+            passwordMsg = languageProvider.getLanguageTransValue('The new password does not match.');
           });
           _timer = Timer(Duration(seconds: 3), () {
             if (mounted) {
@@ -462,8 +423,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
           currentPasswordController.clear();
           newPasswordController.clear();
           confirmPasswordController.clear();
-          passwordMsg = languageProvider
-              .getLanguageTransValue('The current password does not match.');
+          passwordMsg = languageProvider.getLanguageTransValue('The current password does not match.');
         });
         _timer = Timer(Duration(seconds: 3), () {
           if (mounted) {
@@ -532,18 +492,14 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                   SizedBox(height: 8),
                   Text(
                     passwordMsg,
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.bold),
-                  ),
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ],
               ),
               actions: [
                 SizedBox(
                   width: 120,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
+                    onPressed: () { Navigator.of(context).pop(); },
                     style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
                     child: Text(
                       languageProvider.getLanguageTransValue('Cancel'),

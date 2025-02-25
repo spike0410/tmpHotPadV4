@@ -56,8 +56,7 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
+                      Text(title,
                         style: TextStyle(color: titleTextColor, fontSize: 34, fontWeight: FontWeight.bold),
                       ),
                       Consumer<HotpadCtrl>(
@@ -82,12 +81,9 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                       // 언어 선택 아이콘 버튼
                       IconButton(
                         icon: Image.asset(iconLanguagePath, width: 40, height: 30),
-                        onPressed: () {
-                          _showLanguageDialog(context);
-                        },
+                        onPressed: () {_showLanguageDialog(context);},
                       ),
-                      Text(
-                        'Ver $swVersion', // 소프트웨어 버전
+                      Text('Ver $swVersion', // 소프트웨어 버전
                         style: TextStyle(fontSize: 14),
                       ),
                     ],
@@ -166,11 +162,8 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
                     ),
                     SizedBox(height: 120),
                     IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon:
-                      Image.asset(iconCloseBtnPath, width: 70, height: 70),
+                      onPressed: () {Navigator.of(context).pop();},
+                      icon: Image.asset(iconCloseBtnPath, width: 70, height: 70),
                     ),
                   ],
                 ),
@@ -181,7 +174,6 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
       },
     );
   }
-
   /***********************************************************************
    *          줌 기능을 위한 아이콘을 생성하는 함수
    ***********************************************************************////
@@ -189,36 +181,29 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
     return Row(
       children: [
         selectedIndex == 1
-            ? IconButton(
-          icon: Image.asset(iconZoomOutPath,
+          ? IconButton(
+              icon: Image.asset(iconZoomOutPath,
               width: zoomBtnHeight, height: zoomBtnWidth),
-          onPressed: () {
-            graphPageKey.currentState?.zoomOut();
-          },
-        )
-            : SizedBox(width: 56),
+            onPressed: () {graphPageKey.currentState?.zoomOut();},
+          )
+          : SizedBox(width: 56),
         selectedIndex == 1
-            ? IconButton(
-          icon: Image.asset(iconZoomZeroPath,
+          ? IconButton(
+              icon: Image.asset(iconZoomZeroPath,
               width: zoomBtnHeight, height: zoomBtnWidth),
-          onPressed: () {
-            graphPageKey.currentState?.resetZoom();
-          },
-        )
-            : SizedBox(width: 56),
+            onPressed: () {graphPageKey.currentState?.resetZoom();},
+          )
+          : SizedBox(width: 56),
         selectedIndex == 1
-            ? IconButton(
-          icon: Image.asset(iconZoomInPath,
+          ? IconButton(
+              icon: Image.asset(iconZoomInPath,
               width: zoomBtnHeight, height: zoomBtnWidth),
-          onPressed: () {
-            graphPageKey.currentState?.zoomIn();
-          },
-        )
-            : SizedBox(width: 56),
+            onPressed: () {graphPageKey.currentState?.zoomIn();},
+          )
+          : SizedBox(width: 56),
       ],
     );
   }
-
   /***********************************************************************
    *          메뉴 아이콘을 생성하는 함수
    ***********************************************************************////
@@ -236,13 +221,12 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
         _buildToggleButton(iconBackupPath, 4),
         IconButton(
           icon: Image.asset(iconCapturePath,
-              width: menuBtnHeight, height: menuBtnWidth),
+          width: menuBtnHeight, height: menuBtnWidth),
           onPressed: onCapturePressed,
         ),
       ],
     );
   }
-
   /***********************************************************************
    *          메뉴 버튼 생성하는 함수
    ***********************************************************************////
@@ -256,16 +240,11 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
           colorFilter: selectedIndex == index
               ? ColorFilter.mode(Colors.grey, BlendMode.color)
               : ColorFilter.mode(Colors.transparent, BlendMode.srcATop),
-          child: Image.asset(
-            iconPath,
-            width: menuBtnHeight,
-            height: menuBtnWidth,
-          ),
+          child: Image.asset(iconPath, width: menuBtnHeight, height: menuBtnWidth),
         ),
       ),
     );
   }
-
   /***********************************************************************
    *          언어 선택 다이얼로그의 사용되는 라디오 버튼 생성 함수
    ***********************************************************************////
@@ -280,17 +259,10 @@ class MenuBarPage extends StatelessWidget implements PreferredSizeWidget {
       width: width,
       child: Row(
         children: [
-          Radio(
-            value: value,
-            groupValue: groupValue,
-            onChanged: onChanged,
-          ),
+          Radio(value: value, groupValue: groupValue, onChanged: onChanged),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 26,fontWeight: FontWeight.bold),
           ),
         ],
       ),

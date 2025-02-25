@@ -2,13 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:hotpadapp_v4/devices/usb_copy_ctrl.dart';
-import 'package:syncfusion_flutter_core/core.dart';
+// import 'package:syncfusion_flutter_core/core.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
-import '../devices/hotpad_ctrl.dart';
 import '../constant/user_style.dart';
 import '../screens/alarm_page.dart';
 import '../screens/backup_page.dart';
@@ -18,6 +16,8 @@ import '../screens/graph_page.dart';
 import '../screens/settings_page.dart';
 import '../screens/menubar_page.dart';
 import '../screens/statusbar_page.dart';
+import '../devices/hotpad_ctrl.dart';
+import '../devices/usb_copy_ctrl.dart';
 import '../devices/config_file_ctrl.dart';
 import '../devices/file_ctrl.dart';
 import '../providers/authentication_provider.dart';
@@ -44,9 +44,9 @@ Future main() async {
   await languageProvider.setLanguageFromDeviceConfig(); // 언어 데이터 가져오기
   await hotpadCtrlProvider.initialize();                        // Hotpad 컨트롤러 초기화
 
-  // Syncfusion license 등록
-  SyncfusionLicense.registerLicense(
-      "Ngo9BigBOggjHTQxAR8/V1NDaF5cWWtCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdnWH1ednRWQ2hcWU1xV0I=");
+  // // Syncfusion license 등록
+  // SyncfusionLicense.registerLicense(
+  //     "Ngo9BigBOggjHTQxAR8/V1NDaF5cWWtCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdnWH1ednRWQ2hcWU1xV0I=");
 
   // 다중 프로바이더와 함께 애플리케이션 실행
   runApp(
@@ -75,22 +75,17 @@ class MyApp extends StatelessWidget {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
         // Material Design3 기반으로 앱 전체의 테마를 설정
         return MaterialApp(
-          // title: 'HotpadApp_V4',
           theme: ThemeData(
             useMaterial3: true,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: backgroundColor,
-            ),
+            appBarTheme: const AppBarTheme(backgroundColor: backgroundColor),
             scaffoldBackgroundColor: backgroundColor,
-            bottomAppBarTheme: const BottomAppBarTheme(
-              color: backgroundColor,
-            ),
+            bottomAppBarTheme: const BottomAppBarTheme(color: backgroundColor),
             scrollbarTheme: ScrollbarThemeData(
-              thumbVisibility: MaterialStateProperty.all<bool>(true),
-              trackVisibility: MaterialStateProperty.all<bool>(true),
-              trackColor: MaterialStateProperty.all<Color>(Colors.white),
-              thumbColor: MaterialStateProperty.all<Color>(Color(0xFF606060)),
-              thickness: MaterialStateProperty.all<double>(20),
+              thumbVisibility:  WidgetStateProperty.all<bool>(true),
+              trackVisibility:  WidgetStateProperty.all<bool>(true),
+              trackColor:  WidgetStateProperty.all<Color>(Colors.white),
+              thumbColor:  WidgetStateProperty.all<Color>(Color(0xFF606060)),
+              thickness:  WidgetStateProperty.all<double>(20),
               crossAxisMargin: 1,
             ),
           ),
@@ -105,10 +100,10 @@ class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   @override
-  _MainPageState createState() => _MainPageState();
+  MainPageState createState() => MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   String _appBarTitle = 'Main Panel';
   String _appBarImage = iconHomePath;
@@ -130,11 +125,32 @@ class _MainPageState extends State<MainPage> {
       hotpadCtrlProvider.setContext(context);
       hotpadCtrlProvider.serialStart();
       hotpadCtrlProvider.showAlarmMessage('SYS', '-', 'I0001');
+
+      splashScreenDelay();
+
+      // ### 내부 저장공간이 70% 초과하는 경우 메세지 출력
+      // 70% : 약 35GB
+      // 75% : 약 37.5GB
+      double storageValue = hotpadCtrlProvider.storageProgressValue;
+      if ((storageValue >= 0.7) && (storageValue < 0.75)) {
+        hotpadCtrlProvider.showInstMessage('Information','SYS', '-', 'I0009', duration: 10);
+      }
+      else if (storageValue >= 0.75) {
+        List<String> deleteSubFolder = FileCtrl.searchSubFolder();
+        if(deleteSubFolder.isNotEmpty){
+          for(int i = (deleteSubFolder.length - 1); i >= 0; i--){
+            FileCtrl.deleteFolder(deleteSubFolder[i]);
+            hotpadCtrlProvider.updateStorageUsage();
+            storageValue = hotpadCtrlProvider.storageProgressValue;
+            if(storageValue < 0.7){
+              break;
+            }
+          }
+        }
+        hotpadCtrlProvider.showInstMessage('Information','SYS', '-', 'I0010', duration: 10);
+      }
     });
-
-    splashScreenDelay();
   }
-
   /***********************************************************************
    *          스플래시 화면 지연을 처리하는 함수
    ***********************************************************************////
@@ -143,16 +159,13 @@ class _MainPageState extends State<MainPage> {
 
     // 처음에 페이지 1로 이동
     _pageController.jumpToPage(1);
-
     // 지연 후 페이지 0으로 다시 이동
     await Future.delayed(const Duration(seconds: 2), () {
       _onItemTapped(0);
     });
-
     // 스플래시 화면 제거
     FlutterNativeSplash.remove();
   }
-
   /***********************************************************************
    *          MenuBar 항목 탭을 처리하는 함수
    ***********************************************************************////
@@ -167,7 +180,6 @@ class _MainPageState extends State<MainPage> {
     });
     _pageController.jumpToPage(index);
   }
-
   /***********************************************************************
    *          선택된 인덱스에 따라 앱 바 제목과 이미지를 업데이트하는 함수
    ***********************************************************************////
@@ -203,7 +215,6 @@ class _MainPageState extends State<MainPage> {
         break;
     }
   }
-
   /***********************************************************************
    *          인증을 통해 Control 페이지로 이동하는 함수
    ***********************************************************************////
@@ -221,7 +232,6 @@ class _MainPageState extends State<MainPage> {
       _pageController.jumpToPage(5);
     }
   }
-
   /***********************************************************************
    *          현재 화면의 스크린샷을 캡처하는 함수
    ***********************************************************************////
@@ -230,25 +240,22 @@ class _MainPageState extends State<MainPage> {
       final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
       // 프레임이 완전히 렌더링된 후 스크린 샷을 캡쳐해야 함.
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        RenderRepaintBoundary boundary =
-          _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+        RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
         ui.Image image = await boundary.toImage();
         ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         if (byteData != null) {
           Uint8List pngBytes = byteData.buffer.asUint8List();
           String savedPath = await FileCtrl.screenShotsSave(pngBytes);
+
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: savedPath.isNotEmpty
-              ? Text('${languageProvider.getLanguageTransValue('Screenshot has been saved')} : $savedPath',
-              textAlign: TextAlign.center)
-              : Text(languageProvider.getLanguageTransValue('Screenshot not saved'),
-              textAlign: TextAlign.center),
+              ? Text('${languageProvider.getLanguageTransValue('Screenshot has been saved')} : $savedPath', textAlign: TextAlign.center)
+              : Text(languageProvider.getLanguageTransValue('Screenshot not saved'), textAlign: TextAlign.center),
             duration: Duration(seconds: 5),
           ));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(languageProvider.getLanguageTransValue('Failed to capture image.'),
-              textAlign: TextAlign.center),
+            content: Text(languageProvider.getLanguageTransValue('Failed to capture image.'), textAlign: TextAlign.center),
             duration: Duration(seconds: 5),
           ));
         }
@@ -257,7 +264,6 @@ class _MainPageState extends State<MainPage> {
       debugPrint("$e");
     }
   }
-
   /***********************************************************************
    *          GUI 기본 구조
    ***********************************************************************////
