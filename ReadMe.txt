@@ -1,3 +1,9 @@
+### 25/02/27
+	1. 기타 수정 사항
+		- Graph Page의 liveChartInit() 수정
+			--> Graph File Load 후 liveChartInit()를 할 때 live Chart 데이터가 많은 경우 오류가 발생
+			--> _liveChartDataSeries 변수에 저장하던 것을 현재 저장되고 있는 파일에서 데이터를 가져와서 출력
+	
 ### 25/02/25
 	1. 기타 수정 사항
 		- Graph Page에서 Search 중 파일내 데이터가 존재하지 않는 조건에 대한 사항 추가

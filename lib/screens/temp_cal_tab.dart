@@ -417,32 +417,32 @@ class _TempCalTabState extends State<TempCalTab> with WidgetsBindingObserver {
             child: Text(languageProvider.getLanguageTransValue('Are you sure you want to reset the temperature calibration values?')),
           ),
           actions: [
-            SizedBox(
-              width: 120,
-              child: ElevatedButton(
-                onPressed: () {Navigator.of(context).pop();},
-                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(languageProvider.getLanguageTransValue('Cancel'),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+            ElevatedButton(
+              onPressed: () {Navigator.of(context).pop();},
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+              ),
+              child: Text(languageProvider.getLanguageTransValue('Cancel'),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
-            SizedBox(
-              width: 120,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    for(int i = 0; i < totalChannel; i++){
-                      ConfigFileCtrl.tempCalData[i] = 0;
-                    }
-                  });
-                  ConfigFileCtrl.setTempCalData();
-                  Navigator.of(context).pop();
-                },
-                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(languageProvider.getLanguageTransValue('OK'),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  for(int i = 0; i < totalChannel; i++){
+                    ConfigFileCtrl.tempCalData[i] = 0;
+                  }
+                });
+                ConfigFileCtrl.setTempCalData();
+                Navigator.of(context).pop();
+              },
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+              ),
+              child: Text(languageProvider.getLanguageTransValue('OK'),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],

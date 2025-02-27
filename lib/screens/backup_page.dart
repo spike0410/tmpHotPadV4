@@ -7,6 +7,7 @@ import '../devices/file_ctrl.dart';
 import '../devices/usb_copy_ctrl.dart';
 import '../providers/language_provider.dart';
 import '../constant/user_style.dart';
+import '../devices/logger.dart';
 
 class BackupPage extends StatefulWidget {
   const BackupPage({super.key});
@@ -68,7 +69,7 @@ class BackupPageState extends State<BackupPage> {
         isUSBConnect = false;
         usbProgressValue = 0;
       });
-      debugPrint("Failed to get USB storage info: '${e.message}'.");
+      Logger.msg("${e.message}", tag: "ERROR");
     }
   }
   /***********************************************************************
@@ -77,14 +78,14 @@ class BackupPageState extends State<BackupPage> {
   Future<void> _ejectUSB() async {
     try {
       final String result = await platform.invokeMethod('ejectUSB');
-      debugPrint(result);
+      Logger.msg(result);
       setState(() {
         isUSBConnect = false;
         usbProgressValue = 0;
         usbPath = '';
       });
     } on PlatformException catch (e) {
-      debugPrint("Failed to eject USB storage: '${e.message}'.");
+      Logger.msg("${e.message}", tag: 'ERROR');
     }
   }
   /*****************************************************************************
@@ -652,43 +653,43 @@ class BackupPageState extends State<BackupPage> {
               ),
             ),
             actions: [
-              SizedBox(
-                width: 120,
-                child: ElevatedButton(
-                  onPressed: () {Navigator.of(context).pop();},
-                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                  child: Text(
-                    languageProvider.getLanguageTransValue('Cancel'),
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+              ElevatedButton(
+                onPressed: () {Navigator.of(context).pop();},
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                  fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                ),
+                child: Text(
+                  languageProvider.getLanguageTransValue('Cancel'),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
               /// ### 삭제 2차 확인 버튼
-              SizedBox(
-                width: 120,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    for(int i = startIndex; i <= endIndex; i++){
-                      FileCtrl.deleteFolder(deleteSubFolder[i]);
-                    }
-                    await hotpadCtrlProvider.updateStorageUsage();
+              ElevatedButton(
+                onPressed: () async {
+                  for(int i = startIndex; i <= endIndex; i++){
+                    FileCtrl.deleteFolder(deleteSubFolder[i]);
+                  }
+                  await hotpadCtrlProvider.updateStorageUsage();
 
-                    setState(() {
-                      startTextCtrl.text = '';
-                      endTextCtrl.text = '';
+                  setState(() {
+                    startTextCtrl.text = '';
+                    endTextCtrl.text = '';
 
-                      deleteSubFolder.clear();
-                      deleteSubFolder = FileCtrl.searchSubFolder();
-                      deleteSubFolder.removeWhere((value) => value == DateFormat('yyyyMM').format(DateTime.now()));
+                    deleteSubFolder.clear();
+                    deleteSubFolder = FileCtrl.searchSubFolder();
+                    deleteSubFolder.removeWhere((value) => value == DateFormat('yyyyMM').format(DateTime.now()));
 
-                      Navigator.of(context).pop();
-                    });
-                    showDeleteMsg(setState, "The file/folder has been deleted.");
-                  },
-                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                  child: Text(languageProvider.getLanguageTransValue('OK'),
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                    Navigator.of(context).pop();
+                  });
+                  showDeleteMsg(setState, "The file/folder has been deleted.");
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                  fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                ),
+                child: Text(languageProvider.getLanguageTransValue('OK'),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -757,44 +758,44 @@ class BackupPageState extends State<BackupPage> {
                 ),
               ),
               actions: [
-                SizedBox(
-                  width: 180,
-                  /// ### 최대 선택 버튼
-                  child: ElevatedButton(
-                    onPressed: () { maxItemRange(setState); },
-                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(languageProvider.getLanguageTransValue('Select Maximum'),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                /// ### 최대 선택 버튼
+                ElevatedButton(
+                  onPressed: () { maxItemRange(setState); },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                    fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(180)),
+                  ),
+                  child: Text(languageProvider.getLanguageTransValue('Select Maximum'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(
-                  width: 120,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(languageProvider.getLanguageTransValue('Cancel'),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                    fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                  ),
+                  child: Text(languageProvider.getLanguageTransValue('Cancel'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(
-                  width: 120,
-                  /// ### 삭제 1차 확인 버튼
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if ((startTextCtrl.text != '') && (endTextCtrl.text != '')) {
-                        runDelete(setState);
-                      } else {
-                        showDeleteMsg(setState, "There are no selected items");
-                      }
-                    },
-                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(languageProvider.getLanguageTransValue('OK'),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                /// ### 삭제 1차 확인 버튼
+                ElevatedButton(
+                  onPressed: () {
+                    if ((startTextCtrl.text != '') && (endTextCtrl.text != '')) {
+                      runDelete(setState);
+                    } else {
+                      showDeleteMsg(setState, "There are no selected items");
+                    }
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                    fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                  ),
+                  child: Text(languageProvider.getLanguageTransValue('OK'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],

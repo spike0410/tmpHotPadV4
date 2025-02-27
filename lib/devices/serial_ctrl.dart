@@ -10,6 +10,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../devices/hotpad_ctrl.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
+import '../devices/logger.dart';
 
 enum SerialPortStatus {
   none, noFound, noOpen, portOpen, disconnected,
@@ -335,7 +336,7 @@ class SerialCtrl{
         deviceFilters.add({'vendorId': vendorId, 'productId': productId ?? ''});
       }
     }
-    debugPrint('Loaded device filters: $deviceFilters');
+    Logger.msg('### Loaded device filters: $deviceFilters');
   }
   /*****************************************************************************
    *          사용 가능한 시리얼 포트를 찾는 함수
@@ -346,7 +347,7 @@ class SerialCtrl{
       for (var filter in deviceFilters) {
         if (device.vid.toString() == filter['vendorId'] &&
             (filter['productId']!.isEmpty || device.pid.toString() == filter['productId'])) {
-          debugPrint('Matching device found: ${device.deviceName}, Vendor ID: ${device.vid}, Product ID: ${device.pid}');
+          Logger.msg('Serial device found: ${device.deviceName}, Vendor ID: ${device.vid}, Product ID: ${device.pid}');
           serialPortStatus = SerialPortStatus.noFound;
           serialOpen(device);
           return; // 일치하는 장치를 찾으면 더 이상 검색하지 않음
@@ -355,7 +356,7 @@ class SerialCtrl{
     }
 
     serialPortStatus = SerialPortStatus.noFound;
-    debugPrint('### Status : $serialPortStatus');
+    Logger.msg('Serial Status : $serialPortStatus');
   }
   /*****************************************************************************
    *          시리얼 포트를 여는 함수
@@ -364,14 +365,14 @@ class SerialCtrl{
     _port = await device.create();
     if (_port == null) {
       serialPortStatus = SerialPortStatus.noOpen;
-      debugPrint('### Status : $serialPortStatus');
+      Logger.msg('Serial Status : $serialPortStatus');
       return;
     }
 
     bool openResult = await _port!.open();
     if (!openResult) {
       serialPortStatus = SerialPortStatus.noOpen;
-      debugPrint('### Status : $serialPortStatus');
+      Logger.msg('Serial Status : $serialPortStatus');
       return;
     }
 
@@ -386,7 +387,7 @@ class SerialCtrl{
     _subscription = _transaction!.stream.listen(onDataReceivedCallback);
 
     serialPortStatus = SerialPortStatus.connect;
-    debugPrint('### Status : $serialPortStatus');
+    Logger.msg('Serial Status : $serialPortStatus');
   }
   /*****************************************************************************
    *          시리얼 포트를 닫는 함수
@@ -419,14 +420,16 @@ class SerialCtrl{
   /*****************************************************************************
    *          데이터를 전송하는 함수
    *****************************************************************************////
-  void sendData() {
+  void sendData(int count) {
     if ((serialPortStatus == SerialPortStatus.connect || serialPortStatus == SerialPortStatus.rxReady)
         && _port != null) {
       serialPortStatus = SerialPortStatus.txBusy;
       String dataToSend = txPackage.getTxPackageData();
 
       _port!.write(Uint8List.fromList(dataToSend.codeUnits));
-      debugPrint('T<<<[${DateTime.now()}] $dataToSend');
+      if((count%10) == 0){
+        Logger.msg('T<<<${dataToSend.split('\r\n')}');
+      }
     }
   }
 }

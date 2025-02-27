@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
-import '../devices/config_file_ctrl.dart';
 import '../providers/language_provider.dart';
+import '../devices/config_file_ctrl.dart';
 import '../devices/hotpad_ctrl.dart';
+import '../devices/logger.dart';
 
 class SystemTab extends StatefulWidget {
   final bool isAdmin;
@@ -97,7 +98,7 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
     } on PlatformException catch (e) {
       setState(() {
         _strOSVer = "-";
-        debugPrint('OS Version Error] ${e.message}');
+        Logger.msg("${e.message}", tag: "ERROR");
       });
     }
   }
@@ -496,26 +497,26 @@ class _SystemTabState extends State<SystemTab> with WidgetsBindingObserver {
                 ],
               ),
               actions: [
-                SizedBox(
-                  width: 120,
-                  child: ElevatedButton(
-                    onPressed: () { Navigator.of(context).pop(); },
-                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Cancel'),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                ElevatedButton(
+                  onPressed: () { Navigator.of(context).pop(); },
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                    fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                  ),
+                  child: Text(
+                    languageProvider.getLanguageTransValue('Cancel'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(
-                  width: 120,
-                  child: ElevatedButton(
-                    onPressed: () => authenticate(setState),
-                    style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                    child: Text(
-                      languageProvider.getLanguageTransValue('Change'),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                ElevatedButton(
+                  onPressed: () => authenticate(setState),
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                    fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+                  ),
+                  child: Text(
+                    languageProvider.getLanguageTransValue('Change'),
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],

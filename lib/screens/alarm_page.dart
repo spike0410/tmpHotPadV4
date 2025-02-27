@@ -103,7 +103,8 @@ class AlarmTableState extends State<AlarmTable> {
                 DataCell(Center(child: Text(data['Channel']!))),
                 DataCell(Center(child: Text(data['HotPad']!))),
                 // Data 출력시 사용된 code를 언어 설정에 맞게 출력
-                DataCell(Text(languageProvider.getMessageTransValue(data['Descriptions']!))),
+                DataCell(Text(languageProvider.getMessageTransValue(data['Descriptions']!),
+                      softWrap: true)),
                 DataCell(Center(child: Text(data['Date Time']!))),
               ]);
             }).toList(),

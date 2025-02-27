@@ -23,6 +23,7 @@ import '../devices/file_ctrl.dart';
 import '../providers/authentication_provider.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
+import '../devices/logger.dart';
 
 Future main() async {
   // 플러그인(ex. 파일시스템 접근, 카메라, GPS 등등)이 네이티브 코드와 통신할 수 있도록 초기화하는 역할
@@ -31,6 +32,9 @@ Future main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // 초기화가 완료될 때까지 스플래시 화면 유지
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  // 사용자 Logger 클래스 Start
+  await Logger.start();
 
   // 프로바이더 및 컨트롤러 초기화
   final languageProvider = LanguageProvider();
@@ -261,7 +265,7 @@ class MainPageState extends State<MainPage> {
         }
       });
     } catch (e) {
-      debugPrint("$e");
+      Logger.msg("$e", tag: "ERROR");
     }
   }
   /***********************************************************************

@@ -86,26 +86,26 @@ class AuthenticationProvider with ChangeNotifier {
             ),
           ),
           actions: [
-            SizedBox(
-              width: 120,
-              child: ElevatedButton(
-                onPressed: () { Navigator.of(context).pop(false); },
-                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(
-                  languageProvider.getLanguageTransValue('Cancel'),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+            ElevatedButton(
+              onPressed: () { Navigator.of(context).pop(false); },
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+              ),
+              child: Text(
+                languageProvider.getLanguageTransValue('Cancel'),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
-            SizedBox(
-              width: 120,
-              child: ElevatedButton(
-                onPressed: () => authenticate(setState), // OK 버튼을 눌렀을 때
-                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent)),
-                child: Text(
-                  languageProvider.getLanguageTransValue('OK'),
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+            ElevatedButton(
+              onPressed: () => authenticate(setState), // OK 버튼을 눌렀을 때
+              style: ButtonStyle(
+                backgroundColor: WidgetStatePropertyAll(Colors.deepPurpleAccent),
+                fixedSize: WidgetStateProperty.all<Size>(Size.fromWidth(120)),
+              ),
+              child: Text(
+                languageProvider.getLanguageTransValue('OK'),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],

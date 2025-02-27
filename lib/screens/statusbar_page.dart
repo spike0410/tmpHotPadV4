@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import '../constant/user_style.dart';
 import '../devices/hotpad_ctrl.dart';
 import '../devices/config_file_ctrl.dart';
+import '../devices/logger.dart';
 import '../providers/language_provider.dart';
 
-class StatusBarPage extends StatelessWidget {
+class StatusBarPage extends StatefulWidget {
   final double barHeight;
   final VoidCallback onCtrlPressed;
 
@@ -15,13 +16,35 @@ class StatusBarPage extends StatelessWidget {
   });
 
   @override
+  State<StatusBarPage> createState() => _StatusBarPageState();
+}
+
+class _StatusBarPageState extends State<StatusBarPage> {
+  bool isDebugMode = false;
+  bool isBtn = false;
+  int countDebugMode = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async{
+    isDebugMode = await Logger.loadStartLoggerFlag();
+    isBtn = false;
+    countDebugMode = 0;
+  }
+
+  @override
   Widget build(BuildContext context) {
     // LanguageProvider와 HotpadCtrl 프로바이더를 가져옴
     final languageProvider = Provider.of<LanguageProvider>(context);
     final hotpadCtrlProvider = Provider.of<HotpadCtrl>(context);
 
     return Container(
-      height: barHeight,
+      height: widget.barHeight,
       width: double.infinity,
       padding: EdgeInsets.only(left: 10, right: 10),
       decoration: BoxDecoration(
@@ -41,15 +64,54 @@ class StatusBarPage extends StatelessWidget {
             // 컨트롤러 버튼
             IconButton(
               icon: (ConfigFileCtrl.deviceConfigLanguage == 'Kor') ? Image.asset(shiLogPathKor, height: 40) : Image.asset(shiLogPath, height: 40),
-              onPressed: onCtrlPressed,
+              onPressed: widget.onCtrlPressed,
             ),
             SizedBox(width: 50),
             // 컨트롤러 번호 텍스트
-            Text(
-              '${languageProvider.getLanguageTransValue('Controller No.')} ${ConfigFileCtrl.deviceConfigNumber.toString().padLeft(3,'0')}',
-              style: TextStyle(fontSize: (defaultFontSize + 4), fontWeight: FontWeight.bold),
+            SizedBox(
+              child: FilledButton(
+                onPressed: (){
+                  if(isBtn == true){
+                    countDebugMode++;
+                  }
+                },
+                onLongPress: () async{
+                  if(isBtn == false){
+                    isBtn = true;
+                    countDebugMode = 0;
+                  }
+                  else{
+                    if(countDebugMode >= 7){
+                      setState(() {
+                        isDebugMode = !isDebugMode;
+                      });
+                      await Logger.saveStartLoggerFlag(isDebugMode);
+                      isBtn = false;
+                      if(isDebugMode){
+                        Logger.start();
+                      }
+                      else{
+                        Logger.dispose();
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: isDebugMode
+                            ? Text('### Logger Start ###', textAlign: TextAlign.center)
+                            : Text('### Logger End ###', textAlign: TextAlign.center),
+                        duration: Duration(seconds: 5),
+                      ));
+                    }
+                  }
+                },
+                style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.transparent)),
+                child: Text(
+                  '${languageProvider.getLanguageTransValue('Controller No.')} ${ConfigFileCtrl.deviceConfigNumber.toString().padLeft(3,'0')}',
+                  style: TextStyle(color: Colors.black ,fontSize: (defaultFontSize + 4), fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-            SizedBox(width: 50),
+            isDebugMode == true
+                ? Icon(Icons.admin_panel_settings, size: 50)
+                : SizedBox(width: 50),
             // 내부 온도 및 전력 텍스트
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -61,7 +123,7 @@ class StatusBarPage extends StatelessWidget {
                 ),
                 SizedBox(height: 3),
                 SizedBox(
-                  width: 160,
+                  width: 170,
                   child: Text(
                     '${languageProvider.getLanguageTransValue('Internal Power')} : '
                         '${hotpadCtrlProvider.serialCtrl.rxPackage.dcVolt}V/'

@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:isolate';
+import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import '../constant/user_style.dart';
 import '../devices/file_ctrl.dart';
+import '../devices/logger.dart';
 
 class UsbCopyCtrl with ChangeNotifier{
   late String _startPath;
@@ -66,7 +68,7 @@ class UsbCopyCtrl with ChangeNotifier{
         value = 1;
       }
       notifyListeners();
-      debugPrint('###### Copy File Count:$_fileCount/$_totalFileCount');
+      // Logger.msg('@@@ USB Copy File Count:$_fileCount/$_totalFileCount');
     }
     _copyProgressValue = value;
   }
@@ -139,6 +141,7 @@ class UsbCopyCtrl with ChangeNotifier{
       await Future.delayed(const Duration(milliseconds: 200));
 
       // screenShots Files에 파일을 usbFolderList에 복사
+      Logger.msg('### Copy ScreenShot File');
       for (int i = 0; i < screenShotsFiles.length; i++) {
         for (int j = 0; j < screenShotsFiles[i].length; j++) {
           File sourceFile = screenShotsFiles[i][j];
@@ -149,10 +152,15 @@ class UsbCopyCtrl with ChangeNotifier{
         }
       }
       // Alarm Files에 .db to .csv 변환하여 usbFolderList에 복사
+      Logger.msg('### Alarm DB to CSV Conversion');
       await _copyFilesToUsb(alarmFiles, usbFolderList, 0, _convertAlarmDbToCsv);
+
       // Graph Files에 .db to .csv 변환하여 usbFolderList에 복사
+      Logger.msg('### Graph DB to CSV Conversion');
       await _copyFilesToUsb(graphFiles, usbFolderList, 1, _convertGraphDbToCsv);
+
       // Log Files에 .db to .csv 변환하여 usbFolderList에 복사
+      Logger.msg('### Log DB to CSV Conversion');
       await _copyFilesToUsb(logFiles, usbFolderList, 2, _convertLogDbToCsv);
     }
   }
@@ -263,10 +271,10 @@ class UsbCopyCtrl with ChangeNotifier{
       outFolderList[j].add(screenShotsDir.path);
     }
 
-    debugPrint('###### Create USB Folder List');
+    Logger.msg('### Create USB Folder List');
     for (var folderList in outFolderList) {
       for(var list in folderList){
-        debugPrint('###### ${list.toString()}');
+        Logger.msg(' -> ${list.toString()}');
       }
     }
   }
@@ -285,13 +293,13 @@ class UsbCopyCtrl with ChangeNotifier{
               await deleteDirectoryRecursive(entity);
             }
           } catch (e) {
-            debugPrint('###### $e');
+            Logger.msg("$e", tag: "ERROR");
           }
         }
         await dir.delete();
-        debugPrint('###### Directory deleted: ${dir.path}');
+        Logger.msg('Delete USB Directory : ${dir.path}');
       } catch (e) {
-        debugPrint('###### $e');
+        Logger.msg("$e", tag: "ERROR");
       }
     }
   }
@@ -304,21 +312,26 @@ class UsbCopyCtrl with ChangeNotifier{
       int usbFolderIndex,
       Future<String> Function(File) convertToCsv) async {
 
+    String? downloadDirPath = FileCtrl.defaultPath;
     for (int i = 0; i < fileGroups.length; i++) {
       for (int j = 0; j < fileGroups[i].length; j++) {
         File dbFile = fileGroups[i][j];
         String csvPath = await convertToCsv(dbFile);
+        await Future.delayed(const Duration(milliseconds: 100));
         String usbFolderPath = usbFolderList[i][usbFolderIndex];
         File source = File(csvPath);
+
         try{
-          source.copySync('$usbFolderPath/${source.uri.pathSegments.last}');
+          await source.copy('$usbFolderPath/${source.uri.pathSegments.last}');
         }
         catch(e) {
-          debugPrint('###### Error copying or deleting file: $e');
+          Logger.msg("$e", tag: "ERROR");
         }
         finally{
-          source.deleteSync();
           fileProgressValueOperate();
+          double fileSize = await source.length() / 1024.0;
+          Logger.msg("@@@ Copy CSV[$_fileCount/$_totalFileCount]: ${source.path.substring(downloadDirPath!.length)}(${fileSize.toStringAsFixed(3)} KByte)");
+          await source.delete();
         }
       }
     }
@@ -361,11 +374,13 @@ class UsbCopyCtrl with ChangeNotifier{
   Future<String> _convertDbToCsv(File dbFile, String tableName, List<String> columns, String csvHeader) async {
     String csvData = '\uFEFF$csvHeader\n';
 
-    if (!dbFile.existsSync()) {
+    if (!await dbFile.exists()) {
       return '';
     }
 
-    Database db = await openDatabase(dbFile.path);
+    String? downloadDirPath = FileCtrl.defaultPath;
+    Database db = await openReadOnlyDatabase(dbFile.path);
+    await Future.delayed(const Duration(milliseconds: 100));
     File csvFile = File('${dbFile.path.split('.').first}.csv');
     IOSink sink = csvFile.openWrite(mode: FileMode.write);
     sink.write(csvData);
@@ -382,7 +397,13 @@ class UsbCopyCtrl with ChangeNotifier{
           offset: offset,
         );
 
-        if (result.isEmpty) break;
+        if (result.isEmpty) {
+          if(offset == 0){
+            Logger.msg("@@@ Empty Load DB path: ${dbFile.path.substring(downloadDirPath!.length)}");
+          }
+          await Future.delayed(const Duration(microseconds: 100));
+          break;
+        }
 
         for (Map<String, dynamic> row in result) {
           List<String> values = columns.map((col) => '${row[col]}').toList();
@@ -392,7 +413,7 @@ class UsbCopyCtrl with ChangeNotifier{
         offset += chunkSize; // 다음 청크로 이동
       }
     } catch (e) {
-      debugPrint('###### 오류 발생: $e');
+      Logger.msg("$e", tag: "ERROR");
     } finally {
       await db.close();
       await sink.flush();

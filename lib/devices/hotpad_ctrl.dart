@@ -9,6 +9,7 @@ import '../devices/file_ctrl.dart';
 import '../devices/serial_ctrl.dart';
 import '../constant/user_style.dart';
 import '../devices/config_file_ctrl.dart';
+import '../devices/logger.dart';
 
 class HotpadCtrl with ChangeNotifier{
   final SerialCtrl serialCtrl = SerialCtrl();
@@ -28,6 +29,7 @@ class HotpadCtrl with ChangeNotifier{
   List<double> _remainTotalTime = List.filled(totalChannel, -1);
   List<List<String>> _logDataList = [];
 
+  int _iSerialCount = 0;
   bool _isGraphLive = true;
   String _currentTime = '';
   double _totalStorage = 0.0;
@@ -61,6 +63,7 @@ class HotpadCtrl with ChangeNotifier{
   Future<void> initialize() async {
     serialCtrl.initialize(onDataReceived);
 
+    _iSerialCount = 0;      // Log 출력 카운트 변수
     _currentTime = DateFormat('yyyy.MM.dd HH:mm:ss').format(DateTime.now());
 
     _isPU45Enable = ConfigFileCtrl.isPU45EnableList;
@@ -294,7 +297,7 @@ class HotpadCtrl with ChangeNotifier{
     receivePort.listen((message) {
       if (message == 'sendData') {
         serialCtrl.txPackage.setHTOperate(_chStatus);
-        serialCtrl.sendData();
+        serialCtrl.sendData(_iSerialCount);
         serialCtrl.checkDataReceived();
       }
       else if (message == 'updateTime') {
@@ -340,12 +343,14 @@ class HotpadCtrl with ChangeNotifier{
         serialCtrl.rxPackage.setRxPackageData(dataList);
         _saveLogData();
 
-        debugPrint('R>>>[${serialCtrl.rxPackage.rxTime}] $dataList');
+        if((_iSerialCount++%10) == 0){
+          Logger.msg('R>>>$dataList');
+        }
       }
       else {
         serialCtrl.serialPortStatus = SerialPortStatus.rxErr;
 
-        debugPrint('### Status : ${serialCtrl.serialPortStatus}');
+        Logger.msg('Serial Status : ${serialCtrl.serialPortStatus}');
       }
     }
     serialCtrl.serialPortStatus = SerialPortStatus.rxReady;
@@ -368,10 +373,10 @@ class HotpadCtrl with ChangeNotifier{
       _totalStorage = result[0] / (1024 * 1024); // Convert to MB
       _usedStorage = result[1] / (1024 * 1024); // Convert to MB
       _storageProgressValue = _usedStorage / _totalStorage;
-      debugPrint("##### Internal Storage Info] $_totalStorage / $_usedStorage(${(_storageProgressValue * 100).toStringAsFixed(1)})");
+      Logger.msg("Internal Storage Info] $_totalStorage / $_usedStorage(${(_storageProgressValue * 100).toStringAsFixed(1)})");
       notifyListeners();
     } on PlatformException catch (e) {
-      debugPrint("Failed to get USB storage info: '${e.message}'.");
+      Logger.msg("$e", tag: "ERROR");
     }
   }
   /*****************************************************************************

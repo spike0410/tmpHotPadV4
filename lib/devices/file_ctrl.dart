@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../constant/user_style.dart';
 import '../providers/language_provider.dart';
 import '../providers/message_provider.dart';
+import '../devices/logger.dart';
 
 class FileCtrl {
   static late String? _defaultPath;
@@ -45,7 +46,6 @@ class FileCtrl {
     }
     else {
       _defaultPath = null;
-      debugPrint('Storage permission denied');
       SystemNavigator.pop();
     }
 
@@ -70,19 +70,19 @@ class FileCtrl {
 
     if (!await tmpAlarmPath.exists()) {
       await tmpAlarmPath.create(recursive: true);
-      debugPrint('Alarm Folder Create ${tmpAlarmPath.path}');
+      Logger.msg('### Create Alarm Folder : ${tmpAlarmPath.path}');
     }
     if (!await tmpLogPath.exists()) {
       await tmpLogPath.create(recursive: true);
-      debugPrint('Log Folder Create ${tmpLogPath.path}');
+      Logger.msg('### Create Log Folder : ${tmpLogPath.path}');
     }
     if (!await tmpGraphPath.exists()) {
       await tmpGraphPath.create(recursive: true);
-      debugPrint('ScreenShots Folder Create ${tmpGraphPath.path}');
+      Logger.msg('### Create Graph Folder : ${tmpGraphPath.path}');
     }
     if (!await tmpScreenShotsPath.exists()) {
       await tmpScreenShotsPath.create(recursive: true);
-      debugPrint('ScreenShots Folder Create ${tmpScreenShotsPath.path}');
+      Logger.msg('### Create ScreenShots Folder : ${tmpScreenShotsPath.path}');
     }
 
     await _createAlarmFile(messageProvider, _alarmPath!, dateTime);  // 알람 파일을 생성
@@ -100,11 +100,10 @@ class FileCtrl {
 
       await imgFile.writeAsBytes(pngBytes);
 
+      Logger.msg('Save Screenshot : $fileName.png');
       return ('$fileName.png');
-    } else {
-      debugPrint('Log default folder path is not set');
-      return '';
     }
+    return '';
   }
   /*****************************************************************************
    *          알람 파일을 생성하는 함수
@@ -132,7 +131,7 @@ class FileCtrl {
       messageProvider.loadData(result);
     }
 
-    debugPrint('###### Create AlarmFile : $dbPath');
+    Logger.msg('### Create AlarmFile : $dbPath');
   }
   /*****************************************************************************
    *          알람 메시지를 저장하는 함수
@@ -150,7 +149,7 @@ class FileCtrl {
         'dateTime': dataList[4],
       });
     } else {
-      debugPrint('Database is not initialized');
+      Logger.msg('Alarm Database is not initialized');
     }
   }
   /*****************************************************************************
@@ -171,7 +170,7 @@ class FileCtrl {
       ''');
     });
 
-    debugPrint('###### Create GraphFile : $dbPath');
+    Logger.msg('### Create GraphFile : $dbPath');
   }
   /*****************************************************************************
    *          Graph Data를 저장하는 함수
@@ -184,18 +183,30 @@ class FileCtrl {
         'rtd': rtdList.join(','),
       });
     } else {
-      debugPrint('Database is not initialized');
+      Logger.msg('Graph Database is not initialized');
     }
   }
   /*****************************************************************************
-   *          Graph Data를 불러오는 함수
+   *          현재 열려있는 Graph Data를 저장하는 함수
    *****************************************************************************////
-  static Future<List<Map<String, dynamic>>> loadGraphData(String subPath, String fileName) async {
+  static Future<List<Map<String, dynamic>>> loadGraphData() async {
+    List<Map<String, dynamic>> result = [];
+    if (_graphDatabase != null) {
+      result = await _graphDatabase!.query('graph');
+    }
+    return result;
+  }
+  /*****************************************************************************
+   *          선택된 Graph File의 Data를 불러오는 함수
+   *****************************************************************************////
+  static Future<List<Map<String, dynamic>>> loadGraphFileData(String subPath, String fileName) async {
     String dbPath = '$_defaultPath/$subPath/$graphFolder/$fileName';
     bool dbExists = await databaseExists(dbPath);
     List<Map<String, dynamic>> result = [];
 
+    Logger.msg('### Load Graph Data');
     if(dbExists){
+      Logger.msg('Graph Path:$dbPath');
       final database = await openDatabase(dbPath);
       result = await database.query('graph');
 
@@ -221,7 +232,7 @@ class FileCtrl {
       return fileList.toList();
     }
     catch(e){
-      debugPrint("Error Search Graph File List.");
+      Logger.msg("$e", tag: "ERROR");
       return [];
     }
   }
@@ -251,7 +262,7 @@ class FileCtrl {
       ''');
     });
 
-    debugPrint('###### Create LogFile : $dbPath');
+    Logger.msg('### Create LogFile : $dbPath');
   }
   /*****************************************************************************
    *          Log Data를 저장하는 함수
@@ -274,7 +285,7 @@ class FileCtrl {
       });
     }
     else {
-      debugPrint('Database is not initialized');
+      Logger.msg('Database is not initialized');
     }
   }
   /*****************************************************************************
@@ -293,7 +304,7 @@ class FileCtrl {
       return directoryList.toList();
     }
     catch(e){
-      debugPrint("Error Search Graph Date List.");
+      Logger.msg("$e", tag: "ERROR");
       return [];
     }
   }
@@ -308,6 +319,7 @@ class FileCtrl {
         directory.deleteSync(recursive: true);
       }
       catch(e){
+        Logger.msg("$e", tag: "ERROR");
         return;
       }
     }
@@ -331,7 +343,7 @@ class FileCtrl {
 
       return totalSize; // Return size in bytes
     } catch (e) {
-      debugPrint("Error calculating folder size.");
+      Logger.msg("$e", tag: "ERROR");
       return 0;
     }
   }

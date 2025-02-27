@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../constant/user_style.dart';
 import '../providers/language_provider.dart';
+import '../devices/logger.dart';
 
 class ConfigFileCtrl {
   static const String _isPU45EnableKey = 'isPU45Enable';
@@ -121,7 +122,7 @@ class ConfigFileCtrl {
     final prefs = await SharedPreferences.getInstance();
     final storedVersion = prefs.getString(_versionKey);
 
-    debugPrint("Saved SW Version : $storedVersion");
+    Logger.msg("### SW Version : $storedVersion");
 
     if (storedVersion == null || (storedVersion != _currentVersion && !_isExemptVersion(storedVersion))) {
       await _saveDefaults(prefs);
@@ -135,7 +136,7 @@ class ConfigFileCtrl {
   }
 
   static Future<void> _saveDefaults(SharedPreferences prefs) async {
-    debugPrint("_saveDefaults");
+    Logger.msg("### Save Default Setup Value");
 
     final isACPwrCal = prefs.getBool(_isACCalDataKey);
 
@@ -227,14 +228,14 @@ class ConfigFileCtrl {
       padIDList = List<String>.from(jsonDecode(jPadID));
     }
 
-    debugPrint("### HomePageStatusData[isPU45Enable]###\n$isPU45EnableList");
-    debugPrint("### HomePageStatusData[isHeatingBtn]###\n$isStartBtnList");
-    debugPrint("### HomePageStatusData[isPreheatingBtn]###\n$isPreheatingBtnList");
-    debugPrint("### HomePageStatusData[ChannelStatus]###\n$chStatusList");
-    debugPrint("### HomePageStatusData[HeatingStatus]###\n$heatingStatusList");
-    debugPrint("### HomePageStatusData[RemainTime]###\n$remainTimeList");
-    debugPrint("### HomePageStatusData[RemainTotalTime]###\n$remainTotalTimeList");
-    debugPrint("### HomePageStatusData[padID]###\n$padIDList");
+    Logger.msg("[Load HomePage[isPU45Enable]]$isPU45EnableList");
+    Logger.msg("[Load HomePage[isHeatingBtn]]$isStartBtnList");
+    Logger.msg("[Load HomePage[isPreheatingBtn]]$isPreheatingBtnList");
+    Logger.msg("[Load HomePage[ChannelStatus]]$chStatusList");
+    Logger.msg("[Load HomePage[HeatingStatus]]$heatingStatusList");
+    Logger.msg("[Load HomePage[RemainTime]]$remainTimeList");
+    Logger.msg("[Load HomePage[RemainTotalTime]]$remainTotalTimeList");
+    Logger.msg("[Load HomePage[padID]]$padIDList");
   }
   /*******************************************************************
    *               get Device Configuration
@@ -242,7 +243,7 @@ class ConfigFileCtrl {
   static Future<void> _getLanguageData(SharedPreferences prefs) async {
     deviceConfigLanguage = prefs.getString(_languageKey)!;
 
-    debugPrint("### LanguageData###\n$deviceConfigLanguage");
+    Logger.msg("[Load Language]$deviceConfigLanguage");
   }
   /*******************************************************************
    *               get Device Configuration
@@ -251,7 +252,7 @@ class ConfigFileCtrl {
     List<Map<String, dynamic>> deviceConfig = [];
     deviceConfig = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString(_deviceConfigKey) ?? '[]'));
 
-    debugPrint("### DeviceConfigData###\n${deviceConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Load Device Config]\n${deviceConfig.map((map) => map.toString()).join(',\n')}");
 
     deviceConfigNumber = deviceConfig.firstWhere((map) => map.containsKey('DeviceNumber'), orElse: () => {},)['DeviceNumber'];
     deviceConfigUserPassword = deviceConfig.firstWhere((map) => map.containsKey('UserPassword'), orElse: () => {},)['UserPassword'];
@@ -266,7 +267,7 @@ class ConfigFileCtrl {
     List<Map<String, dynamic>> modeProfileConfig = [];
     modeProfileConfig = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString(_modeProfileConfigKey) ?? '[]'));
 
-    debugPrint("### ModeProfileConfigData ###\n${modeProfileConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Load Mode Profile Config]\n${modeProfileConfig.map((map) => map.toString()).join(',\n')}");
 
     preheatingTime = modeProfileConfig.firstWhere((map) => map.containsKey('PreheatingTime'), orElse: () => {},)['PreheatingTime'];
     pu15TargetTemp = modeProfileConfig.firstWhere((map) => map.containsKey('PU15TargetTemp'), orElse: () => {},)['PU15TargetTemp']?.toDouble()?? 0.0;
@@ -285,7 +286,7 @@ class ConfigFileCtrl {
     List<Map<String, dynamic>> tempCalConfig = [];
     tempCalConfig = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString(_tempCalConfigKey) ?? '[]'));
 
-    debugPrint("### TempCalConfigData ###\n${tempCalConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Load Temp. Calibration Config]\n${tempCalConfig.map((map) => map.toString()).join(',\n')}");
 
     tempCalOhm = tempCalConfig.firstWhere((map) => map.containsKey('TargetOhm'), orElse: () => {},)['TargetOhm'];
     tempCalTime = tempCalConfig.firstWhere((map) => map.containsKey('Time'), orElse: () => {},)['Time'];
@@ -301,7 +302,7 @@ class ConfigFileCtrl {
       tempCalData = List<double>.from(jsonDecode(jTempCalDataList));
     }
 
-    debugPrint("### TempCalData ###\n$tempCalData");
+    Logger.msg("[Load Temp. Calibration]$tempCalData");
   }
   /*******************************************************************
    *               get Diagnosis Configuration
@@ -310,7 +311,7 @@ class ConfigFileCtrl {
     List<Map<String, dynamic>> diagnosisConfig = [];
     diagnosisConfig = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString(_diagnosisConfigKey) ?? '[]'));
 
-    debugPrint("### DiagnosisConfigData ###\n${diagnosisConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Load Diagnosis Config]\n${diagnosisConfig.map((map) => map.toString()).join(',\n')}");
 
     /// ### AC/DC Power Configuration ###
     acVoltLow = diagnosisConfig.firstWhere((map) => map.containsKey('ACVoltLow'), orElse: () => {},)['ACVoltLow']?.toDouble()?? 0.0;
@@ -349,7 +350,7 @@ class ConfigFileCtrl {
     List<Map<String, dynamic>> acVoltCalData = [];
     acVoltCalData = List<Map<String, dynamic>>.from(jsonDecode(prefs.getString(_acVoltCalDataKey) ?? '[]'));
 
-    debugPrint("### ACPowerConfigData ###\n${acVoltCalData.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("[Load AC Power Config]${acVoltCalData.toList()}");
 
     acCurrentOffsetCalData = List<double>.from(jsonDecode(prefs.getString(_acCurrentOffsetCalDataKey) ?? '[]'));
     acCurrentGainCalData = List<double>.from(jsonDecode(prefs.getString(_acCurrentGainCalDataKey) ?? '[]'));
@@ -376,14 +377,14 @@ class ConfigFileCtrl {
     await prefs.setString(_remainTotalTimeKey, jsonEncode(remainTotalTimeList));
     await prefs.setString(_padIDKey, jsonEncode(padIDList));
 
-    debugPrint("### setHomePageStatusData[isPU45Enable]\n$isPU45EnableList");
-    debugPrint("### setHomePageStatusData[isStartBtn]\n$isStartBtnList");
-    debugPrint("### setHomePageStatusData[isPreheatingBtn]\n$isPreheatingBtnList");
-    debugPrint("### setHomePageStatusData[chStatusList]\n$chStatusList");
-    debugPrint("### setHomePageStatusData[heatingStatusList]\n$heatingStatusList");
-    debugPrint("### setHomePageStatusData[remainTimeList]\n$remainTimeList");
-    debugPrint("### setHomePageStatusData[remainTotalTimeList]\n$remainTotalTimeList");
-    debugPrint("### setHomePageStatusData[padID]\n$padIDList");
+    Logger.msg("[Save HomePage[isPU45Enable]]$isPU45EnableList");
+    Logger.msg("[Save HomePage[isStartBtn]]$isStartBtnList");
+    Logger.msg("[Save HomePage[isPreheatingBtn]]$isPreheatingBtnList");
+    Logger.msg("[Save HomePage[chStatusList]]$chStatusList");
+    Logger.msg("[Save HomePage[heatingStatusList]]$heatingStatusList");
+    Logger.msg("[Save HomePage[remainTimeList]]$remainTimeList");
+    Logger.msg("[Save HomePage[remainTotalTimeList]]$remainTotalTimeList");
+    Logger.msg("[Save HomePage[padID]]$padIDList");
   }
   /*******************************************************************
    *               set Language
@@ -393,7 +394,7 @@ class ConfigFileCtrl {
 
     await prefs.setString(_languageKey, deviceConfigLanguage);
 
-    debugPrint("setLanguageData]\n$deviceConfigLanguage");
+    Logger.msg("[Save Language]$deviceConfigLanguage");
 
     // context가 유효한지 확인
     if(!context.mounted) return;
@@ -413,7 +414,7 @@ class ConfigFileCtrl {
     deviceConfig.add({'FANStartTemp': deviceConfigFANStartTemp});
     deviceConfig.add({'FANDeltaTemp': deviceConfigFANDeltaTemp});
 
-    debugPrint("setDeviceConfigData]\n${deviceConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Save Device Config]\n${deviceConfig.map((map) => map.toString()).join(',\n')}");
 
     await prefs.setString(_deviceConfigKey, jsonEncode(deviceConfig));
   }
@@ -434,7 +435,7 @@ class ConfigFileCtrl {
     modeProfileConfig.add({'PU45Hold1stTime': pu45Hold1stTime});
     modeProfileConfig.add({'PU45Hold2ndTime': pu45Hold2ndTime});
 
-    debugPrint("setModeProfileConfigData]\n${modeProfileConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Save Mode Profile Config]\n${modeProfileConfig.map((map) => map.toString()).join(',\n')}");
 
     await prefs.setString(_modeProfileConfigKey, jsonEncode(modeProfileConfig));
   }
@@ -449,7 +450,7 @@ class ConfigFileCtrl {
     tempCalConfig.add({'Time': tempCalTime});
     tempCalConfig.add({'Gain': tempCalGain});
 
-    debugPrint("setTempCalConfigData]\n${tempCalConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Save Temp. Calibration Config]\n${tempCalConfig.map((map) => map.toString()).join(',\n')}");
 
     await prefs.setString(_tempCalConfigKey, jsonEncode(tempCalConfig));
   }
@@ -461,7 +462,7 @@ class ConfigFileCtrl {
 
     await prefs.setString(_tempCalDataKey, jsonEncode(tempCalData));
 
-    debugPrint("setTempCalData] : $tempCalData");
+    Logger.msg("[Save Temp. Calibration] : $tempCalData");
   }
   /*******************************************************************
    *               set Diagnosis Configuration
@@ -498,7 +499,7 @@ class ConfigFileCtrl {
     diagnosisConfig.add({'PU45Over2ndDeltaTemp': pu45Over2ndDeltaTemp});
     diagnosisConfig.add({'PU45OverStopDelay': pu45OverStopDelay});
 
-    debugPrint("setDiagnosisConfigData]\n${diagnosisConfig.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Save Diagnosis Config]\n${diagnosisConfig.map((map) => map.toString()).join(',\n')}");
 
     await prefs.setString(_diagnosisConfigKey, jsonEncode(diagnosisConfig));
   }
@@ -512,7 +513,7 @@ class ConfigFileCtrl {
     acVoltCalData.add({'Offset': acVoltCalOffset});
     acVoltCalData.add({'Gain': acVoltCalGain});
 
-    debugPrint("setACPowerConfigData]\n${acVoltCalData.map((map) => map.toString()).join(',\n')}");
+    Logger.msg("\n[Save AC Power Config]\n${acVoltCalData.map((map) => map.toString()).join(',\n')}");
     await prefs.setString(_acVoltCalDataKey, jsonEncode(acVoltCalData));
   }
   /*******************************************************************

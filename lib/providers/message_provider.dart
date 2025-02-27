@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/language_provider.dart';
 import '../devices/file_ctrl.dart';
+import '../devices/logger.dart';
 
 class MessageProvider extends ChangeNotifier {
   Timer? _timer;
@@ -27,7 +28,7 @@ class MessageProvider extends ChangeNotifier {
         'Date Time': item['dateTime'],
       });
 
-      debugPrint("## Alarm File : $item");
+      Logger.msg("### Alarm File : $item");
     }
   }
   /***********************************************************************
