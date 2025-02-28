@@ -26,7 +26,7 @@ class HotpadCtrl with ChangeNotifier{
   List<HeatingStatus> _heatingStatus = List.filled(totalChannel, HeatingStatus.stop);
   List<HeatingStatus> _oldHeatingStatus = List.filled(totalChannel, HeatingStatus.stop);
   List<double> _remainTime = List.filled(totalChannel, 0);
-  List<double> _remainTotalTime = List.filled(totalChannel, -1);
+  List<double> _remainTotalTime = List.filled(totalChannel, 1);
   List<List<String>> _logDataList = [];
 
   int _iSerialCount = 0;
@@ -119,12 +119,12 @@ class HotpadCtrl with ChangeNotifier{
   List<HeatingStatus> get getHeatingStatusList => _heatingStatus;
 
   double getRemainTime(int index){
-    if (index < 0 || index >= totalChannel) return -1;
+    if (index < 0 || index >= totalChannel) return 0;
     return _remainTime[index];
   }
 
   double getRemainTotalTime(int index){
-    if (index < 0 || index >= totalChannel) return -1;
+    if (index < 0 || index >= totalChannel) return 1;
     return _remainTotalTime[index];
   }
 
@@ -153,7 +153,6 @@ class HotpadCtrl with ChangeNotifier{
     else{
       _sPU45Enable[index] = "PU15";
     }
-
     _updateStatus();
     notifyListeners();
   }
@@ -167,7 +166,8 @@ class HotpadCtrl with ChangeNotifier{
    *          히팅 시작 함수
    *****************************************************************************////
   void startHeating(int index){
-    if (index < 0 || index >= totalChannel) return;
+    if (index < 0 || index >= totalChannel || _heatingStatus[index] == HeatingStatus.workEnd) return;
+
     _isStartBtn[index] = true;
     _isPreheatingBtn[index] = false;
 
@@ -190,7 +190,7 @@ class HotpadCtrl with ChangeNotifier{
    *          예열 시작 함수
    *****************************************************************************////
   void startPreheating(int index){
-    if (index < 0 || index >= totalChannel) return;
+    if (index < 0 || index >= totalChannel || _heatingStatus[index] == HeatingStatus.workEnd) return;
     _isStartBtn[index] = false;
     _isPreheatingBtn[index] = true;
     // Preheating RemainTime 설정
@@ -213,7 +213,7 @@ class HotpadCtrl with ChangeNotifier{
     _isStartBtn[index] = false;
     _isPreheatingBtn[index] = false;
     _remainTime[index] = 0;
-    _remainTotalTime[index] = -1;
+    _remainTotalTime[index] = 1;
     _heatingStatus[index] = HeatingStatus.stop;
     _oldHeatingStatus[index] = HeatingStatus.stop;
     _chStatus[index] = ChannelStatus.stop;
@@ -284,6 +284,8 @@ class HotpadCtrl with ChangeNotifier{
       case HeatingStatus.error:
         tmpStr = "Pad Error";
         break;
+      default:
+        break;
     }
 
     return languageProvider.getStatusLanguageTransValue(tmpStr);
@@ -299,14 +301,11 @@ class HotpadCtrl with ChangeNotifier{
         serialCtrl.txPackage.setHTOperate(_chStatus);
         serialCtrl.sendData(_iSerialCount);
         serialCtrl.checkDataReceived();
-      }
-      else if (message == 'updateTime') {
         _currentTime = getCurrentTime();
-      }
-      else if (message == 'decrementRemainTime') {
         _decrementRemainTime();
       }
-      else if (message == 'updateStorage') {
+
+      if (message == 'updateStorage') {
         updateStorageUsage();
         _updateStatus();
       }
@@ -318,8 +317,6 @@ class HotpadCtrl with ChangeNotifier{
   static void _isolateEntry(SendPort sendPort) async {
     Timer.periodic(Duration(seconds: 1), (timer) {
       sendPort.send('sendData');
-      sendPort.send('updateTime');
-      sendPort.send('decrementRemainTime');
     });
     Timer.periodic(Duration(minutes: 1), (timer) {
       sendPort.send('updateStorage');
@@ -412,46 +409,62 @@ class HotpadCtrl with ChangeNotifier{
    *****************************************************************************////
   void _decrementRemainTime() {
     for (int index = 0; index < totalChannel; index++) {
-      if (_chStatus[index] == ChannelStatus.start) {
-        if (_isPU45Enable[index] == false) { // PU15
-          if (_isPreheatingBtn[index] == false) { // heating
-            if ((double.tryParse(serialCtrl.rxPackage.rtdTemp[index]) ?? 0.0) >= ConfigFileCtrl.pu15TargetTemp) {
+      if(_heatingStatus[index] != HeatingStatus.workEnd) {
+        if (_chStatus[index] == ChannelStatus.start) {
+          if (_isPU45Enable[index] == false) { // PU15
+            if (_isPreheatingBtn[index] == false) { // heating
+              if ((double.tryParse(serialCtrl.rxPackage.rtdTemp[index]) ??
+                  0.0) >= ConfigFileCtrl.pu15TargetTemp) {
+                _remainTime[index] -= 1;
+                _heatingStatus[index] = HeatingStatus.holding1st;
+              }
+            }
+            else { // Preheating
               _remainTime[index] -= 1;
-              _heatingStatus[index] = HeatingStatus.holding1st;
+              if ((double.tryParse(serialCtrl.rxPackage.rtdTemp[index]) ??
+                  0.0) >= ConfigFileCtrl.pu15TargetTemp) {
+                _heatingStatus[index] = HeatingStatus.preheatHolding;
+              }
             }
           }
-          else { // Preheating
+          else { // PU45
+            if (_remainTime[index] > (_remainTotalTime[index] -
+                (ConfigFileCtrl.pu45Ramp1stTime * 60))) {
+              _heatingStatus[index] = HeatingStatus.rising1st;
+            }
+            else if (_remainTime[index] > (_remainTotalTime[index] -
+                (ConfigFileCtrl.pu45Ramp1stTime +
+                    ConfigFileCtrl.pu45Hold1stTime) * 60)) {
+              _heatingStatus[index] = HeatingStatus.holding1st;
+            }
+            else if (_remainTime[index] > (_remainTotalTime[index] -
+                (ConfigFileCtrl.pu45Ramp1stTime +
+                    ConfigFileCtrl.pu45Hold1stTime +
+                    ConfigFileCtrl.pu45Ramp2ndTime) * 60)) {
+              _heatingStatus[index] = HeatingStatus.rising2nd;
+            }
+            else {
+              _heatingStatus[index] = HeatingStatus.holding2nd;
+            }
             _remainTime[index] -= 1;
           }
-        }
-        else { // PU45
-          if (_remainTime[index] > (_remainTotalTime[index] - (ConfigFileCtrl.pu45Ramp1stTime * 60))) {
-            _heatingStatus[index] = HeatingStatus.rising1st;
-          }
-          else if (_remainTime[index] > (_remainTotalTime[index] - (ConfigFileCtrl.pu45Ramp1stTime + ConfigFileCtrl.pu45Hold1stTime) * 60)) {
-            _heatingStatus[index] = HeatingStatus.holding1st;
-          }
-          else if (_remainTime[index] > (_remainTotalTime[index] - (ConfigFileCtrl.pu45Ramp1stTime + ConfigFileCtrl.pu45Hold1stTime + ConfigFileCtrl.pu45Ramp2ndTime) * 60)) {
-            _heatingStatus[index] = HeatingStatus.rising2nd;
-          }
-          else {
-            _heatingStatus[index] = HeatingStatus.holding2nd;
-          }
 
-          _remainTime[index] -= 1;
-        }
-
-        if (_remainTime[index] <= 0) {
-          _heatingStatus[index] = HeatingStatus.stop;
+          if (_remainTime[index] < 0) {
+            _heatingStatus[index] = HeatingStatus.workEnd;
+          }
         }
       }
       // HeatingStatus 변경에 따라 메세지 출력
-      if(_heatingStatus[index] != _oldHeatingStatus[index]){
+      if((_heatingStatus[index] != _oldHeatingStatus[index]) ||
+          _heatingStatus[index] == HeatingStatus.workEnd){
         String codeStr = '';
         _oldHeatingStatus[index] = _heatingStatus[index];
 
         switch(_heatingStatus[index]) {
-          case HeatingStatus.stop:
+          case HeatingStatus.workEnd:
+            _heatingStatus[index] = HeatingStatus.stop;
+            _oldHeatingStatus[index] = HeatingStatus.stop;
+            _remainTime[index] = 0;
             codeStr = 'I0008';
             stopHeating(index);
             break;
@@ -476,12 +489,16 @@ class HotpadCtrl with ChangeNotifier{
           case HeatingStatus.error:
             codeStr = 'E0000';
             break;
+          default:
+            break;
         }
 
-        showAlarmMessage(
-            'CH${(index+1).toString().padLeft(2,'0')}',
-            getIsPU45Enable(index) ? 'PU45' : 'PU15',
-            codeStr);
+        if(codeStr != '') {
+          showAlarmMessage(
+              'CH${(index + 1).toString().padLeft(2, '0')}',
+              getIsPU45Enable(index) ? 'PU45' : 'PU15',
+              codeStr);
+        }
       }
     }
   }

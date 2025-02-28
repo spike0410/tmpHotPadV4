@@ -367,7 +367,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           height: cellHeight,
           isHighlighted : isHighlighted,
           child: _progressDataTable(
-              value: (remainTotalTimeValue == -1)
+              value: (remainTotalTimeValue == 1)
                   ? 0
                   : (1.0 - remainTimeValue/remainTotalTimeValue),
               width: (cellWidth[1] - 10),
